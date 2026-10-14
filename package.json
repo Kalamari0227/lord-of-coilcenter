@@ -1,0 +1,17 @@
+{
+  "name": "lord-of-coilcenter-foundation",
+  "private": true,
+  "version": "0.1.0",
+  "description": "코일센터의 제왕 경영 화면 개편 기반",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run audio:verify && npm test && npm run build",
+    "audio:render": "node scripts/render-audio.mjs",
+    "audio:verify": "node scripts/verify-audio.mjs"
+  }
+}

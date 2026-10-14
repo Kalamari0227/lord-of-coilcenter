@@ -188,7 +188,7 @@ function hallPanel() {
           <th>모법이익</th><th>자기자본</th><th>경영 스타일</th></tr>
       ${all.slice(0, 12).map(r => `<tr>
         <td>${new Date(r.at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}</td>
-        <td class="hname">${r.company}</td>
+        <td class="hname">${escapeText(r.company)}</td>
         <td>${r.diff}${r.mode === '속성' ? ' · 속성' : ''}</td>
         <td>${r.months}</td>
         <td class="hgrade">${r.grade}</td>
@@ -223,15 +223,20 @@ function isIOS() {
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
+function refreshInstallPanel() {
+  const box = document.getElementById('install');
+  if (box) box.outerHTML = installPanel();
+  wireInstall();
+}
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();          // 브라우저 기본 배너를 막고 우리 버튼으로 받는다
   installPrompt = e;
-  const box = document.getElementById('install'); if (box) box.outerHTML = installPanel();
-  wireInstall();
+  refreshInstallPanel();
 });
 window.addEventListener('appinstalled', () => {
   installPrompt = null; installedFlag = true;
-  const box = document.getElementById('install'); if (box) box.outerHTML = installPanel();
+  refreshInstallPanel();
   toast('설치했습니다. 이제 홈 화면에서 바로 열 수 있습니다.');
 });
 
@@ -242,10 +247,12 @@ window.addEventListener('appinstalled', () => {
    아이폰 사파리는 그 이벤트를 안 주므로 손으로 하는 법을 적어준다. */
 function installPanel() {
   const ios = isIOS();
+  const standalone = isStandalone();
+  const canInstall = installPrompt && !standalone && !installedFlag;
 
-  const android = `<div class="iway ${!ios && installPrompt ? 'on' : ''}">
+  const android = `<div class="iway ${!ios && canInstall ? 'on' : ''}">
     <h3>🤖 안드로이드 · PC</h3>
-    ${installPrompt
+    ${canInstall
       ? `<p>아래 버튼 한 번이면 끝입니다.</p>
          <button class="primary" id="btn-install">지금 설치</button>`
       : `<ol class="steps">
@@ -258,24 +265,28 @@ function installPanel() {
   const iphone = `<div class="iway ${ios ? 'on' : ''}">
     <h3>📱 아이폰 · 아이패드</h3>
     <ol class="steps">
-      <li><b>사파리</b>로 이 주소를 엽니다 <span class="muted">(크롬으로 열면 이 메뉴가 없습니다)</span></li>
-      <li>화면 아래 가운데 <b>공유 버튼</b> <b>⬆︎</b> 을 누릅니다
-        <span class="muted">(아이패드는 오른쪽 위)</span></li>
-      <li>메뉴를 아래로 내려 <b>「홈 화면에 추가」</b>를 누릅니다</li>
-      <li>오른쪽 위 <b>「추가」</b>를 누르면 홈 화면에 아이콘이 생깁니다</li>
+      <li><b>사파리 또는 크롬</b>으로 이 주소를 엽니다</li>
+      <li><b>공유 버튼</b> <b>⬆︎</b> 을 누릅니다 <span class="muted">(사파리는 더 보기 메뉴 안에 있을 수 있습니다)</span></li>
+      <li><b>「홈 화면에 추가」</b>를 누릅니다 <span class="muted">(보이지 않으면 공유 메뉴의 동작 편집에서 추가하십시오)</span></li>
+      <li><b>「웹 앱으로 열기」</b>가 보이면 켠 뒤 <b>「추가」</b>를 누릅니다</li>
     </ol>
   </div>`;
 
-  const head = (isStandalone() || installedFlag)
+  const head = standalone
     ? `<h2>앱으로 실행 중입니다</h2>
-       <p class="hint">홈 화면 아이콘으로 열렸습니다. 비행기 안에서도 돌아갑니다.
-         다른 기기에 깔려면 아래를 보여주십시오.</p>`
+       <p class="hint">홈 화면 아이콘으로 열렸습니다. 다른 기기에 설치하려면 아래 안내를 이용하십시오.</p>`
+    : installedFlag
+    ? `<h2>앱 설치가 완료되었습니다</h2>
+       <p class="hint">지금은 브라우저 탭입니다. 홈 화면이나 앱 목록의 아이콘으로 열면 앱으로 실행됩니다.</p>`
     : `<h2>휴대폰에 앱으로 설치하기</h2>
-       <p class="hint">홈 화면에 아이콘이 생기고, 주소창 없이 전체 화면으로 열립니다.
-         한 번 깔아두면 인터넷이 없어도 돌아갑니다.</p>`;
+       <p class="hint">홈 화면에 아이콘이 생기고, 주소창 없이 별도 창으로 열립니다.</p>`;
+  const offline = window.CC_DEVELOPMENT
+    ? '현재는 개발 미리보기이므로 오프라인 실행을 지원하지 않습니다. 휴대폰에서는 배포된 HTTPS 주소를 여십시오.'
+    : '처음에는 인터넷에 연결해 게임을 열어 두십시오. 게임 파일 저장이 완료되면 오프라인에서도 실행할 수 있습니다. 음악·효과음은 이미 내려받은 음원만 재생되며, 브라우저가 저장 공간을 비우면 다시 연결해야 합니다.';
 
-  return `<div class="card install${isStandalone() || installedFlag ? ' done' : ''}" id="install">
+  return `<div class="card install${standalone || installedFlag ? ' done' : ''}" id="install">
     ${head}
+    <p class="hint">${offline}</p>
     <div class="iways">${ios ? iphone + android : android + iphone}</div>
   </div>`;
 }
@@ -284,16 +295,24 @@ function wireInstall() {
   const b = document.getElementById('btn-install');
   if (!b) return;
   b.onclick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    if (outcome !== 'accepted') toast('설치를 취소했습니다. 나중에 다시 하셔도 됩니다.');
+    const prompt = installPrompt;
+    if (!prompt) return;
     installPrompt = null;
+    b.disabled = true;
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome !== 'accepted') toast('설치를 취소했습니다. 브라우저 메뉴에서 나중에 다시 설치할 수 있습니다.');
+    } catch {
+      toast('설치 창을 열지 못했습니다. 아래 브라우저 메뉴 안내로 설치해 주십시오.');
+    } finally {
+      refreshInstallPanel();
+    }
   };
 }
 
 /* 서비스 워커는 http(s)에서만 등록된다. file://로 열면 조용히 건너뛴다. */
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+if (!window.CC_DEVELOPMENT && 'serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });

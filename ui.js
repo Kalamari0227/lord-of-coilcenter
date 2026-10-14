@@ -5,6 +5,8 @@
 
 const $ = s => document.querySelector(s);
 const app = $('#app');
+const escapeText = value => String(value).replace(/[&<>"']/g, character =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const fmt = n => Math.round(n).toLocaleString('en-US');
 const money = n => (n < 0 ? '−$' : '$') + fmt(Math.abs(n));
 // $17,610 → "18k". 천 단위가 안 되면 그냥 달러로 적는다.
@@ -499,9 +501,9 @@ function openDecisions() {
      예전에는 화면을 통째로 갈아끼워서 "내가 뭘 보고 골랐더라"가 사라졌다.
      고르지 않은 선택지는 흐려지고, 고른 것은 남는다. */
   const showVerdict = (choiceLabel, msg, chips, extra = '', pickedIdx = -1) => {
+    if (typeof ccAudioCue === 'function') ccAudioCue(card.form === 'order' ? 'order' : 'stamp', ccAudioEventId('verdict'));
     const last = G.qi + 1 >= G.queue.length;
-    const pic = who.img ? `<img src="${A(who.img + `.png`)}" alt="">`
-                        : `<div class="em">${who.face}</div>`;
+    const pic = face(who);
     const list = dlg.querySelector('#olist');
     if (list) {
       list.classList.add('done');
@@ -525,11 +527,15 @@ function openDecisions() {
     else {
       // 발주·영업계획처럼 폼 화면이면 통째로 갈아끼운다 (선택지가 없으므로 남길 게 없다)
       dlg.innerHTML = `<div class="dlg">${head}${html}</div>`;
+      dlg.removeAttribute('aria-labelledby');
+      dlg.setAttribute('aria-label', card.title);
     }
     dlg.querySelector('#nx').onclick = () => {
+      if (last && typeof ccAudioCue === 'function') ccAudioCue('month-turn', ccAudioEventId('advance'));
       dlg.close(); dlg.remove(); G.qi++; openDecisions();
     };
     dlg.querySelector('#nx').scrollIntoView({ block: 'nearest' });
+    dlg.querySelector('#nx').focus({ preventScroll: true });
   };
 
   // ESC로 닫으면 결재 흐름이 끊긴다. 반드시 고르고 나가야 한다.
@@ -1186,7 +1192,7 @@ function renderSetup() {
   const sv = loadedSave();
   const resumeCard = sv ? `<div class="card resume">
       <h2>이어서 하기</h2>
-      <p class="hint"><b>${sv.s.companyName}</b> · ${DIFF[sv.diffKey] ? DIFF[sv.diffKey].name : ''}
+      <p class="hint"><b>${escapeText(sv.s.companyName)}</b> · ${DIFF[sv.diffKey] ? DIFF[sv.diffKey].name : ''}
         · ${dateLabel(sv.s.turn)} · ${sinceLabel(sv.at)}에 저장</p>
       <div class="hbtns">
         <button class="primary" id="btn-resume">${dateLabel(sv.s.turn)}부터 이어서</button>
@@ -1263,11 +1269,14 @@ function renderSetup() {
     // 새 판을 시작하면 이전 저장은 덮인다. 실수로 날리지 않게 한 번 묻는다.
     if (loadedSave() && !confirm('저장해둔 판이 있습니다. 새로 시작하면 그 판은 지워집니다. 계속할까요?')) return;
     clearSave();
-    newGame({ ...SETUP, mode, name: $('#nm').value.trim() || '노바리아 코일센터' });
+    const begin = () => { newGame({ ...SETUP, mode, name: $('#nm').value.trim() || '노바리아 코일센터' }); return !!G; };
+    if (typeof ccAudioGesture === 'function') ccAudioGesture(begin); else begin();
   };
   $('#go-normal').onclick = () => start('normal');
   $('#go-quick').onclick = () => start('quick');
-  const rb = $('#btn-resume'); if (rb) rb.onclick = resumeGame;
+  const rb = $('#btn-resume'); if (rb) rb.onclick = () => {
+    if (typeof ccAudioGesture === 'function') ccAudioGesture(resumeGame); else resumeGame();
+  };
   const db = $('#btn-drop'); if (db) db.onclick = () => {
     if (confirm('저장해둔 판을 지웁니다. 되돌릴 수 없습니다.')) { clearSave(); renderSetup(); }
   };
@@ -1616,7 +1625,7 @@ function renderPlay() {
 
   app.innerHTML = `
     <div class="topbar">
-      <b>${s.companyName}</b>
+      <b>${escapeText(s.companyName)}</b>
       <span>${periodNow()} <i>${periodIndex()} / ${periodTotal()}</i></span>
       <span class="phase ph-${s.market.phase}">${ph.label}</span>
       <button class="mini" id="btn-motion">${motionOff() ? '움직임 켜기' : '움직임 끄기'}</button>
@@ -2328,6 +2337,7 @@ function showReport(R) {
   dlg.addEventListener('cancel', e => e.preventDefault());
   document.body.appendChild(dlg);
   dlg.showModal();
+  if (typeof ccAudioReport === 'function') ccAudioReport(R, dlg);
   dlg.querySelector("#close").onclick = () => {
     dlg.close(); dlg.remove();
     render();
@@ -2335,6 +2345,7 @@ function showReport(R) {
 }
 
 function renderEnd() {
+  if (typeof ccAudioEnding === 'function') ccAudioEnding();
   const g = grade(G.s, (G.diff || DIFF.normal).target), s = G.s, W = G.W;
   const P = companyProfile(s, W), m = P.m;
   /* 판이 끝났으니 저장을 지우고 기록을 남긴다. 한 판을 두 번 적지 않게 표시를 달아둔다. */
@@ -2356,7 +2367,7 @@ function renderEnd() {
 
   app.innerHTML = `
     <div class="card center" style="padding:30px 22px 24px">
-      <p class="muted">${s.companyName} · ${s.history.length}개월 · ${(G.diff || DIFF.normal).name}</p>
+      <p class="muted">${escapeText(s.companyName)} · ${s.history.length}개월 · ${(G.diff || DIFF.normal).name}</p>
       <h1 style="margin:4px 0 2px">당신이 만든 회사</h1>
       <div class="big" style="color:var(--blue)">${P.name}</div>
       <div class="profile">${P.lines.map(t => `<p>${t}</p>`).join('')}</div>
@@ -2410,6 +2421,7 @@ function renderEnd() {
     </div>`;
   $('#again').onclick = () => { G = null; render(); };
   $('#end-csv').onclick = exportHall;
+  if (typeof ccAudioMenu === 'function') ccAudioMenu($('#again').parentElement);
 }
 
 /* save.js가 뒤에 붙는다. 거기서 render()를 부른다 — 설치 안내와 저장 목록이 첫 화면에 필요하다. */

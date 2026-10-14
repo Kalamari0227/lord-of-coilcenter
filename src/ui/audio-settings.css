@@ -1,0 +1,26 @@
+.cc-audio-settings { width:min(100%, 36rem); padding:0; box-shadow:var(--cc-window-shadow); }
+.cc-audio-settings .cc-dossier-heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cc-space-3); padding:var(--cc-space-4); background:var(--cc-raised); border-bottom:1px solid var(--cc-border); }
+.cc-audio-settings h2 { margin:0; font-size:var(--cc-text-heading); }
+.cc-audio-settings .cc-dossier-close { flex-shrink:0; }
+.cc-audio-settings .cc-dossier-content { display:grid; gap:var(--cc-space-4); padding:var(--cc-space-4); }
+.cc-audio-settings p { margin:0; }
+.cc-audio-mute { display:flex; gap:var(--cc-space-3); align-items:center; min-height:44px; }
+.cc-audio-settings input[type='checkbox'] { width:24px; height:24px; accent-color:var(--cc-gold); }
+.cc-audio-levels { display:grid; gap:var(--cc-space-4); }
+.cc-audio-level { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--cc-space-2); }
+.cc-audio-level output { color:var(--cc-gold); font-variant-numeric:tabular-nums; }
+.cc-audio-settings input[type='range'] { grid-column:1/-1; width:100%; min-width:0; min-height:44px; margin:0; accent-color:var(--cc-gold); }
+.cc-audio-preview { min-width:0; display:grid; gap:var(--cc-space-3); padding:var(--cc-space-4); border:1px solid var(--cc-border); }
+.cc-audio-preview legend { padding:0 var(--cc-space-2); font-size:var(--cc-text-label); }
+.cc-audio-preview select { width:100%; min-width:0; }
+.cc-audio-preview-actions { display:flex; flex-wrap:wrap; gap:var(--cc-space-2); }
+.cc-audio-preview-actions button { flex:1; }
+.cc-audio-status { color:var(--cc-muted); font-size:var(--cc-text-small); line-height:1.5; }
+.cc-nav .cc-audio-status { flex-basis:100%; }
+.cc-game .cc-nav { flex-wrap:wrap; }
+.cc-audio-settings .cc-audio-controls { display:grid; gap:var(--cc-space-3); }
+@media(max-width:760px) {
+  .cc-game .cc-nav .cc-audio-status { grid-column:1/-1; }
+  .cc-audio-settings .cc-dossier-content { padding:var(--cc-space-3); }
+  .cc-audio-preview { padding:var(--cc-space-3); }
+}

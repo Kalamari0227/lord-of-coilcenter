@@ -1,0 +1,168 @@
+:root {
+  --cc-font-body:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --cc-font-title:'AppleMyungjo','Batang',Georgia,serif;
+  --cc-text-body:18px; --cc-text-small:14px; --cc-text-label:16px; --cc-text-heading:22px;
+  --cc-space-1:4px; --cc-space-2:8px; --cc-space-3:12px; --cc-space-4:16px; --cc-space-6:24px; --cc-space-8:32px;
+  --cc-window-shadow:inset 0 0 0 2px var(--cc-dark),inset 0 0 0 3px #3b575c,3px 3px 0 var(--cc-shadow);
+}
+body:has(.cc-app) { font:var(--cc-text-body)/1.5 var(--cc-font-body); }
+body:has(.cc-app)::before,body:has(.cc-app)::after { display:none; }
+.cc-app.wrap { max-width:1480px; padding:var(--cc-space-4); }
+.cc-app button { box-shadow:inset 0 0 0 2px var(--cc-dark); }
+.cc-app button.primary,.cc-app button[aria-current='page'] { background:var(--cc-gold); color:var(--cc-bg); font-weight:700; box-shadow:inset 0 0 0 2px #6b5835,inset 0 0 0 3px #eed29a; }
+.cc-window { border:1px solid var(--cc-border); background:var(--cc-panel); box-shadow:var(--cc-window-shadow); }
+.cc-window-title { font-size:var(--cc-text-label); padding:var(--cc-space-3); margin:0; border-bottom:1px solid var(--cc-border); background:var(--cc-raised); }
+.cc-window-body { padding:var(--cc-space-4); }
+.cc-status { display:flex; align-items:center; gap:var(--cc-space-8); padding:var(--cc-space-2) 0 var(--cc-space-4); border-bottom:2px solid var(--cc-border); margin-bottom:var(--cc-space-3); }
+.cc-status > div { min-width:0; }
+.cc-status small,.cc-status strong { display:block; }
+.cc-status small { color:var(--cc-muted); font-size:var(--cc-text-small); }
+.cc-status strong { font-size:20px; }
+.cc-brand { margin-right:auto; padding-right:var(--cc-space-4); border-right:1px solid var(--cc-border); }
+.cc-brand span { font:26px var(--cc-font-title); color:var(--cc-gold); }
+.cc-brand b { display:block; font-size:var(--cc-text-small); margin-top:var(--cc-space-1); }
+.cc-game .cc-nav { display:flex; gap:var(--cc-space-1); margin-bottom:var(--cc-space-3); }
+.cc-game .cc-nav button { min-width:112px; flex:0 1 auto; font-size:16px; padding:8px 16px; }
+.cc-game .cc-nav button:last-child { margin-left:auto; }
+.cc-game .cc-layout { display:grid; grid-template-columns:176px minmax(0,1fr) 280px; gap:var(--cc-space-3); align-items:start; }
+.cc-main,.cc-commands { min-width:0; }
+.cc-game .cc-staff { display:block; padding-bottom:var(--cc-space-2); }
+.cc-game .cc-staff h2 { font-size:var(--cc-text-label); margin:0; color:var(--cc-text); }
+.cc-game .cc-person { width:calc(100% - 16px); margin:var(--cc-space-2) var(--cc-space-2) 0; padding:var(--cc-space-2); display:flex; align-items:center; gap:var(--cc-space-2); text-align:left; }
+.cc-game .cc-person small,.cc-game .cc-person b { display:block; font-size:var(--cc-text-small); }
+.cc-game .cc-person small { color:var(--cc-muted); font-size:12px; line-height:1.4; }
+.cc-game .cc-person[aria-pressed='true'] b::before { content:none; }
+.cc-game .cc-person[aria-pressed='true'] b { color:var(--cc-gold); }
+.cc-portrait { display:inline-block; flex:none; width:54px; height:65px; background-image:url('art/strategy-officers.png'); background-size:300% 200%; background-position:var(--portrait-x) var(--portrait-y); image-rendering:pixelated; border:1px solid var(--cc-border); }
+.cc-game .cc-scene { position:relative; aspect-ratio:8/5; overflow:hidden; padding:3px; }
+.cc-scene-art { width:100%; height:100%; display:block; object-fit:cover; image-rendering:pixelated; }
+.cc-scene-caption { position:absolute; right:8px; bottom:8px; background:var(--cc-dark); padding:4px 8px; border:1px solid var(--cc-border); font-size:var(--cc-text-small); }
+.cc-app .cc-map-place { position:absolute; transform:translate(-50%,-50%); white-space:nowrap; min-height:44px; font-size:var(--cc-text-label); background:var(--cc-dark); padding:8px 12px; box-shadow:2px 2px 0 var(--cc-shadow),inset 0 0 0 2px var(--cc-panel); }
+.cc-app .cc-map-place:active { transform:translate(-50%,calc(-50% + 1px)); }
+.cc-place-mark { display:inline-block; height:7px; width:7px; margin-right:6px; background:var(--cc-gold); }
+.cc-dialogue { display:flex; align-items:flex-start; gap:var(--cc-space-4); padding:var(--cc-space-4); margin-top:var(--cc-space-3); min-height:164px; }
+.cc-dialogue-portrait { width:88px; height:106px; }
+.cc-dialogue h2 { margin:0 0 var(--cc-space-2); font-size:var(--cc-text-heading); color:var(--cc-gold); }
+.cc-dialogue h2 small { display:block; font:var(--cc-text-small)/1.5 var(--cc-font-body); color:var(--cc-muted); }
+.cc-dialogue p { margin:var(--cc-space-2) 0; font-size:var(--cc-text-label); }
+.cc-report-kind { color:var(--cc-good); border-bottom:1px solid var(--cc-border); font-size:var(--cc-text-small); }
+.cc-commands { display:grid; gap:var(--cc-space-3); }
+.cc-command-list { display:grid; gap:var(--cc-space-2); padding:var(--cc-space-3); }
+.cc-command-list button { text-align:left; padding-left:var(--cc-space-4); }
+.cc-command-list button::before { content:'›'; margin-right:var(--cc-space-3); color:var(--cc-gold); }
+.cc-mission p { margin:0 0 var(--cc-space-3); }
+.cc-mission strong { display:block; color:var(--cc-gold); font-size:var(--cc-text-heading); }
+.cc-rule { display:block; border-top:1px solid var(--cc-border); margin:var(--cc-space-4) 0; }
+.cc-turn { margin-top:var(--cc-space-3); padding:var(--cc-space-3) var(--cc-space-4); display:flex; justify-content:space-between; gap:var(--cc-space-4); align-items:center; }
+.cc-turn b { color:var(--cc-gold); }
+.cc-turn p { margin:var(--cc-space-1) 0 0; color:var(--cc-muted); font-size:var(--cc-text-small); }
+.cc-turn #go { position:static; width:220px; flex:none; min-height:56px; font-size:20px; }
+.cc-app.cc-title.wrap { position:relative; max-width:none; min-height:100svh; padding:0; background:var(--cc-bg) url('art/strategy-office.png') center/cover; }
+.cc-title-shade { position:absolute; inset:0; background:linear-gradient(90deg,rgba(6,20,27,.94),rgba(6,20,27,.68) 35%,rgba(6,20,27,.07) 72%),linear-gradient(0deg,rgba(6,20,27,.75),transparent 50%); }
+.cc-title-content { position:relative; padding:clamp(32px,7vh,80px) max(32px,8vw) 32px; min-height:100svh; display:flex; flex-direction:column; align-items:flex-start; }
+.cc-title-heading > p:first-child { font-size:14px; color:var(--cc-gold); letter-spacing:.12em; margin:0 0 20px; }
+.cc-title h1 { font-family:var(--cc-font-title); font-size:clamp(48px,5.7vw,84px); font-weight:400; margin:0; letter-spacing:.08em; text-shadow:3px 4px var(--cc-shadow); }
+.cc-title-story { font-size:20px; line-height:1.8; margin:24px 0 32px; }
+.cc-title-menu { width:300px; display:grid; gap:8px; padding:16px; }
+.cc-title-menu p { font-size:14px; color:var(--cc-gold); margin:0 0 4px; letter-spacing:.08em; }
+.cc-title-menu small { font-size:12px; color:var(--cc-muted); }
+.cc-title-credit { margin-top:auto; padding-top:32px; font-size:12px; color:var(--cc-muted); }
+.cc-title-edition { position:absolute; right:32px; bottom:32px; font-size:12px; color:var(--cc-text); }
+.cc-back { margin-bottom:24px; }
+.cc-app.cc-setup { max-width:1000px; }
+.cc-setup .modecard { clip-path:none; border-color:var(--cc-border); }
+.cc-setup .modecard.on { background:var(--cc-raised); color:var(--cc-text); }
+.cc-setup .modecard .n,.cc-setup .modecard .d { font-size:14px; line-height:1.6; }
+.cc-table-scroll { max-width:100%; overflow-x:auto; margin-bottom:8px; }
+.cc-table-scroll table { margin-bottom:0; }
+table,.card table,.metrics table,.perf table { font-size:14px; font-variant-numeric:tabular-nums; }
+.cc-skip { position:absolute; top:-100px; left:16px; z-index:100; background:var(--cc-gold); color:var(--cc-bg); padding:12px; }
+.cc-skip:focus { top:8px; }
+.cc-person[aria-pressed='true'] { border-color:var(--cc-gold); background:var(--cc-raised); }
+.cc-game .cc-nav button[aria-current='page'] { background:var(--cc-gold); color:var(--cc-bg); }
+.metrics tr.head.c-pl th,.metrics tr.head.c-stock th,.metrics tr.head.c-wc th,.metrics tr.head.c-debt th { background:var(--cc-raised); color:var(--cc-text); }
+.cc-crew-portrait { width:150px; height:180px; max-width:100%; }
+.crew-pic:has(.cc-portrait) { background:var(--cc-dark); }
+.cc-face { width:64px; height:77px; }
+@media(max-width:1100px) {
+  .cc-game .cc-layout { grid-template-columns:minmax(0,1fr) 260px; }
+  .cc-game .cc-staff { grid-column:1/-1; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); }
+  .cc-staff .cc-window-title { grid-column:1/-1; }
+  .cc-game .cc-person { flex-direction:column; text-align:center; }
+  .cc-game .cc-person small { min-height:34px; }
+  .cc-status { gap:16px; flex-wrap:wrap; }
+  .cc-status strong { font-size:18px; }
+  .cc-game .cc-nav button { min-width:0; flex:1; padding:8px; font-size:16px; }
+}
+@media(max-width:760px) {
+  :root {
+    --cc-text-body:17px; --cc-title-mobile-size:clamp(36px,10vw,56px);
+    --cc-ledger-label-width:124px; --cc-ledger-value-width:128px;
+    --cc-turn-height:56px; --cc-layer-turn:41;
+    --cc-crew-width:60px; --cc-crew-height:72px;
+  }
+  .cc-app.wrap { padding:8px; }
+  .cc-app.cc-game.wrap { padding-bottom:calc(var(--cc-turn-height) + var(--cc-space-6) + env(safe-area-inset-bottom,0px)); }
+  .cc-status { gap:12px 20px; padding:8px 4px 12px; }
+  .cc-brand { width:100%; border:0; }
+  .cc-brand span { font-size:24px; }
+  .cc-status > div:not(.cc-brand) { flex:1 1 40%; }
+  .cc-status strong { font-size:16px; }
+  .cc-game .cc-nav { display:grid; grid-template-columns:repeat(3,1fr); }
+  .cc-game .cc-nav button:last-child { margin:0; }
+  .cc-game .cc-layout { grid-template-columns:minmax(0,1fr); }
+  .cc-main { grid-row:1; }
+  .cc-game .cc-staff { grid-row:2; grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .cc-game .cc-person { flex-direction:row; padding:4px; gap:4px; }
+  .cc-person .cc-portrait { width:34px; height:41px; }
+  .cc-game .cc-person small { display:none; }
+  .cc-game .cc-person b { font-size:13px; }
+  .cc-app .cc-map-place { padding:4px 6px; font-size:12px; }
+  .cc-place-mark { width:5px; height:5px; margin-right:4px; }
+  .cc-scene-caption { font-size:11px; padding:2px 4px; }
+  .cc-dialogue { padding:12px; gap:12px; }
+  .cc-dialogue-portrait { width:60px; height:72px; }
+  .cc-dialogue h2 { font-size:20px; }
+  .cc-commands { grid-template-columns:minmax(0,1fr); }
+  .cc-command-list { grid-template-columns:1fr 1fr; }
+  .cc-command-list button { padding:8px; font-size:16px; }
+  .cc-command-list button::before { margin-right:6px; }
+  .cc-mission { display:none; }
+  .cc-turn { flex-wrap:wrap; padding:12px; }
+  .cc-turn #go {
+    position:fixed; left:var(--cc-space-3); right:var(--cc-space-3);
+    bottom:calc(var(--cc-space-3) + env(safe-area-inset-bottom,0px));
+    z-index:var(--cc-layer-turn); width:auto; min-height:var(--cc-turn-height);
+    padding:var(--cc-space-3) var(--cc-space-4); line-height:1.4;
+  }
+  body:has(dialog[open]) .cc-turn #go { display:none; }
+  .cc-title-content { padding:40px 24px 24px; }
+  .cc-title h1 { font-size:var(--cc-title-mobile-size); white-space:nowrap; }
+  .cc-title-menu { width:min(300px,100%); }
+  .cc-title-story { font-size:18px; }
+  .cc-title-edition { right:16px; bottom:24px; }
+  .cc-title-credit { max-width:50%; }
+  .cc-crew-portrait { width:100px; height:120px; }
+  .metrics.perf:has(> .cc-table-scroll) { overflow:visible; }
+  .perf > .cc-table-scroll table {
+    table-layout:fixed; width:calc(var(--cc-ledger-label-width) + 3 * var(--cc-ledger-value-width)); min-width:100%;
+  }
+  .perf > .cc-table-scroll tr > :first-child:not([colspan]) {
+    position:sticky; left:0; z-index:1; width:var(--cc-ledger-label-width);
+    white-space:normal; overflow-wrap:anywhere; background:var(--cc-panel);
+    box-shadow:inset -1px 0 var(--cc-border);
+  }
+  .perf > .cc-table-scroll tr.sub td:first-child { padding-left:var(--cc-space-2); }
+  .perf > .cc-table-scroll th:not([colspan]) { white-space:normal; }
+  dialog.deck .crew { flex-direction:column; }
+  dialog.deck .crew-pic {
+    display:flex; align-items:center; gap:var(--cc-space-3); flex:auto; width:100%;
+    padding:var(--cc-space-2) var(--cc-space-3); border-right:0;
+  }
+  dialog.deck .cc-crew-portrait { width:var(--cc-crew-width); height:var(--cc-crew-height); }
+  dialog.deck .crew-plate {
+    position:static; min-width:0; padding:0; background:transparent; color:var(--cc-text);
+  }
+  dialog.deck .crew-body { padding:var(--cc-space-3); }
+  dialog.deck .crew-body .line { padding:0; font-size:var(--cc-text-body); }
+}

@@ -85,7 +85,7 @@ const DIFF = {
     target:58_000_000, trust:55, legacy:10_000,
     desc:'자본금 $25M, 은행 이자 5%. 차입이 $30M인데 물려받은 고객은 적고, 창고엔 장기재고 1만 톤이 서 있습니다.' },
 };
-const SETUP = { country: 'NV', lines: ['SLIT', 'LEVEL'], diff: 'normal' };
+const SETUP = { country: 'NV', lines: ['SLIT', 'LEVEL'], diff: 'normal', name: '' };
 
 let G = null;
 
@@ -1237,21 +1237,22 @@ function renderSetup() {
         회전한도라 현금이 남으면 자동으로 갚고, 모자라면 자동으로 끌어 씁니다.
         공장동 하나에 3라인까지 들어갑니다.</p>
       <label class="row"><div class="lab"><span>회사 이름</span></div>
-        <input id="nm" placeholder="예: 한빛 코일센터"
+        <input id="nm" value="${escapeText(SETUP.name)}" placeholder="예: 한빛 코일센터"
           style="width:100%;padding:11px 13px;border:2px solid var(--ink);font:inherit;background:var(--panel);color:var(--ink)"></label>
     </div>
 
     <div class="card">
-      <h2>결재 주기</h2>
+      <h2>게임 시작</h2>
+      <p class="hint">아래 버튼을 누르면 입력한 회사 이름으로 게임을 시작합니다. 결재 주기를 골라주세요.</p>
       <div class="modes">
-        <button id="go-normal" class="modecard">
-          <b>노멀</b>
+        <button id="go-normal" class="modecard primary">
+          <b>매월 결재로 게임 시작</b>
           <span class="n">48개월 · 결재 48번</span>
           <span class="d">매달 결재합니다. 한 달 한 달이 보이고, 배가 언제 오는지 재고가 어떻게 쌓이는지
             직접 겪습니다. 처음이면 이쪽을 권합니다.</span>
         </button>
         <button id="go-quick" class="modecard">
-          <b>속성</b>
+          <b>분기 결재로 게임 시작</b>
           <span class="n">16분기 · 결재 16번</span>
           <span class="d">분기마다 한 번만 결재하고, 정한 방침대로 석 달이 한꺼번에 돌아갑니다.
             빠르게 한 판 끝내보고 싶을 때. 대신 중간에 손을 못 댑니다.</span>
@@ -1262,6 +1263,7 @@ function renderSetup() {
     ${installPanel()}
     ${hallPanel()}`;
 
+  $('#nm').oninput = event => { SETUP.name = event.target.value; };
   app.querySelectorAll('[data-diff]').forEach(b => b.onclick = () => {
     SETUP.diff = b.dataset.diff; renderSetup();
   });

@@ -73,6 +73,7 @@ body:has(.cc-app)::before,body:has(.cc-app)::after { display:none; }
 .cc-setup .modecard { clip-path:none; border-color:var(--cc-border); }
 .cc-setup .modecard.on { background:var(--cc-raised); color:var(--cc-text); }
 .cc-setup .modecard .n,.cc-setup .modecard .d { font-size:14px; line-height:1.6; }
+.cc-setup .modecard.primary .n,.cc-setup .modecard.primary .d { color:inherit; }
 .cc-table-scroll { max-width:100%; overflow-x:auto; margin-bottom:8px; }
 .cc-table-scroll table { margin-bottom:0; }
 table,.card table,.metrics table,.perf table { font-size:14px; font-variant-numeric:tabular-nums; }

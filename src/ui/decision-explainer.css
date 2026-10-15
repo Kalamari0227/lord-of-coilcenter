@@ -1,0 +1,23 @@
+dialog.deck .cc-decision-guide {
+  margin: 8px 0 16px;
+  padding: 12px;
+  background: var(--cc-dark);
+  color: var(--cc-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+dialog.deck .cc-decision-effects,
+dialog.deck .cc-effect-group,
+dialog.deck .cc-effect-text,
+dialog.deck .cc-effect-note { display: block; }
+dialog.deck .cc-effect-group { margin-top: 8px; }
+dialog.deck .cc-effect-label { color: var(--cc-gold); font-size: 14px; }
+dialog.deck .cc-effect-text { color: var(--cc-text); font-size: 14px; line-height: 1.5; }
+dialog.deck .cc-effect-note { color: var(--cc-muted); font-size: 14px; line-height: 1.5; }
+dialog.deck .cc-effect-group[data-cc-effect='risk'] .cc-effect-label { color: var(--cc-warning); }
+@media (max-width: 760px) {
+  dialog.deck .cc-decision-guide,
+  dialog.deck .cc-effect-label,
+  dialog.deck .cc-effect-text,
+  dialog.deck .cc-effect-note { font-size: 16px; }
+}

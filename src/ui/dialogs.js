@@ -11,6 +11,7 @@ openDecisions = function (...args) {
     title.tabIndex = -1;
     title.focus({ preventScroll: true });
   }
+  if (typeof ccExplainDecision === 'function') ccExplainDecision(dialog, G.queue[G.qi].card);
   const inputs = [...dialog.querySelectorAll('[data-ok]')];
   const sales = [...dialog.querySelectorAll('input[data-sk]')];
   let salesInvalid = sales.length > 0 && sales.every(input => !(Number(input.value) > 0));

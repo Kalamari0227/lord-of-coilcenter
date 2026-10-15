@@ -1,6 +1,6 @@
 const ccDossierTitles = {
   production: '생산 현황', inventory: '소재와 물류', customers: '거래처와 수주',
-  finance: '경영 장부', reports: '사내 보고', history: '법인 연혁', instructions: '사장 취임 안내',
+  finance: '경영 장부', reports: '사내 보고', history: '법인 연혁', instructions: '사장 취임 안내', handover: '직원 인수인계',
 };
 
 function ccInventoryDossier(s) {
@@ -47,6 +47,7 @@ function ccBriefingDossier(s, W) {
 }
 
 function ccDossierContent(kind) {
+  if (kind === 'handover') return ccHandoverContent();
   if (kind === 'instructions') return `<section class="card"><h2>당신의 임기는 4년입니다</h2>
     <p>사업 지도에서 공장·야드·항만·거래처를 살펴보고, 인물을 선택해 담당자의 보고를 듣습니다.
     집무실과 명령 창에서 장부를 확인한 뒤 <b>금월 결재</b>를 시작하십시오.</p>
@@ -90,6 +91,14 @@ function ccOpenDossier(kind, trigger = document.activeElement) {
     dialog.remove();
     if (trigger?.isConnected) trigger.focus();
   }, { once: true });
+  if (kind === 'instructions' && G) {
+    const reopen = ccCommand('직원 인수인계 다시 보기', () => {
+      dialog.close();
+      ccOpenDossier('handover', trigger);
+    });
+    reopen.id = 'cc-reopen-handover';
+    dialog.querySelector('.cc-dossier-content').append(reopen);
+  }
   document.body.append(dialog);
   dialog.showModal();
   ccAudioCue('paper-open');

@@ -139,13 +139,17 @@ function ccRenderPlay() {
   });
   [['finance', '경영 장부'], ['reports', '사내 보고'], ['history', '연혁']].forEach(([key, label]) =>
     nav.append(ccCommand(label, button => ccOpenDossier(key, button))));
+  const help = ccCommand('취임 안내', button => ccOpenDossier('instructions', button));
+  help.id = 'cc-help'; nav.append(help);
   const save = ccCommand('저장 · 타이틀', ccSaveToTitle); save.id = 'btn-save'; nav.append(save); ccAudioMenu(nav);
   const main = ccElement('main', 'cc-main'); main.id = 'cc-main'; main.tabIndex = -1;
   const scene = ccElement('section', 'cc-window cc-scene'); scene.id = 'cc-scene';
   scene.setAttribute('aria-label', '사업 현장');
-  const report = ccElement('section', 'cc-window cc-dialogue'); report.id = 'cc-person-report';
+  const report = ccElement('section', 'cc-window cc-dialogue'); report.id = 'cc-person-report'; report.tabIndex = -1;
   report.setAttribute('aria-label', '선택한 직원의 보고');
   main.append(scene, report);
+  const guidance = ccQuarterGuidance();
+  if (guidance) main.append(guidance);
   const commands = ccElement('aside', 'cc-commands',
     `<section class="cc-window"><h2 class="cc-window-title">사장의 명령</h2><div class="cc-command-list" id="cc-command-list"></div></section>
     <section class="cc-window cc-mission"><h2 class="cc-window-title">4년의 임무</h2><div class="cc-window-body">

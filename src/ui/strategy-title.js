@@ -16,7 +16,7 @@ function ccRenderSetup() {
     <div class="cc-title-heading"><p>해외 코일센터 경영 전략 시뮬레이션</p>
     <h1>코일센터의<br>제왕</h1><p class="cc-title-story">산업항의 새 아침.<br>당신의 임기, 마흔여덟 달.</p></div>
     <nav class="cc-window cc-title-menu" aria-label="시작 메뉴"><p>사장으로 부임하다</p></nav>
-    <p class="cc-title-credit">기획과 구성 · 곤사마</p></main>
+    <p class="cc-title-credit">기획과 구성 · 곤사마<br>재기획, 각색 : Ethan.J</p></main>
     <span class="cc-title-edition">노바리아 · 2026</span>`;
   const menu = app.querySelector('.cc-title-menu');
   menu.append(ccCommand('새로 시작', () => { ccView.preparing = true; ccView.page = 'map'; ccView.person = 'jung'; render(); ccAudioCue('select'); }, 'primary'));

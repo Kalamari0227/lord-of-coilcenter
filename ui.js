@@ -1202,8 +1202,7 @@ function renderSetup() {
 
   app.innerHTML = `
     <h1>코일센터의 제왕</h1>
-    <p class="byline">로드 오브 코일센터 &nbsp;·&nbsp; 기획과 구성 <b>by 곤사마</b></p>
-    <p class="byline">재기획, 각색 : Ethan.J</p>
+    <p class="byline" style="line-height:1.8">로드 오브 코일센터 &nbsp;·&nbsp; 기획과 구성 <b>by 곤사마</b> <span style="display:inline-block">&nbsp;·&nbsp; 재기획, 각색 : Ethan.J</span></p>
     <p class="thanks">Special Thanks to &nbsp; 랴됴헷도 &nbsp;·&nbsp; 원찰스 &nbsp;·&nbsp; 규한화</p>
     <p class="sub">2026년 1월, 해외 코일센터 사장으로 부임합니다. 4년 동안 호황 · 공급과잉 · 불황 · 회복이
       한 번씩 오는데, 순서와 길이는 판마다 다릅니다.</p>

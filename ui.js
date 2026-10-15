@@ -2183,28 +2183,76 @@ function advance() {
   showReport(mergeReports(reports));
 }
 
-/* 결산 첫 화면에 올릴 것 — 이번 결과, 직전 대비, 핵심 원인 셋, 다음 위험 하나.
-   원인은 실제로 장부에 찍힌 비용만 쓴다. 근거 없는 "이 결정이 얼마를 깎았다"를 지어내지 않는다.
-   추정치는 따로 표시하고 합계에 섞지 않는다. */
-/* 결산에 올릴 항목들.
-   영업이익 안에 들어가는 것과 그 아래(영업외)에 붙는 것을 섞으면 안 된다.
-   이자는 영업이익 다음에 빠지는 금융비용인데, 그걸 "영업이익을 만든 것"에 올리면
-   장부와 설명이 어긋난다.
-   그리고 이건 "이익 변동의 원인"이 아니라 그냥 "이번 기간의 큰 항목"이다.
-   전분기 대비 증감 기여도를 제대로 분해할 수 없으니 그렇게 단정하지 않는다. */
-function reportItems(R) {
+/* 영업이익 증감을 동일한 길이의 직전 원장과 대사한다. 표시만 센트 단위로
+   반올림하고, 남은 항목에는 표시 반올림 차이도 포함해 화면 합계를 맞춘다. */
+function ccSettlementComparison(R, s) {
+  const months = R.months || 1;
+  const unavailable = reason => ({ available: false, months, reason });
+  if (!Number.isInteger(months) || months < 1 || !Array.isArray(s.history) || s.history.length < months)
+    return unavailable('이번 기간의 월별 원장이 부족해 비교할 수 없습니다.');
+  const full = (Array.isArray(s.prelude) ? s.prelude : []).concat(s.history);
+  if (full.length < months * 2)
+    return unavailable(`직전 ${months}개월 원장이 부족해 같은 기간으로 비교할 수 없습니다.`);
+  const period = full.slice(-months * 2);
+  if (!Number.isInteger(R.turn) || period.some((r, i) => !r || r.turn !== R.turn - period.length + 1 + i))
+    return unavailable('월별 원장이 연속되지 않아 같은 기간으로 비교할 수 없습니다.');
+  const fields = ['gp', 'fixedCost', 'varCost', 'depreciation', 'op'];
+  const valid = r => fields.every(key => Number.isFinite(r[key])) &&
+    Math.abs(r.op - (r.gp - r.fixedCost - r.varCost - r.depreciation)) < 0.01;
+  if (!valid(R) || !period.every(valid))
+    return unavailable('손익 원장에 누락되거나 맞지 않는 금액이 있어 비교할 수 없습니다.');
+  const previous = period.slice(0, months), current = period.slice(months);
+  const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0);
+  if (fields.some(key => Math.abs(sum(current, key) - R[key]) >= 0.01))
+    return unavailable('이번 결산과 월별 원장 금액이 달라 비교할 수 없습니다.');
+  const previousCents = Math.round(sum(previous, 'op') * 100), currentCents = Math.round(R.op * 100);
+  const deltaCents = currentCents - previousCents;
+  const contributions = [
+    ['gp', '매출총이익 변화', 1], ['fixedCost', '고정비 변화', -1],
+    ['varCost', '변동비 변화', -1], ['depreciation', '감가상각 변화', -1],
+  ].map(([key, label, sign]) => ({ key, label, cents: Math.round((R[key] - sum(previous, key)) * sign * 100) }))
+    .sort((a, b) => Math.abs(b.cents) - Math.abs(a.cents)).slice(0, 3);
+  const remainingCents = deltaCents - contributions.reduce((total, row) => total + row.cents, 0);
+  if (![previousCents, currentCents, deltaCents, remainingCents, ...contributions.map(row => row.cents)].every(Number.isSafeInteger))
+    return unavailable('손익 금액을 정확히 표시할 수 없어 비교를 보류합니다.');
+  return { available: true, months, previousCents, currentCents, deltaCents, contributions, remainingCents };
+}
+
+function ccSettlementMarkup(comparison) {
+  if (!comparison.available) return `<section class="cc-settlement-guide" data-settlement="unavailable" aria-label="영업이익 증감 설명">
+    <h3>직전 기간과 비교</h3><p>${comparison.reason}</p></section>`;
+  const dollars = cents => `${cents < 0 ? '−' : ''}$${(Math.abs(cents) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const signed = cents => `${cents > 0 ? '+' : ''}${dollars(cents)}`;
+  const rows = comparison.contributions.concat({ key: 'remaining', label: '나머지 항목 · 반올림 차이 포함', cents: comparison.remainingCents });
+  return `<section class="cc-settlement-guide" data-settlement="available" aria-label="영업이익 증감 설명">
+    <h3>영업이익은 왜 달라졌나</h3>
+    <p>직전 ${comparison.months}개월 ${dollars(comparison.previousCents)} → 이번 ${comparison.months}개월 ${dollars(comparison.currentCents)}</p>
+    <dl>${rows.map(row => `<div data-contribution="${row.key}"><dt>${row.label}</dt><dd class="${row.cents < 0 ? 'bad' : row.cents > 0 ? 'good' : ''}">${signed(row.cents)}</dd></div>`).join('')}
+    <div class="cc-settlement-total"><dt>영업이익 증감 합계</dt><dd>${signed(comparison.deltaCents)}</dd></div></dl>
+    <p class="cc-settlement-note">영업이익 = 매출총이익 − 고정비 − 변동비 − 감가상각. +는 이익 증가, −는 감소입니다. 장부 항목의 증감 대사이며 개별 결재의 효과 추정은 아닙니다. 이자·대손은 제외합니다.</p>
+    </section>`;
+}
+
+/* 이번 기간의 큰 장부 항목. 증감 기여와 중복해 더하지 않는다. */
+function reportItems(R, monthlyReports) {
   const op = [], non = [];
   const add = (arr, label, amt) => { if (Math.abs(amt) > 500) arr.push({ label, amt }); };
   add(op, '안 팔려서 반값 처분', -(R.dumpLoss || 0));
   add(op, '오래 묵어 못 쓰게 된 것', -(R.degradeLoss || 0));
   add(op, '현물 재고 평가손', -(R.valuationLoss || 0));
   add(op, '스크랩 판매', R.scrapRevenue || 0);
-  if (R.overTons > 0) add(op, `야드 한도 ${fmt(Math.round(R.overTons))}t 초과 — 외부창고비`,
-    -(R.overTons * CFG.WAREHOUSE_OVER_COST));
+  const months = R.months || 1;
+  const monthly = monthlyReports || (months === 1 ? [R] : []);
+  const warehouseAvailable = monthly.length === months && monthly.every((r, i) =>
+    r && r.turn === R.turn - months + 1 + i && Number.isFinite(r.overTons) && r.overTons >= 0);
+  if (warehouseAvailable) {
+    const charge = monthly.reduce((total, r) => total + r.overTons * CFG.WAREHOUSE_OVER_COST, 0);
+    add(op, `외부창고비 · ${months}개월 실제 합계`, -charge);
+  }
   add(non, '이자 (영업외)', -(R.interest || 0));
   add(non, '대손 (영업외)', -(R.badDebt || 0));
   const bySize = (a, b) => Math.abs(b.amt) - Math.abs(a.amt);
-  return { op: op.sort(bySize).slice(0, 3), non: non.sort(bySize).slice(0, 2) };
+  return { op: op.sort(bySize).slice(0, 3), non: non.sort(bySize).slice(0, 2), warehouseAvailable };
 }
 
 /* 다음 기간에 제일 큰 위험 하나. 지금 숫자에서 바로 읽히는 것만 고른다. */
@@ -2250,25 +2298,21 @@ function showReport(R) {
     return e;
   });
 
-  // 직전 기간 대비
   const mpt = R.months || 1;
-  const hist = G.s.history;
-  // 전임 사장이 돌린 기간도 비교 대상이다. 부임 첫 결산이 "비교할 직전 기간 없음"이면 안 된다.
-  const full = (G.s.prelude || []).concat(hist);
-  const prev = full.length > mpt ? full.slice(-mpt * 2, -mpt) : [];
-  const sum = (a, k) => a.reduce((x, r) => x + (r[k] || 0), 0);
-  const dOp = prev.length ? R.op - sum(prev, 'op') : null;
-  const items = reportItems(R);
+  const comparison = ccSettlementComparison(R, G.s);
+  const dOp = comparison.available ? comparison.deltaCents / 100 : null;
+  const monthlyReports = (G.s.history || []).slice(-mpt);
+  const items = reportItems(R, monthlyReports);
   const risk = nextRisk(G.s, G.W);
 
   dlg.innerHTML = `<div class="dlg">
-    <h2>${R.months > 1 ? periodLabel(R.firstTurn, 3) : R.date} 결산${R.months > 1 ? ` <span class="muted" style="font-size:13px">${R.months}개월 합계</span>` : ''}</h2>
+    <h2>${R.months === 3 ? periodLabel(R.firstTurn, 3) : R.months > 1 ? `${dateLabel(R.firstTurn)}–${R.date}` : R.date} 결산${R.months > 1 ? ` <span class="muted" style="font-size:13px">${R.months}개월 합계</span>` : ''}</h2>
 
     <div class="rhead">
       <div class="rbox">
-        <span class="rl">${R.months > 1 ? '이번 분기' : '이번 달'} 영업이익</span>
+        <span class="rl">${R.months === 3 ? '이번 분기' : R.months > 1 ? `이번 ${R.months}개월` : '이번 달'} 영업이익</span>
         <span class="rv ${R.op < 0 ? 'bad' : 'good'}">${money(R.op)}</span>
-        <span class="rn">${dOp == null ? '비교할 직전 기간 없음'
+        <span class="rn">${dOp == null ? '직전 동일 기간 비교 불가'
           : `직전 대비 ${dOp >= 0 ? '▲ +$' : '▼ −$'}${money1k(Math.abs(dOp))}`}</span>
       </div>
       <div class="rbox">
@@ -2283,14 +2327,17 @@ function showReport(R) {
       </div>
     </div>
 
-    ${(items.op.length || items.non.length) ? `<div class="rcause">
-      <h3 class="h3">이번 기간의 큰 항목 <span class="muted" style="font-size:11.5px;font-weight:600">실제 장부 금액입니다. 이익 증감의 원인 분해는 아닙니다.</span></h3>
+    ${ccSettlementMarkup(comparison)}
+
+    ${(items.op.length || items.non.length || !items.warehouseAvailable) ? `<details class="fold cc-settlement-items"><summary>이번 기간의 큰 장부 항목</summary><div class="rcause">
+      <p class="muted">이번 기간의 실제 금액입니다. 위 증감 합계에 다시 더하지 않습니다.</p>
+      ${!items.warehouseAvailable ? '<p class="muted">외부창고비는 월별 원장이 부족해 합계를 확인할 수 없습니다.</p>' : ''}
       ${items.op.map(c => `<div class="rc"><span>${c.label}</span>
-        <b class="${c.amt < 0 ? 'v neg' : 'v pos'}">${c.amt < 0 ? '▼ −$' : '▲ +$'}${money1k(Math.abs(c.amt))}</b></div>`).join('')}
+        <b class="${c.amt < 0 ? 'v neg' : 'v pos'}">${c.amt < 0 ? '▼ −$' : '▲ +$'}${fmt(Math.abs(c.amt))}</b></div>`).join('')}
       ${items.non.length ? `<div class="rc rcsep"><span class="muted">아래는 영업이익 다음에 빠집니다 — 순이익에만 영향</span><b></b></div>
       ${items.non.map(c => `<div class="rc"><span>${c.label}</span>
-        <b class="${c.amt < 0 ? 'v neg' : 'v pos'}">${c.amt < 0 ? '▼ −$' : '▲ +$'}${money1k(Math.abs(c.amt))}</b></div>`).join('')}` : ''}
-      </div>` : ''}
+        <b class="${c.amt < 0 ? 'v neg' : 'v pos'}">${c.amt < 0 ? '▼ −$' : '▲ +$'}${fmt(Math.abs(c.amt))}</b></div>`).join('')}` : ''}
+      </div></details>` : ''}
 
     ${/* 한 결산에 이정표를 셋씩 터뜨리면 축하가 아니라 소음이 된다.
           한 건만 보여주고 나머지는 다음 결산으로 미룬다 — 어차피 목록에는 다 남는다. */

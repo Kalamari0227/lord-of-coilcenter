@@ -17,3 +17,15 @@
 검증 명령: `node --test tests/onboarding.test.mjs tests/setup.test.mjs tests/save.test.mjs tests/audio-integration.test.mjs`.
 
 브라우저 확인 지점: `#cc-help`, `#cc-reopen-handover`, `.cc-dossier-close`, `#cc-quarter-guidance[data-guidance-stage]`, `[data-guidance="report"]`, `[data-guidance="ledger"]`, `#go`. 단계 값은 `month-1`, `month-2`, `month-3`, `quarter`, `independent`이다. VM은 행동 연결·상태 불변·저장·전환을 검증하며 실제 키보드 Escape와 1440×1000/390×844 화면 배치는 별도 브라우저 QA 대상이다.
+
+## 결재·결산 설명
+
+결재 설명은 선택지의 원문 `fx`를 보존하면서 비용·효과·위험을 읽기 전용으로 분류한다. 지급 시점은 실제 동작을 확인한 카드에만 명시한다. 설명을 만들면서 `apply`를 미리 실행하거나 게임 RNG를 소비하지 않는다.
+
+결산의 「영업이익은 왜 달라졌나」는 `prelude + history`에서 이번 결산의 실제 개월 수(`R.months || 1`)를 제외하고 같은 길이의 직전 기간과 비교한다. `영업이익 = 매출총이익 − 고정비 − 변동비 − 감가상각`의 큰 증감 세 항목과 나머지를 보여 주며, 센트 반올림 차이는 나머지에 포함해 표시 합계를 맞춘다. 이자·대손은 제외하고 개별 결재의 효과로 단정하지 않는다. 기간·수치가 누락되거나 원장이 맞지 않으면 비교 불가 이유를 표시한다.
+
+외부창고비는 해당 기간의 실제 월별 `overTons × WAREHOUSE_OVER_COST`를 합산한다. 분기 집행이 중도 종료되면 실제 1~2개월만 사용한다. `mergeReports`와 저장 보고서의 스키마·금액·월말 재고는 변경하지 않는다. 기존 큰 장부 항목, 손익 상세, 기간 사건과 결산 음향 연결을 유지한다.
+
+검증 명령: `node --test tests/decision-explainer.test.mjs tests/settlement-guide.test.mjs tests/rules.test.mjs tests/save.test.mjs tests/audio-integration.test.mjs`.
+
+결산 브라우저 확인 지점: `.cc-settlement-guide[data-settlement]`, `[data-contribution]`, `.cc-settlement-total`, `.cc-settlement-items`, `dialog #close`. 월·분기·부분 기간, 비교 불가, 기존 상세 펼침과 닫기 뒤 음악 복귀를 확인한다. 새 비교는 순수 읽기 함수이며 경제·저장·난수 불변은 고정 실제 엔진 보고서와 기존 오디오 통합 checksum으로 검증한다.

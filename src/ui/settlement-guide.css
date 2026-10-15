@@ -1,0 +1,24 @@
+.cc-settlement-guide {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--cc-border);
+  background: var(--cc-dark);
+  color: var(--cc-text);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+.cc-settlement-guide h3 { margin: 0 0 8px; font-size: 18px; }
+.cc-settlement-guide p { margin: 8px 0; font-size: 16px; }
+.cc-settlement-guide dl { margin: 16px 0; font-size: 16px; font-variant-numeric: tabular-nums; }
+.cc-settlement-guide dl > div { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.cc-settlement-guide dt { min-width: 0; }
+.cc-settlement-guide dd { margin: 0; text-align: right; flex-shrink: 0; }
+.cc-settlement-guide .cc-settlement-total { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--cc-border); font-weight: 700; }
+.cc-settlement-guide .cc-settlement-note { color: var(--cc-muted); font-size: 14px; }
+.cc-settlement-items .rcause { margin: 0; border: 0; }
+@media (max-width: 480px) {
+  .cc-settlement-guide { padding: 12px; }
+  .cc-settlement-guide dl > div { flex-wrap: wrap; gap: 4px 12px; }
+  .cc-settlement-guide dd { margin-left: auto; }
+}

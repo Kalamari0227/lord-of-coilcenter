@@ -130,3 +130,17 @@ test('original sales form receives guidance while retaining its submit handler a
   f.nodes.get('#ssubmit').onclick();
   assert.equal(f.run('G.done.length'), 1);
 });
+test('contract price wording is financial while standalone approximation markers remain uncertain', () => {
+  const f = fixture();
+  for (const [text, group] of [
+    ['−E사 계약 단가 −$3/t · 다음 반기 협상까지', 'cost'],
+    ['+약$40,000', 'risk'],
+    ['−손실 약 $40k', 'risk'],
+  ]) {
+    f.context.effect = text;
+    const html = f.run("ccDecisionEffects({id:'boundary'}, {label:'확인',fx:[effect]})");
+    assert.match(html, new RegExp(`data-cc-effect="${group}"`), text);
+    assert.doesNotMatch(html, new RegExp(`data-cc-effect="${group === 'cost' ? 'risk' : 'cost'}"`), text);
+    assert.ok(html.includes(text));
+  }
+});

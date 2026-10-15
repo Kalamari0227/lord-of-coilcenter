@@ -16,7 +16,7 @@ function ccDecisionEffects(card, option) {
   for (const text of option.fx || []) {
     if (!text) continue;
     // These are reading groups, not a claim of certainty; unknown effects stay unpromised.
-    const uncertain = text.startsWith('?') || /약(?=\s|\$|\d)|조건|통하면|확률|[±~～]/.test(text);
+    const uncertain = text.startsWith('?') || /(?:^|[\s+−=-])약(?=\s|\$|\d)|조건|통하면|확률|[±~～]/.test(text);
     const financial = /\$|현금|통장|고정비|특근비|보험료|대금|비용|차입|한도|이자/.test(text);
     groups[uncertain ? 'risk' : financial ? 'cost' : 'effect'].push(text);
   }

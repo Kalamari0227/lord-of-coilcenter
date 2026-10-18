@@ -203,3 +203,23 @@ test('repeated pending effect plays only latest intent after shared fetch finish
   await flush(); gate.resolve(); await Promise.all([first, second]); // When
   assert.equal(f.active().length, 1); // Then
 });
+
+
+test('third jingle replaces the oldest graph while both remaining voices share one peak budget', async () => {
+  const f = fixture(); await f.api.setScene('map'); await f.api.unlock();
+  await f.api.jingle('month-close', 'first'); const oldest = f.active().find(s => !s.loop);
+  await f.api.jingle('term-complete', 'second'); f.advance(100);
+  await f.api.jingle('month-close', 'third');
+  assert.equal(oldest.active, false); assert.equal(oldest.target, null);
+  const remaining = f.active().filter(s => !s.loop);
+  assert.equal(remaining.length, 2);
+  assert.equal(f.api.status().activeJingles, 2);
+  const aggregate = remaining.reduce((total, s) => total + s.target.gain.value * s.target.target.gain.value, 0);
+  assert.ok(aggregate <= 0.1 * 0.65 + Number.EPSILON);
+  remaining[0].finish();
+  assert.equal(remaining[1].target.target.gain.value, 0.65);
+  assert.equal(f.api.status().activeJingles, 1);
+  f.api.configure({ muted: true });
+  assert.equal(f.active().length, 0);
+  assert.ok(f.sources.every(s => s.target === null));
+});

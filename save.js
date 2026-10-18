@@ -286,6 +286,7 @@ function installPanel() {
 
   return `<div class="card install${standalone || installedFlag ? ' done' : ''}" id="install">
     ${head}
+    ${!standalone && !installedFlag && !canInstall ? '<p class="hint">현재 브라우저가 설치 요청을 제공하지 않았습니다. 아래 설치 메뉴가 표시되는 경우에 이용할 수 있습니다.</p>' : ''}
     <p class="hint">${offline}</p>
     <div class="iways">${ios ? iphone + android : android + iphone}</div>
   </div>`;
@@ -311,16 +312,9 @@ function wireInstall() {
   };
 }
 
-/* 서비스 워커는 http(s)에서만 등록된다. file://로 열면 조용히 건너뛴다. */
-if (!window.CC_DEVELOPMENT && 'serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
-}
-
 /* pagehide의 비동기 작업 완료는 보장되지 않는다. 평소 checkpoint를 보존하고,
    여기서는 추가 저장만 시도한다. 부분 결재는 저장하지 않는다. */
-window.addEventListener('pagehide', () => { if (G && G.s && !G.s.over) void saveGame(true); });
+window.addEventListener('pagehide', () => { if (typeof ccUpdate !== 'undefined' && ccUpdate.reload) return; if (G && G.s && !G.s.over) void saveGame(true); });
 
 /* 첫 그리기. ui.js가 아니라 여기서 부른다 —
    첫 화면에 설치 안내와 이어하기 버튼이 같이 떠야 하니까. */

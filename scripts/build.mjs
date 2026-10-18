@@ -142,8 +142,19 @@ self.addEventListener('activate', event => {
   await writeFile(path.join(outputDir, 'sw.js'), `const SCOPE = new URL('./', self.location.href);
 const PREFIX = 'coilcenter-foundation:' + encodeURIComponent(SCOPE.pathname) + ':';
 const CACHE = PREFIX + '${version}';
+const VERSION = '${version}';
 const ASSETS = ${JSON.stringify(assets)};
 const AUDIO = ${JSON.stringify([...audio.keys()].sort().map(file => './' + file))};
+self.addEventListener('message', event => {
+  const data = event.data, client = event.source;
+  if (!client || !event.ports[0] || data?.protocol !== 'coilcenter-update-v1' || data.scope !== SCOPE.href) return;
+  const url = new URL(client.url);
+  if (url.origin !== SCOPE.origin || !url.pathname.startsWith(SCOPE.pathname)) return;
+  if (data.type === 'version') event.ports[0].postMessage({ protocol: data.protocol, version: VERSION, scope: SCOPE.href });
+  if (data.type === 'activate' && data.version === VERSION && self.registration.waiting?.state === 'installed') {
+    event.waitUntil(self.skipWaiting().then(() => event.ports[0].postMessage({ protocol: data.protocol, version: VERSION, scope: SCOPE.href })));
+  }
+});
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
 });

@@ -127,3 +127,11 @@ test('iOS instructions support Safari and Chrome without assuming share-button p
   assert.doesNotMatch(f.markup, /크롬으로 열면 이 메뉴가 없습니다|화면 아래 가운데/);
   assert.ok(f.markup.indexOf('아이폰 · 아이패드') < f.markup.indexOf('안드로이드 · PC'));
 });
+
+test('no browser install offer exposes no fabricated install action', () => {
+  const f = fixture();
+  assert.equal(f.button, null);
+  assert.doesNotMatch(f.markup, /id="btn-install"/);
+  f.offer();
+  assert.equal(typeof f.button.onclick, 'function');
+});

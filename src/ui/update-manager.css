@@ -1,0 +1,5 @@
+.cc-update-banner { margin: var(--cc-space-12, 12px) 0; padding: var(--cc-space-16, 16px); }
+.cc-update-banner[hidden], .cc-update-manager [hidden] { display: none; }
+.cc-update-manager [data-cc-update-status] { overflow-wrap: anywhere; }
+.cc-update-manager .cc-dossier-content > button { margin: 4px; min-height: 44px; }
+.cc-update-manager .install { margin-top: 16px; }

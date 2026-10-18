@@ -1,0 +1,33 @@
+.cc-history-ending .cc-company-history {
+  margin-block: var(--cc-space-4);
+  font-size: var(--cc-text-body);
+  line-height: 1.5;
+}
+.cc-company-history .cc-history-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cc-space-6); }
+.cc-company-history .cc-history-stack > section { min-width: 0; }
+.cc-company-history h3 { font-size: var(--cc-text-heading); margin: 0 0 var(--cc-space-3); }
+.cc-company-history h4 { font-size: var(--cc-text-body); margin: var(--cc-space-4) 0 var(--cc-space-2); }
+.cc-company-history p { margin: var(--cc-space-2) 0; }
+.cc-company-history .cc-history-meta { color: var(--cc-muted); font-size: var(--cc-text-small); }
+.cc-company-history table { width: 100%; font-size: var(--cc-text-label); }
+.cc-company-history caption { text-align: left; padding-block: var(--cc-space-2); color: var(--cc-muted); }
+.cc-company-history th, .cc-company-history td { text-align: left; white-space: normal; min-width: 8em; }
+.cc-company-history .cc-history-records { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cc-space-4); }
+.cc-company-history .cc-history-record { border-top: 1px solid var(--cc-border); padding-top: var(--cc-space-4); }
+.cc-company-history .cc-history-record h3 { font-size: var(--cc-text-body); }
+.cc-company-history .cc-history-response { display: flex; align-items: flex-start; gap: var(--cc-space-3); margin: var(--cc-space-3) 0 0; padding: var(--cc-space-3); background: var(--cc-dark); }
+.cc-company-history .cc-history-response .cc-portrait { flex: 0 0 60px; width: 60px; height: 72px; }
+.cc-company-history .cc-history-response > div { min-width: 0; }
+.cc-company-history .cc-history-response p:first-child { font-size: var(--cc-text-label); }
+.cc-company-history .cc-history-related { font-size: var(--cc-text-label); color: var(--cc-muted); }
+.cc-company-history .cc-history-pending { padding: var(--cc-space-4); background: var(--cc-dark); }
+.cc-company-history .cc-history-pending h4 { margin-top: 0; }
+.cc-company-history .cc-history-projects { padding-left: var(--cc-space-6); display: grid; gap: var(--cc-space-3); }
+.cc-history-ending > .grid > .card { min-width: 0; }
+.cc-history-ending .cc-table-scroll { max-width: 100%; }
+body:has(.cc-history-ending) #toast:not(.on) { visibility: hidden; }
+@media (max-width: 760px) {
+  .cc-history-ending > .grid { grid-template-columns: minmax(0, 1fr); }
+  .cc-history-ending .cc-company-history { font-size: calc(17px * var(--cc-text-scale, 1)); }
+  .cc-company-history .cc-history-response { flex-wrap: wrap; }
+}

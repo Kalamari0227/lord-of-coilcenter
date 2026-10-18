@@ -37,7 +37,7 @@ function ccCustomersDossier(s) {
 
 function ccHistoryDossier(s, W) {
   const milestones = (W.miles || []).slice().reverse().map(milestone =>
-    `<li><span>${ccEscape(milestone.date)}</span> ${ccEscape(milestone.title)}</li>`).join('');
+    `<li><span>${ccEscape(milestone.date)}</span> ${ccEscape(ccNarrativeText(milestone.title))}</li>`).join('');
   return `<section class="card"><h2>부임 ${s.history.length}개월</h2>
     ${milestones ? `<ol>${milestones}</ol>` : '<p>아직 기록된 이정표가 없습니다. 첫 결산부터 법인의 기록이 쌓입니다.</p>'}</section>
     ${decisionsMade()}${growthPanel(s, W)}`;

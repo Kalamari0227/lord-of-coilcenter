@@ -7,6 +7,10 @@ const $ = s => document.querySelector(s);
 const app = $('#app');
 const escapeText = value => String(value).replace(/[&<>"']/g, character =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+function ccNarrativeText(value) {
+  const replacements = [["납기 석 달 연속 완납", "소재 부족 없이 3개월 생산"], ["석 달 동안 한 고객도 못 채운 적이 없습니다. 이건 운이 아니라 관리입니다.", "최근 3개월 소재 투입 부족 비율이 거의 없었습니다. 실제 고객 납품은 결산에서 확인하십시오."], ["이 회사에서 부호가 바뀌는 건 처음입니다.", "부임 이후 기록에서 처음으로 한 달 영업흑자를 냈습니다."], ["고철상보다 조금 나은 값에 넘겼습니다. 손실은 확정됐고 창고는 비었습니다. 둘 다 오늘로 끝났다는 게 중요합니다.", "해당 전임자 재고를 처분하고 시세의 72%를 현금으로 회수했습니다. 다른 재고는 장부에서 확인하십시오."], ["묵은 것부터 깎아서 넘겼습니다. 장부는 아프고 통장은 숨을 쉽니다. 둘 중에 통장이 먼저 죽으면 장부는 볼 일도 없습니다.", "오래된 소재부터 할인 판매해 현금을 회수했습니다. 실제 회수액과 남은 재고를 확인하십시오."], ["현물 재고에서 평가손", "일반재 재고와 도착 예정 일반재에서 평가손"]];
+  return replacements.reduce((text, [before, after]) => text.replaceAll(before, after), String(value));
+}
 const fmt = n => Math.round(n).toLocaleString('en-US');
 const money = n => (n < 0 ? '−$' : '$') + fmt(Math.abs(n));
 // $17,610 → "18k". 천 단위가 안 되면 그냥 달러로 적는다.
@@ -212,10 +216,10 @@ function deltaChips(a, b) {
   const out = [];
   const push = (lab, d, f) => { if (Math.abs(d) > 1e-9) out.push(
     `<span class="chip ${d > 0 ? 'up' : 'down'}">${lab} ${d > 0 ? '+' : '−'}${f(Math.abs(d))}</span>`); };
-  push('통장', b.cash - a.cash, v => money(v).replace('$', '$'));
+  push('현금', b.cash - a.cash, v => money(v).replace('$', '$'));
   push('본사 신뢰', Math.round(b.trust - a.trust), v => v);
   push('직원 사기', Math.round(b.morale - a.morale), v => v);
-  push('물량', (b.share / a.share - 1) * 100, v => v.toFixed(1) + '%');
+  push('시장 점유율(상대 변화)', (b.share / a.share - 1) * 100, v => v.toFixed(1) + '%');
   return out.join(' ');
 }
 
@@ -519,7 +523,7 @@ async function openDecisions() {
         <div class="vlabel">사장님의 결정</div>
         <div class="vchoice">${choiceLabel}</div>
         ${msg ? `<div class="vwho">${pic}<span>${who.name}</span></div>
-                 <p class="vmsg says">${msg}</p>` : ''}
+                 <p class="vmsg says">${escapeText(ccNarrativeText(msg))}</p>` : ''}
         ${chips ? `<div class="chips">${chips}</div>` : ''}
         ${extra}
       </div>
@@ -734,7 +738,7 @@ function salesPlanCard(s, W) {
       const tied = sorted.filter(k => mix[k] === mix[top]);
       return `${on.map(k => `${CFG.CUSTOMERS[k].name} ${mix[k]}`).join(', ')}으로 짰습니다. `
            + `${tied.length === on.length && on.length > 1
-                ? '다섯 군데에 똑같이 나눴습니다. 어디도 특별히 밀지 않는 배분입니다. '
+                ? `선택한 ${on.length}개 고객군에 같은 비중으로 나눴습니다. 어디도 특별히 밀지 않는 배분입니다. `
               : tied.length > 1
                 ? `${tied.map(k => CFG.CUSTOMERS[k].name).join('과 ')}에 같은 무게로 공동 1순위입니다. `
               : top ? `${CFG.CUSTOMERS[top].name}에 제일 세게 붙입니다. ` : ''}`
@@ -1089,7 +1093,7 @@ function lineList(s, L) {
 
   (s.buildQueue || []).forEach(b => rows.push(`<div class="lrow slim">
     <div class="ltop"><b>${CFG.LINE[b.type].label}</b><i class="wip">설치 중</i></div>
-    <div class="ph">${dateLabel(b.readyTurn)}부터 가동 · 그때까지는 돈만 나갑니다</div></div>`));
+    <div class="ph">가동 예정월 ${dateLabel(b.readyTurn)} · 설비 투자금은 결산에서 지급합니다</div></div>`));
 
   const left = CFG.MAX_LINES - s.lines.length - (s.buildQueue || []).length;
   for (let i = 0; i < left; i++) rows.push(`<div class="lrow slim">
@@ -1148,7 +1152,7 @@ function yardRack(s) {
 function plantMarks(s, W) {
   const m = [];
   if (W.solar === 'own') m.push(['☀', '지붕 태양광', '전기료를 매달 깎고 있습니다']);
-  else if (W.solar === 'lease') m.push(['☀', '지붕 임대 태양광', '20년 계약 · 증축 때 그 지붕은 못 씁니다']);
+  else if (W.solar === 'lease') m.push(['☀', '지붕 임대 태양광', '지붕 임대형 · 매달 고정비 $4,500 절감']);
   if (W.maintAge <= 2 && W.equip >= 70) m.push(['🔧', '정비 직후', `${W.maintAge}개월 전에 전부 뜯었습니다`]);
   if (W.spares === true) m.push(['📦', '예비품 확보', '베어링·유압호스가 창고에 있습니다']);
   if (W.safety === 0) m.push(['🦺', '안전 설비 교체', '크레인 와이어와 보호구를 새로 걸었습니다']);
@@ -1331,14 +1335,14 @@ function goalPanel(s, W) {
   const leftM = 12 - m;
   /* 부임 첫 달의 긴급 상황은 경보 로직이 아니라 인수인계에서 나온다.
      방금 브리핑에서 "정비 미뤘고, 묵은 재고가 있고, 단가가 깎여 있다"고 세 가지를 짚었는데
-     바로 아래에 "지금 급한 건 없습니다"가 뜨면 그 자체가 모순이다. */
+     바로 아래에 "현재 경고 조건에 해당하는 항목은 없습니다. 예정된 지급과 안건을 확인하십시오"가 뜨면 그 자체가 모순이다. */
   const w = warnings(s, W).slice(0, 2);
   if (!s.history.length) {
     const legacy = legacyTons(s);
     const cut = standingCut(s, W);
     if (W.maintAge >= 6) w.unshift(['인수', `전임 사장이 정비를 미뤘습니다. 마지막 정비 후 ${W.maintAge}개월째입니다.`]);
     if (legacy > 0) w.unshift(['인수', `창고에 규격이 애매한 일반재 ${fmt(legacy)}톤이 묵어 있습니다. 매달 이자가 나갑니다.`]);
-    if (cut > 0.5) w.unshift(['인수', `고객 단가가 평균 톤당 $${cut.toFixed(1)} 깎여 있습니다. 영업이익이 안 남는 이유가 대부분 여기 있습니다.`]);
+    if (cut > 0.5) w.unshift(['인수', `고객 단가가 평균 톤당 $${cut.toFixed(1)} 깎여 있습니다. 할인된 가격은 톤당 수입을 줄입니다. 전체 영업이익에는 판매량·가공비·재고 손실도 반영됩니다. 결산표에서 함께 확인하십시오.`]);
     w.length = Math.min(w.length, 3);
   }
   return `<div class="card goal">
@@ -1358,7 +1362,7 @@ function goalPanel(s, W) {
     </div>
     ${w.length ? `<div class="urg">${w.map(([kk, t]) =>
       `<div class="warn"><i>⚠ ${kk}</i><span>${t}</span></div>`).join('')}</div>`
-      : '<div class="urg none">지금 급한 건 없습니다.</div>'}
+      : '<div class="urg none">현재 경고 조건에 해당하는 항목은 없습니다. 예정된 지급과 안건을 확인하십시오.</div>'}
   </div>`;
 }
 
@@ -1374,19 +1378,19 @@ function projectPanel(s, W) {
   // 남은 기간 대비 진척이 따라가고 있는가
   const pace = spent > 0 ? pct / (spent / p.months * 100) : 1;
   const st = pct >= 100 ? 'good' : pace >= 0.85 ? 'good' : pace >= 0.55 ? 'warn' : 'bad';
-  const word = pct >= 100 ? '목표 달성 — 남은 기간은 굳히기'
+  const word = pct >= 100 ? '현재 목표 도달 · 최종 평가는 예정월에'
     : pace >= 0.85 ? '예정대로 가고 있습니다'
-    : pace >= 0.55 ? '조금 뒤처집니다' : '이대로면 미달입니다';
+    : pace >= 0.55 ? '조금 뒤처집니다' : '기간 대비 진척이 낮습니다. 최종 결과는 평가월에 정해집니다';
   return `<div class="card proj p-${st}">
-    <h2>진행 중 · ${p.name}</h2>
+    <h2>${s.over ? "미완료" : "진행 중"} · ${p.name}</h2>
     <div class="pbar"><span style="width:${Math.min(100, pct)}%"></span>
       <i style="left:${Math.min(100, Math.round(spent / p.months * 100))}%"></i></div>
     <div class="prow">
       <span><b>${pct}%</b> ${p.aim}</span>
-      <span>${left > 0 ? `${left}개월 남음 · ${dateLabel(pr.end)} 판가름` : '이번 달 판가름'}</span>
+      <span>${dateLabel(pr.end - 1)} 결산 뒤 평가 · ${s.over ? "평가 전에 재임 종료" : pr.end > CFG.TOTAL_TURNS + 1 ? "임기 후 평가 예정 · 임기 중 완료 불가" : `${left}개월 뒤 평가`}</span>
       <span class="ps">${word}</span>
     </div>
-    ${pace < 0.85 && left > 0 ? `<div class="pwhy"><b>왜 뒤처지나</b> — ${projectDrag(s, W, pr)}</div>` : ''}
+    ${pace < 0.85 && left > 0 ? `<div class="pwhy"><b>함께 확인할 현재 상태</b> — ${projectDrag(s, W, pr)}</div>` : ''}
     <p class="hint">기준 ${fmtGoal(pr.key, pr.base)} → 목표 ${fmtGoal(pr.key, pr.goal)} ·
       지금 ${fmtGoal(pr.key, PROJECTS[pr.key].now(s, W))}${
         PROJECTS[pr.key].now(s, W) < pr.base ? ' <b class="v neg">(시작값보다 내려갔습니다)</b>' : ''}.
@@ -1412,12 +1416,12 @@ function projectDrag(s, W, pr) {
     if (s.trust < 60) why.push(`본사 신뢰 ${Math.round(s.trust)} — 본사가 밀어주는 물량이 줄고 있습니다`);
     const lost = Object.keys(CUST).filter(k => W.rel[k] < 45);
     if (lost.length) why.push(`${lost.map(k => CUST[k]).join('·')} 관계가 나빠 기존 물량이 빠지고 있습니다`);
-    return why.length ? why.join(' · ') : '신규 거래는 원래 막판에 몰려 열립니다.';
+    return why.length ? why.join(' · ') : '뚜렷한 걸림돌은 확인되지 않았습니다. 다음 달 점유율을 다시 확인하십시오.';
   }
   const n = stockNow(s);
   const why = [];
   if (n.invM > COVER.ok) why.push(`재고율 ${n.invM.toFixed(1)}개월 — 채권을 걷어도 재고가 늘면 운전자본은 그대로입니다`);
-  if ((s.ar || []).length > 8) why.push('밀린 채권이 여러 건 남아 있습니다');
+  if ((s.ar || []).length > 8) why.push('아직 받을 고객 대금이 여러 건 남아 있습니다');
   return why.length ? why.join(' · ') : '순서대로 걷히고 있습니다.';
 }
 /* 목표를 사람이 읽는 단위로. 품질은 내부 지수를 그대로 쓴다 —
@@ -1435,10 +1439,10 @@ function milesBlock(list) {
     const w = CAST[m.who] || CAST.han;
     const pic = w.img ? `<img src="${A(w.img + '.png')}" alt="">` : `<div class="em">${w.face}</div>`;
     return `<div class="mile">
-      <div class="mt">이정표 달성 · ${escapeText(m.title)}</div>
+      <div class="mt">이정표 달성 · ${escapeText(ccNarrativeText(m.title))}</div>
       <div class="mwho">${pic}<span>${w.name}</span></div>
-      <p class="says">${escapeText(m.msg)}</p>
-      <div class="mnext">다음 목표 — ${escapeText(m.next)}</div>
+      <p class="says">${escapeText(ccNarrativeText(m.msg))}</p>
+      <div class="mnext">다음 목표 — ${escapeText(ccNarrativeText(m.next))}</div>
     </div>`;
   }).join('');
 }
@@ -1458,9 +1462,9 @@ function growthPanel(s, W) {
     const monthly = add * per - (s.lines.length >= 2 ? CFG.FC_PER_EXTRA_LINE : 0);
     const ready = runway(s) >= 2.5 && !(s.buildQueue || []).length;
     const why = (s.buildQueue || []).length ? '이미 짓는 중입니다'
-      : runway(s) < 2.5 ? `자금 여력 ${runway(s).toFixed(1)}개월 — 3개월치는 있어야 합니다`
+      : runway(s) < 2.5 ? `자금 여력 ${runway(s).toFixed(1)}개월 — 표시상 준비 기준은 자금 여력 추정 2.5개월 이상입니다`
       : add < cfg.cap * 0.25 ? '아직 받을 물량이 모자랍니다'
-      : '조건 충족 — 안건으로 올라올 수 있습니다';
+      : '현재 참고 기준 충족 · 실제 증설 제안은 별도 조건으로 결정됩니다';
     return { t, label: cfg.label, total, add, monthly, ok: ready && add >= cfg.cap * 0.25, why };
   });
   return `<div class="card grow">
@@ -1491,7 +1495,7 @@ function kpiRow(s, W) {
     ${box(`${per} 영업이익`, money(k.op), k.op < 0 ? 'bad' : 'good',
       dOp == null ? '비교할 직전 기간 없음' : `직전 대비 ${dOp >= 0 ? '▲ +$' : '▼ −$'}${money1k(Math.abs(dOp))}`)}
     ${box('납기 달성', Math.round(k.fulfil * 100) + '%', k.fulfil < 0.95 ? 'bad' : 'good',
-      k.fulfil < 0.95 ? '못 채운 고객이 있습니다' : '다 채웠습니다')}
+      k.fulfil < 0.95 ? '못 채운 고객이 있습니다' : `납품 / 주문 ${Math.round(k.fulfil * 100)}%`)}
     ${box('재고 · 야드', `${k.coverM.toFixed(1)}개월`, k.coverM < COVER.warn || k.yard > 0.9 ? 'bad' : k.coverM > COVER.heavy ? 'warn' : 'good',
       `야드 ${Math.round(k.yard * 100)}%${k.coverM < COVER.warn ? ' · 결품 위험' : k.yard > 0.9 ? ' · 자리 없음' : ''}`)}
     ${box('자금 여력', `${k.runway.toFixed(1)}개월치`, k.runway < 1.5 ? 'bad' : k.runway < 2.5 ? 'warn' : 'good',
@@ -1501,26 +1505,26 @@ function kpiRow(s, W) {
   </div>`;
 }
 
-/* 지난 결정의 핵심 결과 — 최대 셋. 돌아온 청구서를 먼저, 그다음 영향 큰 순서.
+/* 지난 결정의 핵심 결과 — 최대 셋. 이번 기간에 확인된 사건를 먼저, 그다음 영향 큰 순서.
    전부 보여주는 건 아래 접힌 곳에 그대로 둔다. */
 function topResults(s, W) {
   const items = [];
   for (const f of (W.lastFired || []).slice(0, 2))
     items.push({ kind: 'bill', text: f.text, why: f.chain ? `${f.chain.date} ${f.chain.label} · ${f.chain.gap}개월 뒤` : f.why });
-  for (const im of (W.lastImpacts || [])) {
+  for (const im of (typeof ccMeaningImpacts === 'function' ? ccMeaningImpacts(W) : W.lastImpacts || [])) {
     if (items.length >= 3) break;
     items.push({ kind: 'imp', text: im.label, rows: im.rows });
   }
   if (!items.length) return '';
   return `<div class="card tops">
-    <h2>지난 결정이 지금 무엇이 됐나</h2>
+    <h2>이번 기간의 변화와 관련 결정</h2>
     ${items.slice(0, 3).map(it => it.kind === 'bill'
-      ? `<div class="top bill"><b>${escapeText(it.text)}</b>${it.why ? `<span>원인 · ${escapeText(it.why)}</span>` : ''}</div>`
+      ? `<div class="top bill"><b>${escapeText(it.text)}</b>${it.why ? `<span>관련 결정 기록 · ${escapeText(it.why)}</span>` : ''}</div>`
       : `<div class="top"><b>${escapeText(it.text)}</b><div class="fx">${it.rows.map(([k, t]) => {
           const cls = k === '+' ? 'up' : k === '−' ? 'dn' : k === '?' ? 'rsk' : 'neu';
-          return `<span class="${cls}">${FX_MARK[k] ? `<b class="fxm">${FX_MARK[k]}</b> ` : ''}${escapeText(t)}</span>`;
+          return `<span class="${cls}">${FX_MARK[k] ? `<b class="fxm">${FX_MARK[k]}</b> ` : ''}${escapeText(ccNarrativeText(t))}</span>`;
         }).join('')}</div></div>`).join('')}
-    <p class="hint">판매량·이익 변화는 그 결정이 움직인 몫을 따로 떼어 <b>추정</b>한 값입니다. 실제 지출은 결산표에 있습니다.</p>
+    <p class="hint">추정치는 단순 환산값이며 원장 이익에 더하지 않습니다. 현금은 결재 직후 변화, 실제 손익은 결산표에서 확인하십시오.</p>
   </div>`;
 }
 
@@ -1528,35 +1532,35 @@ function impactPanel(W) {
   if (!W.lastImpacts.length) return '';
   return `<div class="card">
     <h2>지난 결재의 영향</h2>
-    <div class="imps">${W.lastImpacts.map(im => `<div class="imp"><b>${escapeText(im.label)}</b>
+    <div class="imps">${(typeof ccMeaningImpacts === 'function' ? ccMeaningImpacts(W) : W.lastImpacts).map(im => `<div class="imp"><b>${escapeText(im.label)}</b>
       <div class="fx">${im.rows.map(([k, t]) => {
         const cls = k === '+' ? 'up' : k === '−' ? 'dn' : k === '?' ? 'rsk' : 'neu';
-        return `<span class="${cls}">${k === '?' ? '⚠ ' : ''}${escapeText(t)}</span>`; }).join('')}</div></div>`).join('')}</div>
-    <p class="hint">판매량·이익 변화는 그 결정이 움직인 몫을 따로 떼어 추정한 값입니다.</p>
+        return `<span class="${cls}">${k === '?' ? '⚠ ' : ''}${escapeText(ccNarrativeText(t))}</span>`; }).join('')}</div></div>`).join('')}</div>
+    <p class="hint">추정치는 단순 환산값이며 원장 이익에 더하지 않습니다. 기간 말 상태에는 다른 결정과 월별 변화도 포함됩니다.</p>
   </div>`;
 }
 
 /* 이번 달 여파 — 과거의 결정이 지금 돌아온 것 */
-/* 돌아온 청구서 — 과거의 결정이 지금 돌아온 것.
+/* 이번 기간에 확인된 사건 — 과거의 결정이 지금 돌아온 것.
    결과만 툭 던지지 않는다. 언제 무슨 결정을 했고, 몇 달 걸려서, 지금 무엇이 됐는지
    화살표로 이어 보여준다. 그 고리가 안 보이면 이 게임은 그냥 운이다. */
 function firedPanel(W) {
   if (!W.lastFired.length) return '';
   return `<div class="card fired">
-    <h2>돌아온 청구서 — 그때 그 결정이 지금</h2>
+    <h2>이번 기간에 확인된 사건</h2>
     ${W.lastFired.map(f => {
       const c = f.chain;
       return `<div class="fire">
         ${c ? `<div class="chain">
           <span class="c-then"><i>${escapeText(c.date)}</i>${escapeText(c.label)}</span>
           <span class="c-arrow">${c.gap > 0 ? `${c.gap}개월 뒤` : '곧바로'} →</span>
-          <span class="c-now">지금</span></div>` : ''}
-        <b>${escapeText(f.text)}</b>${!c && f.why ? `<span>원인 · ${escapeText(f.why)}</span>` : ''}</div>`;
+          <span class="c-now">관련 결정 기록 · 인과관계 확정 아님</span></div>` : ''}
+        <b>${escapeText(f.text)}</b>${!c && f.why ? `<span>관련 결정 기록 · ${escapeText(f.why)}</span>` : ''}</div>`;
     }).join('')}
   </div>`;
 }
 
-/* 아직 안 온 청구서 — 예고된 것들.
+/* 결재 뒤 확인할 사항 — 예고된 것들.
    결재할 때 "?2~4개월 뒤 설비·품질 부담"이라고 붙여줬던 것들을 모아둔다.
    언제 한 결정인지, 언제쯤 올지 같이 보여준다. */
 function pendingPanel(W, s) {
@@ -1570,11 +1574,11 @@ function pendingPanel(W, s) {
     .slice(0, 6);
   if (!rows.length) return '';
   return `<div class="card warns">
-    <h2>아직 안 온 청구서</h2>
+    <h2>결재 뒤 확인할 사항</h2>
     ${rows.map(m => `<div class="warn">
       <i>${dateLabel(m.turn)} · ${ago(s.turn - m.turn)}</i>
-      <span><b>${escapeText(m.label)}</b> — ${escapeText(m.risk)}</span></div>`).join('')}
-    <p class="hint">결재할 때 ⚠로 붙어 있던 것들입니다. 아직 청구서가 안 왔을 뿐입니다.</p>
+      <span><b>${escapeText(m.label)}</b> — ${escapeText(typeof ccMeaningRisk === "function" ? ccMeaningRisk(m.risk) : m.risk)}</span></div>`).join('')}
+    <p class="hint">결재 당시 기록한 비용·위험·다음 확인 사항입니다. 이미 적용된 항목도 있으며, 위험이 반드시 발생하는 것은 아닙니다.</p>
   </div>`;
 }
 
@@ -1668,7 +1672,7 @@ function renderPlay() {
 
     <details class="fold"><summary>지금까지의 이정표${(G.W.miles || []).length ? ` (${G.W.miles.length})` : ''} · 앞으로 지을 수 있는 것</summary>
       ${(G.W.miles || []).length ? `<div class="card"><h2>지금까지의 이정표</h2>
-        ${G.W.miles.slice().reverse().map(m => `<div class="mrow"><i>${escapeText(m.date)}</i><b>${escapeText(m.title)}</b></div>`).join('')}
+        ${G.W.miles.slice().reverse().map(m => `<div class="mrow"><i>${escapeText(m.date)}</i><b>${escapeText(ccNarrativeText(m.title))}</b></div>`).join('')}
       </div>` : ''}
       ${growthPanel(s, G.W)}
     </details>
@@ -1704,7 +1708,7 @@ function renderPlay() {
         ${(() => { const lr = last || (s.prelude || []).slice(-1)[0]; return lr ? `<div class="note ${lr.shortageEvents.length ? 'bad' : 'good'}">지난달 내시
           ${fmt(Object.values(lr.demandAuto).reduce((a, b) => a + b, 0))}톤 중
           <b>${fmt(Object.values(lr.shipped).reduce((a, b) => a + b, 0))}톤 납품</b>
-          ${lr.shortageEvents.length ? '· 못 채운 고객이 있습니다' : '· 다 채웠습니다'}</div>` : ''; })()}
+          ${lr.shortageEvents.length ? '· 못 채운 고객이 있습니다' : '· 납품량과 주문량은 위 비율에서 확인하십시오'}</div>` : ''; })()}
       </div>
 
       <div class="card">
@@ -1718,7 +1722,7 @@ function renderPlay() {
             <td class="${n.invM < COVER.warn ? 'v neg' : ''}">${fmt(n.inv)} 톤 · ${n.invM.toFixed(1)}개월</td></tr>
           <tr><td>본사 생산 중</td><td>${fmt(n.prod)} 톤</td></tr>
           <tr class="tot"><td>재원량 · 재원율</td><td>${fmt(n.res)} 톤 · ${n.resM.toFixed(1)}개월</td></tr></table>
-          ${n.invM < COVER.warn && s.turn > 5 ? `<div class="note bad">${CAST.jung.name}: 이대로면 다음 달 어느 고객 하나는 못 채웁니다.</div>` : ''}`; })()}
+          ${n.invM < COVER.warn && s.turn > 5 ? `<div class="note bad">${CAST.jung.name}: 소재 부족 위험이 있습니다. 예정 입고와 고객별 필요량을 확인하십시오.</div>` : ''}`; })()}
       </div>
     </div>
     </details>
@@ -1750,8 +1754,8 @@ function agingPanel(s) {
       <span class="n">${fmt(x.qty)}t</span></div>`).join('')}</div>
     ${old > tot * 0.25
       ? `<div class="note bad">${CAST.oh.name}: 석 달 넘은 게 ${fmt(old)}톤입니다.
-         넉 달부터는 은행이 담보로 안 쳐주고, ${CFG.DEGRADE_DEAD_TURNS}개월을 넘기면 전량 불용재고입니다.</div>`
-      : `<p class="hint">석 달까지는 멀쩡합니다. 그 뒤부터 값이 떨어집니다.</p>`}`;
+         보관 4개월부터 담보에서 제외됩니다. 일반 재고는 ${CFG.DEGRADE_DEAD_TURNS}개월째부터 전량 스크랩 처리되며, 전임자 재고는 별도 규칙으로 조금씩 줄어듭니다.</div>`
+      : `<p class="hint">보관 3개월까지는 노후화 손실이 없습니다. 가격 하락에 따른 평가손은 별도입니다.</p>`}`;
 }
 
 /* ============================================================
@@ -1842,7 +1846,7 @@ function expandCard(type, L, s) {
              `+${CFG.INSTALL_TURNS}개월 뒤 가공할 수 있는 양 ↑`],
         apply: (st, g) => { g.ui.expandPick = type;
           return `${CFG.LINE[type].label} 발주 넣었심더. ${CFG.INSTALL_TURNS}개월 뒤부터 돕니더. `
-               + `그때까지는 돈만 나갑니더.`; } },
+               + `설비 투자금은 이번 결산에서 지급합니더.`; } },
       { displayId: "op-expand.defer", label: '이번엔 넘어갑니다', hint: '현금을 지킨다',
         fx: ['+현금 지킴', '−이 물량은 못 받는다'],
         apply: () => '증설은 접었심더. 그 물량은 딴 데로 갈 겁니더.' },
@@ -1915,9 +1919,9 @@ function perfPanel(s) {
   row('재고자산 (창고 현물)', 'bal', r => (r.bs || {}).invValue || 0, K, { note: '소재와 가공제품의 장부가' });
   row('매입채무', 'bal', r => -((r.bs || {}).ap || 0), K, { note: '본사에 줄 소재값. 유산스 60일이라 아직 안 나간 돈' });
   row('순운전자본', 'bal', r => (r.bs || {}).nwc || 0, K,
-      { cls: 'tot', note: '매출채권 + 재고자산 − 매입채무. 이 돈을 은행에서 빌려 댄다' });
+      { cls: 'tot', note: '매출채권 + 재고자산 − 매입채무. 받을 고객 대금 + 창고 재고 금액 − 지급 예정 매입 대금. 운영 중 묶여 있는 돈을 보는 지표입니다' });
   row('(참고) 해상 미착 금액', 'bal', r => (r.bs || {}).seaValue || 0, K,
-      { cls: 'sub', note: '배 위에 있는 소재값. 도착해야 매입채무로 잡히므로 위 계산에는 안 들어간다' });
+      { cls: 'sub', note: '배 위에 있는 소재값. 현재 장부 계산에서는 창고 재고·매입채무와 구분해 표시하므로 위 계산에는 안 들어간다' });
 
   sec('차입 (월말 · 천달러)', 'c-debt');
   row('현금', 'bal', r => (r.bs || {}).cash || 0, K);
@@ -1926,7 +1930,7 @@ function perfPanel(s) {
       { note: '재고·매출채권 70% + 토지·건물 60% + 본사 지급보증' });
   row('남은 여력', 'bal', r => (r.bs || {}).debtRoom || 0, K, { cls: 'tot' });
   row('한도 소진율', 'bal', r => (r.bs || {}).debtUse || 0, pc,
-      { inv: true, note: '차입금 ÷ 은행 한도. 100%에서 더 필요해지면 부도다' });
+      { inv: true, note: '차입금 ÷ 은행 한도. 대출 한도를 모두 쓰면 추가 차입이 어렵습니다. 현금까지 부족해지면 지급 불능으로 종료됩니다' });
   row('이자비용', 'flow', r => r.interest, K, { inv: true });
   row('자기자본', 'bal', r => (r.bs || {}).equity || 0, K);
 
@@ -1993,20 +1997,20 @@ function takeoverBrief(s) {
       <span class="who">${CAST.han.name} · ${CAST.han.role}</span>
       사장님, 부임을 환영합니다. 작년 실적부터 보고드리겠습니다.<br><br>
       작년 판매는 <b>${fmt(tons)}톤</b>, 매출 <b>${M1(Y.revenue)}</b>, 영업이익 <b>${K1(Y.op)}</b>,
-      순이익 <b>${K1(Y.np)}</b>입니다. ${Y.np < 0 ? '영업으로는 겨우 남겼는데 이자 내고 나면 적자입니다.' : ''}
+      순이익 <b>${K1(Y.np)}</b>입니다. ${Y.np < 0 ? '작년 순이익은 적자입니다. 영업이익과 이자·대손을 함께 확인하십시오.' : ''}
       가공 판매 비중은 ${Math.round(proc * 100)}%이고, 거래가 제일 큰 곳은
       ${cname(ks[0])} ${Math.round((ct[ks[0]] || 0) / tons * 100)}%, 그다음이 ${cname(ks[1])} ${Math.round((ct[ks[1]] || 0) / tons * 100)}%입니다.
       설비는 작년 평균 ${lines}로 돌았습니다.<br><br>
       지금 창고와 바다 위에 <b>${fmt(st.inv)}톤(${st.invM.toFixed(1)}개월치)</b>, 본사에서 생산 중인 것까지 합치면
       <b>${fmt(st.res)}톤(${st.resM.toFixed(1)}개월치)</b>입니다.<br><br>
-      자금 구조부터 말씀드리면, 자본금은 <b>${M1(s.paidIn)}</b>이고 나머지는 전부 은행 돈입니다.
+      자금 구조부터 말씀드리면, 자본금은 <b>${M1(s.paidIn)}</b>이고 차입금과 지급 예정 매입 대금은 별도입니다. 아래에서 차입금과 현재 대출 한도를 확인하십시오.
       지금 차입금이 <b>${M1(s.debt.principal)}</b>, 한도가 ${M1(s.debt.limit)}이니 ${Math.round(100 * s.debt.principal / Math.max(1, s.debt.limit))}%를 쓰고 있습니다.
       금리는 연 ${((s.debt.rate ?? 0.03) * 100).toFixed(0)}%입니다.
       한도는 재고와 매출채권에 붙어 있어서, 장사가 줄면 한도도 같이 줍니다. 그게 제일 무섭습니다.<br><br>
       짚어드릴 게 세 가지 있습니다. 전임 사장님이 설비 정비를 한 번 미루셨고,
       창고 구석에 규격이 애매한 일반재 ${fmt(legacyTons(s))}톤이 묵어 있습니다.
       그리고 고객 단가가 해마다 조금씩 깎여서 지금 평균 톤당 <b>$${Math.round(G && G.W ? standingCut(s, G.W) : 0)}</b>가 나가 있습니다.
-      영업이익이 안 남는 이유가 대부분 여기 있습니다.</div></div>
+      할인된 가격은 톤당 수입을 줄입니다. 전체 영업이익에는 판매량·가공비·재고 손실도 반영됩니다. 결산표에서 함께 확인하십시오.</div></div>
   </div>`;
 }
 
@@ -2046,8 +2050,8 @@ function custPanel(s) {
         <span class="leak">${cut !== 0
           // 곱셈을 그대로 보여준다. "월 −$18k"만 있으면 어디서 나온 숫자인지 알 수가 없다.
           ? `<b>${cut > 0 ? '−' : '+'}$${Math.abs(cut)}</b>/t × ${fmt(Math.round(avg[k] || 0))}t
-             = 월 이익 <b>${cut > 0 ? '−' : '+'}$${money1k(Math.abs(leak))}</b>`
-             + (tmp ? `<i class="tmp">한시 $${tmp.amt} 포함 · ${dateLabel(tmp.until).replace(/^\d+년 /, '')} 원복</i>` : '')
+             = 현재 할인액×최근 월평균 판매량 기준 추정 이익 영향 <b>${cut > 0 ? '−' : '+'}$${money1k(Math.abs(leak))}</b>`
+             + (tmp ? `<i class="tmp">한시 할인 톤당 $${tmp.amt} 포함 · ${dateLabel(tmp.until).replace(/^\d+년 /, '')} 원복</i>` : '')
              + (pdg ? `<i class="pdg">다음 협상 −$${pdg} 약속</i>` : '')
           : pdg ? `단가 양보 없음<i class="pdg">다음 협상 −$${pdg} 약속</i>` : '단가 양보 없음'}</span>
       </div>`;
@@ -2056,7 +2060,7 @@ function custPanel(s) {
       pend ? ` 새 배분은 ${dateLabel(pend.turn).replace(/^\d+년 /, '')}부터 숫자에 나타납니다.` : ''}<br>
       단가 양보는 <b>계약 단가</b>(정기 협상에서만 바뀌고 다음 협상까지 간다)와
       <b>한시 인하</b>(기한이 되면 자동으로 원복된다) 둘로 나뉩니다.
-      영구히 마진을 깎는 계약은 하지 않습니다 — 계약 단가를 되돌리려면 정기 협상에서 인상을 관철해야 합니다.</p>
+      계약 할인은 정기 협상에서 바꿀 때까지 유지됩니다. 한시 할인은 표시된 기한에 끝납니다 — 계약 단가를 되돌리려면 정기 협상에서 인상을 관철해야 합니다.</p>
   </div>`;
 }
 
@@ -2262,15 +2266,15 @@ function reportItems(R, monthlyReports) {
 /* 다음 기간에 제일 큰 위험 하나. 지금 숫자에서 바로 읽히는 것만 고른다. */
 function nextRisk(s, W) {
   const k = keyMetrics(s, W);
-  if (k.runway < 1.5) return `자금 여력이 ${k.runway.toFixed(1)}개월치입니다. 한 달만 삐끗하면 소재 대금을 못 막습니다.`;
-  if (k.coverM < COVER.crisis) return `재고율 ${k.coverM.toFixed(1)}개월. 두 달 뒤 결품이 납니다. 지금 걸어도 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 걸립니다.`;
-  if (k.yard > 0.92) return `야드가 ${Math.round(k.yard * 100)}% 찼습니다. 더 들어오면 동선이 막혀 가동률이 떨어집니다.`;
+  if (k.runway < 1.5) return `자금 여력은 약 ${k.runway.toFixed(1)}개월치로 추정됩니다. 수금이 늦으면 소재 대금 지급이 어려울 수 있습니다. 경영 장부를 확인하십시오.`;
+  if (k.coverM < COVER.crisis) return `재고는 약 ${k.coverM.toFixed(1)}개월치입니다. 앞으로 소재가 부족할 수 있습니다. 새 발주 도착까지 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월이 걸리므로 예정 입고를 확인하십시오.`;
+  if (k.yard > 0.92) return `창고가 ${Math.round(k.yard * 100)}% 찼습니다. 보관 한도를 넘으면 가공 가능량이 줄어듭니다. 예정 입고를 확인하십시오.`;
   if (W.equip < 50) return `설비 상태 ${equipLabel(W.equip)}, 정비 후 ${W.maintAge}개월째입니다. 고장 위험권입니다.`;
-  if (k.pace != null && k.pace < 0.85) return `본사 목표 페이스 ${Math.round(k.pace * 100)}%입니다. 연말 평가에 그대로 남습니다.`;
+  if (k.pace != null && k.pace < 0.85) return `진행된 기간 기준 목표 달성 속도는 ${Math.round(k.pace * 100)}%입니다. 남은 기간의 주문 목표를 확인하십시오.`;
   const worst = Object.keys(CUST).filter(x => (s.custShare[x] || 0) > 0.05)
     .sort((a, b) => W.rel[a] - W.rel[b])[0];
   if (worst && W.rel[worst] < 45) return `${cname(worst)} 관계가 ${relLabel(W.rel[worst])}입니다. 더 내려가면 물량이 넘어갑니다.`;
-  if (W.fatigue > 50) return `현장 피로가 한계입니다. 사람이 나가기 시작하면 캐파가 빠집니다.`;
+  if (W.fatigue > 50) return `현장 피로가 높습니다. 인력과 휴식 관련 안건을 확인하십시오.`;
   return '당장 눈에 띄는 위험은 없습니다. 그럴 때 정비와 재고를 보는 겁니다.';
 }
 
@@ -2287,7 +2291,7 @@ function showReport(R) {
   const raw = [...(R.phaseChange ? [R.phaseChange] : []), ...R.flags, ...R.log];
   const seen = new Map();
   for (const t of raw) {
-    const str = String(t);
+    const str = ccNarrativeText(t);
     const key = str.replace(/[\d,]+/g, '#');
     const nums = (str.match(/[\d,]+/g) || []).map(x => +x.replace(/,/g, ''));
     if (seen.has(key)) { const e = seen.get(key); e.n++; e.all.push(str); e.nums.push(nums); }
@@ -2332,6 +2336,7 @@ function showReport(R) {
     </div>
 
     ${ccSettlementMarkup(comparison)}
+    ${impactPanel(G.W)}
 
     ${(items.op.length || items.non.length || !items.warehouseAvailable) ? `<details class="fold cc-settlement-items"><summary>이번 기간의 큰 장부 항목</summary><div class="rcause">
       <p class="muted">이번 기간의 실제 금액입니다. 위 증감 합계에 다시 더하지 않습니다.</p>
@@ -2349,8 +2354,8 @@ function showReport(R) {
 
     <div class="rrisk"><b>다음 ${R.months > 1 ? '분기' : '달'} 위험</b> — ${risk}</div>
 
-    ${G.W && G.W.fired.length ? `<h3 class="h3">돌아온 청구서</h3>${G.W.fired.map(f =>
-      `<div class="note bad"><b>${escapeText(f.text)}</b>${f.why ? `<br><span class="muted">원인 · ${escapeText(f.why)}</span>` : ''}</div>`).join('')}` : ''}
+    ${G.W && G.W.fired.length ? `<h3 class="h3">이번 기간에 확인된 사건</h3>${G.W.fired.map(f =>
+      `<div class="note bad"><b>${escapeText(f.text)}</b>${f.why ? `<br><span class="muted">관련 결정 기록 · ${escapeText(f.why)}</span>` : ''}</div>`).join('')}` : ''}
 
     <details class="fold"><summary>손익 상세</summary>
     <table>
@@ -2365,24 +2370,24 @@ function showReport(R) {
         <td class="${R.op < 0 ? 'v neg' : 'v pos'}">${money(R.op)}</td></tr></table>
     <div class="sep"></div>
     <table>
-      <tr><td>모사 이익 <span class="muted" style="font-weight:600">우리에게 소재 팔아 번 돈</span></td>
+      <tr><td>본사 소재 이익 <span class="muted" style="font-weight:600">우리에게 소재 팔아 번 돈</span></td>
         <td>${money(R.hqMargin)}</td></tr>
       <tr><td>코일센터 이익 <span class="muted" style="font-weight:600">위 영업이익</span></td>
         <td class="${R.op < 0 ? 'v neg' : ''}">${money(R.op)}</td></tr>
-      <tr class="tot"><td>모법이익 <span class="muted" style="font-weight:600">모사 이익 + 코일센터 이익</span></td>
+      <tr class="tot"><td>모법이익 <span class="muted" style="font-weight:600">본사 소재 이익 + 코일센터 이익</span></td>
         <td class="${R.consolidated < 0 ? 'v neg' : 'v pos'}">${money(R.consolidated)}</td></tr></table>
     </details>
     ${R.lineReady ? `<div class="note good">${escapeText(R.lineReady)}</div>` : ''}
     ${lines.length ? `<details class="fold"><summary>이 기간에 일어난 일 (${lines.length}건)</summary>
       ${lines.map(x => {
         const bad = /결품|넘겼|막혀|모자|대손|떠나|부도|클레임|넘어갔|나갔/.test(x.text) ? 'bad' : '';
-        if (x.n === 1) return `<div class="note ${bad}">${escapeText(x.text)}</div>`;
+        if (x.n === 1) return `<div class="note ${bad}">${escapeText(ccNarrativeText(x.text))}</div>`;
         // 묶음은 합계·횟수를 적고, 펼치면 달마다 실제 값이 나온다
         const head = x.varies
           ? `${escapeText(x.text.replace(/[\d,]+/, fmt(x.sum)))} <span class="muted">· ${x.n}개월 합계</span>`
-          : `${escapeText(x.text)} <span class="muted">· ${x.n}개월 연속</span>`;
+          : `${escapeText(ccNarrativeText(x.text))} <span class="muted">· ${x.n}개월 연속</span>`;
         return `<div class="note ${bad}"><details class="grp"><summary>${head}</summary>
-          ${x.all.map((t, i) => `<div class="gl"><i>${i + 1}번째 달</i>${escapeText(t)}</div>`).join('')}
+          ${x.all.map((t, i) => `<div class="gl"><i>${i + 1}번째 달</i>${escapeText(ccNarrativeText(t))}</div>`).join('')}
           </details></div>`;
       }).join('')}
       </details>` : ''}
@@ -2422,6 +2427,7 @@ function renderEnd() {
     <div class="card center" style="padding:30px 22px 24px">
       <p class="muted">${escapeText(s.companyName)} · ${s.history.length}개월 · ${(G.diff || DIFF.normal).name}</p>
       <h1 style="margin:4px 0 2px">당신이 만든 회사</h1>
+      <p>${s.overReason === "COMPLETE" ? "48개월 임기 완료" : s.overReason === "CAPITAL_ERODED" ? "자기자본 소진으로 종료" : "현금 부족으로 지급 불능"}</p>
       <div class="big" style="color:var(--blue)">${P.name}</div>
       <div class="profile">${P.lines.map(t => `<p>${t}</p>`).join('')}</div>
       <p class="muted" style="font-size:13px;margin-top:14px">본사 평가 ${g.grade} · ${g.title} — ${g.desc}</p>
@@ -2429,14 +2435,15 @@ function renderEnd() {
 
     <div class="grid g2">
       <div class="card">
-        <h2>4년의 숫자</h2>
+        <h2>재임 ${s.history.length}개월의 기록</h2>
+        ${projectPanel(s, W)}
         <table>
           <tr><td>누적 판매량</td><td>${fmt(m.tons)}t</td></tr>
           <tr><td>누적 영업이익</td><td class="${m.op < 0 ? 'v neg' : 'v pos'}">${k(m.op)}</td></tr>
           <tr><td>톤당 평균 영업이익</td><td>$${m.margin.toFixed(1)}/t</td></tr>
-          <tr><td>모사 소재 판매량</td><td>${fmt(m.hqTons)}t</td></tr>
-          <tr><td>모사 이익</td><td>${k(g.consol - m.op)}</td></tr>
-          <tr><td>모법이익 <span class="muted">모사 이익 + 코일센터 이익</span></td><td class="${g.consol < 0 ? 'v neg' : 'v pos'}">${k(g.consol)}</td></tr>
+          <tr><td>본사 소재 판매량</td><td>${fmt(m.hqTons)}t</td></tr>
+          <tr><td>본사 소재 이익</td><td>${k(g.consol - m.op)}</td></tr>
+          <tr><td>모법이익 <span class="muted">본사 소재 이익 + 코일센터 이익</span></td><td class="${g.consol < 0 ? 'v neg' : 'v pos'}">${k(g.consol)}</td></tr>
           <tr><td>본사 내시 수행률</td><td>${Math.round(g.fulfil * 100)}%</td></tr>
           ${hqRows}
           <tr><td>평균 가동률</td><td>${Math.round(m.util * 100)}%</td></tr>

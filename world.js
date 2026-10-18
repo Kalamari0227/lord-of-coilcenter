@@ -383,7 +383,7 @@ function hqYearEnd(s, W) {
   else if (r >= 0.8) { s.trust = wClamp(s.trust - 5); W.stats.hqMiss++;
     text = `${yr}년차 본사 소재 판매 ${Math.round(r * 100)}% — ${promised}에 못 미쳤습니다. 본사가 아쉬워합니다.`; }
   else { s.trust = wClamp(s.trust - 10); s.myShare *= 0.97; W.stats.hqMiss++;
-    text = `${yr}년차 본사 소재 판매 ${Math.round(r * 100)}% — ${promised}에 크게 못 미쳤습니다. 본사가 내년 내시를 줄이겠답니다.`; }
+    text = `${yr}년차 본사 소재 판매 ${Math.round(r * 100)}% — ${promised}에 크게 못 미쳤습니다. 본사 신뢰와 현재 시장 점유율이 낮아졌습니다.`; }
   W.hq.log.push({ year: yr, target: W.hq.target, ytd: W.hq.ytd, r, commit: W.hq.commit });
   fire(W, s, 'hq', text, W.hq.commit === 'full' ? '연초에 본사 요구를 그대로 받았습니다' : null);
   W.hq.ytd = 0; W.hq.target = 0;
@@ -423,6 +423,7 @@ function settleImpacts(s, W, R, before) {
     return { label: im.label, rows: out };
   }).filter(x => x.rows.length);
   W.lastImpacts = rows;
+  if (typeof ccCaptureImpactMeaning === 'function') ccCaptureImpactMeaning(s, W, R, before);
   W.impacts = [];
 }
 
@@ -449,20 +450,20 @@ function briefing(s, W) {
   const say = (who, kind, text, w) => out.push({ who, kind, text, w });
 
   // 생산 — 구 공장장. 숫자를 직접 본다. 대신 괜찮을 때는 말이 없다.
-  if (W.equip < 48) say('gu', '확인', `2호 라인 진동이 평소보다 높심더. 베어링 쪽입니더. 정비한 지 ${W.maintAge}개월 됐고예.`, 9);
+  if (W.equip < 48) say('gu', '확인', `설비 상태가 ${equipLabel(W.equip)}입니더. 마지막 정비 후 ${W.maintAge}개월 됐고예. 생산 현황을 보이소.`, 9);
   else if (W.equip < 62) say('gu', wChance(0.8) ? '추정' : '소문', `기계 소리가 좀 달라졌심더. 당장이야 돌아가는데, 오래는 모르겠습니더.`, 6);
   else if (wChance(0.12)) say('gu', '추정', `슬리터 나이프 쪽이 좀 걸립니더. 큰일은 아이고예.`, 3);   // 가끔은 헛걱정
-  if (W.fatigue > 35) say('gu', '확인', `반장들 얼굴이 말이 아입니더. 석 달째 특근 아입니꺼.`, 7);
+  if (W.fatigue > 35) say('gu', '확인', `현장 피로가 많이 쌓였심더. 작업량과 쉬는 시간을 살펴보이소.`, 7);
 
   // 소재 발주 — 정 부장. 영업이 내시를 보고 소재를 건다. 본사 가격은 본사 영업팀 소문으로 듣는다.
   const sn = stockNow(s);
   if (W.priceRumor === 1) say('jung', '소문', `본사 영업팀 제 동기 얘긴데, 다음 분기에 소재값 올린답니다. 확정은 아닙니다만 저는 믿습니다.`, 6);
   else if (W.priceRumor === -1) say('jung', '소문', `본사 재고가 꽤 쌓였답니다. 다음 분기에 값이 빠질 수도 있는데, 이건 반은 소문입니다.`, 6);
-  if (cov < COVER.warn) say('jung', '확인', `재고율 ${cov.toFixed(1)}개월입니다. 본사 생산 중인 것까지 다 쳐도 ${sn.resM.toFixed(1)}개월이고요. 이건 위험합니다.`, 9);
-  else if (cov > COVER.heavy) say('jung', '확인', `재고율 ${cov.toFixed(1)}개월, 재원율 ${sn.resM.toFixed(1)}개월. 저는 든든합니다. 한 부장님은 저를 째려봅니다.`, 6);
+  if (cov < COVER.warn) say('jung', '확인', `창고와 운송 중 소재는 약 ${cov.toFixed(1)}개월치입니다. 본사 생산 중 물량까지 합치면 약 ${sn.resM.toFixed(1)}개월치입니다. 소재와 물류 장부에서 확인하십시오.`, 9);
+  else if (cov > COVER.heavy) say('jung', '확인', `창고와 운송 중 소재는 약 ${cov.toFixed(1)}개월치, 본사 생산 중 물량까지 합치면 약 ${sn.resM.toFixed(1)}개월치입니다. 저는 든든합니다. 한 부장님은 저를 째려봅니다.`, 6);
 
   // 자재 — 서 대리. 비품·포장재·MRO. 현장이 잘 안 보는 것들을 본다.
-  if (W.spares === false && W.equip < 60) say('seo', '확인', `저… 베어링이랑 유압호스 예비품이 거의 없어요. 지금 서면 부품 오는 데 열흘입니다.`, 7);
+  if (W.spares === false && W.equip < 60) say('seo', '확인', `예비 부품이 없습니다. 고장 나면 수리가 늦어질 수 있어요.`, 7);
   if (W.packCheap) say('seo', '추정', `새로 바꾼 방청지가 좀 얇은 것 같은데요… 우기에 괜찮을지 제가 확신이 안 섭니다.`, 5);
 
   // 영업 — 정 부장. 시장 소문을 제일 먼저 듣는데, 부풀린다.
@@ -475,7 +476,7 @@ function briefing(s, W) {
   if (warm && wChance(0.6)) say('jung', '추정', `${cname(warm)} 쪽 분위기가 좋습니다. 뭘 더 맡길 눈치인데, 제가 한번 찔러보겠습니다.`, 5);
 
   // 재무 — 한 부장. 숫자만 말한다. 틀리지 않는다.
-  if (run < 1.6) say('han', '확인', `결론부터. 현금과 한도 다 긁어서 ${run.toFixed(1)}개월입니다. 지금 큰 결재를 올리시면 제가 말리겠습니다.`, 9);
+  if (run < 1.6) say('han', '추정', `결론부터. 현금과 남은 한도로 계산한 자금 여력은 약 ${run.toFixed(1)}개월치입니다. 실제 지급 예정 대금도 확인해야 합니다.`, 9);
   const delayed = s.ar.filter(a => a.delayed).reduce((a, x) => a + x.amount, 0);
   if (delayed > 500_000) say('han', '확인', `밀린 대금이 $${fmt(delayed / 1000)}k입니다. 다들 "곧 드리겠다"고 합니다. 곧이 언제인지는 안 적혀 있습니다.`, 6);
   const topK = topCust(s);
@@ -483,8 +484,8 @@ function briefing(s, W) {
 
   // 품질 — 오 과장. 추세를 본다.
   const qs = W.snaps.slice(-3).map(x => x.quality);
-  if (W.quality < 66) say('oh', '확인', `양품률 ${qualityPct(W.quality).toFixed(1)}%. ${CUST[topK]}향 로트에서 미세 표면 결함 검출이 늘었습니다. 수치로는 이미 넘었습니다.`, 8);
-  else if (qs.length === 3 && qs[2] < qs[0] - 0.25) say('oh', '추정', `석 달 연속 하락입니다. 폭은 작습니다. 다만 세 번 연속이면 추세로 봅니다. 아직 고객은 모릅니다.`, 6);
+  if (W.quality < 66) say('oh', '확인', `현재 품질 지수를 양품률로 환산하면 ${qualityPct(W.quality).toFixed(1)}%입니다. 품질 지표가 낮아 원인과 출하 검사를 확인해야 합니다.`, 8);
+  else if (qs.length === 3 && qs[2] < qs[0] - 0.25) say('oh', '추정', `최근 보고 세 건을 비교하면 양품률 환산값이 처음보다 0.25%p 넘게 낮아졌습니다. 추세를 더 확인하겠습니다.`, 6);
 
   // 현지 — 린 매니저. 사람 얘기.
   if (s.morale < 50) say('lin', '추정', `사장님, 요즘 현장 분위기 안 좋아요. 점심시간에 옆 공단 얘기하는 사람 많아졌어요. 그거 보통 나가기 전에 그래요.`, 7);
@@ -493,13 +494,13 @@ function briefing(s, W) {
   if (W.hq.target > 0) {
     const m = ((s.turn - 1) % 12);
     const pace = m > 0 ? W.hq.ytd / (W.hq.target * m / 12) : 1;
-    if (m >= 4 && pace < 0.88) say('jung', '확인', `올해 본사 목표 대비 ${Math.round(pace * 100)}% 페이스입니다. 본사에서 전화 올 때마다 안부부터 묻습니다. 그게 더 무섭습니다.`, 7);
+    if (m >= 4 && pace < 0.88) say('jung', '확인', `올해 진행된 기간에 맞춘 본사 소재 주문 목표 대비 ${Math.round(pace * 100)}%입니다. 본사에서 전화 올 때마다 안부부터 묻습니다. 그게 더 무섭습니다.`, 7);
   }
 
   out.sort((a, b) => b.w - a.w);
   const seen = new Set(), pickN = [];
   for (const x of out) { if (pickN.length >= 5) break; if (seen.has(x.who) && pickN.length >= 3) continue; seen.add(x.who); pickN.push(x); }
-  if (!pickN.length) pickN.push({ who: 'han', kind: '확인', text: '이번 달은 특별히 보고드릴 게 없습니다. 조용한 달입니다.' });
+  if (!pickN.length) pickN.push({ who: 'han', kind: '확인', text: '현재 우선 보고할 징후는 없습니다. 장부와 예정된 안건은 확인하십시오.' });
   return pickN;
 }
 
@@ -513,26 +514,26 @@ function warnings(s, W) {
     out.push(['생산', '가동률이 3개월 연속 90%를 넘었습니다. 설비 고장과 품질 위험이 쌓이고 있습니다.']);
   if (W.equip < 50) out.push(['설비', `설비 상태 ${equipLabel(W.equip)}. 마지막 정비 후 ${W.maintAge}개월째입니다.`]);
   const c = W.coverHist.slice(-3);
-  if (c.length === 3 && c[2] > c[0] + 0.5 && c[2] > 3.2) out.push(['재무', '소재 재고가 빠르게 늘고 있습니다. 현금이 창고에 묶이고 있습니다.']);
+  if (c.length === 3 && c[2] > c[0] + 0.5 && c[2] > 3.2) out.push(['재무', '최근 보고 세 건에서 재고 개월 수가 0.5개월 넘게 늘었고 현재 3.2개월을 넘습니다. 재고와 지급 예정 대금을 확인하십시오.']);
   if (coverOf(s) < COVER.warn && s.turn > 3)
-    out.push(['구매', `재고율이 ${coverOf(s).toFixed(1)}개월입니다. 석 달 뒤 소재가 모자랍니다. 결품이면 큰 고객부터 등을 돌립니다.`]);
+    out.push(['구매', `재고는 약 ${coverOf(s).toFixed(1)}개월치입니다. 소재가 부족해질 위험이 있습니다. 소재와 물류 장부에서 예정 입고와 다음 발주를 확인하십시오.`]);
   for (const k in CUST) {
     const h = W.shareHist[k].slice(-4);
     if (h.length === 4 && h[3] < h[0] * 0.88 && (s.custShare[k] || 0) > 0.06)
-      out.push(['고객', `${cname(k)} 주문이 줄고 있습니다. 경쟁사로 옮기는 중일 수 있습니다.`]);
+      out.push(['고객', `최근 기록에서 ${cname(k)}의 구성비가 줄었습니다. 실제 판매량과 고객 관계를 거래처 장부에서 확인하십시오.`]);
   }
   if (W.quality < 66) out.push(['품질', '클레임이 날 수 있는 수준입니다.']);
-  if (W.fatigue > 55) out.push(['조직', '현장이 한계입니다. 사람이 나가기 시작하면 캐파가 빠집니다.']);
+  if (W.fatigue > 55) out.push(['조직', '현장 피로가 높습니다. 인력·휴식 안건과 생산 현황을 확인하십시오.']);
   const r = runway(s);
-  if (r < 1.3) out.push(['현금', `현금과 한도로 ${r.toFixed(1)}개월치입니다.`]);
+  if (r < 1.3) out.push(['현금', `자금 여력 추정 ${r.toFixed(1)}개월치입니다. 받을 대금과 낼 대금의 예정월을 확인하십시오.`]);
   /* 자본금이 얇은 회사라 은행 한도가 목줄이다. 한도가 차기 전에 미리 말해준다.
      한도는 재고·매출채권을 따라 움직이므로, 물량이 빠지는 달에 같이 줄어든다. */
   const use = s.debt.limit > 0 ? s.debt.principal / s.debt.limit : 0;
-  if (use > 0.85) out.push(['자금', `은행 한도의 ${Math.round(use * 100)}%를 쓰고 있습니다. 남은 여력 $${Math.round((s.debt.limit - s.debt.principal) / 1000).toLocaleString()}k.`]);
+  if (use > 0.85) out.push(['자금', `은행 한도의 ${Math.round(use * 100)}%를 쓰고 있습니다. ${s.debt.limit >= s.debt.principal ? "남은 한도" : "한도 초과액"} $${Math.round(Math.abs(s.debt.limit - s.debt.principal) / 1000).toLocaleString()}k.`]);
   if (s.equity < s.paidIn * 0.4)
-    out.push(['자본', `자기자본이 자본금의 ${Math.round(100 * s.equity / s.paidIn)}%까지 줄었습니다. 이대로면 본사가 증자를 논의하게 됩니다.`]);
+    out.push(['자본', `자기자본이 자본금의 ${Math.round(100 * s.equity / s.paidIn)}%까지 줄었습니다. 손실과 자본 상태를 경영 장부에서 확인하십시오.`]);
   const tk = topCust(s);
-  if ((s.custShare[tk] || 0) > 0.48) out.push(['고객', `${cname(tk)} 의존도 ${Math.round(s.custShare[tk] * 100)}%. 가격 협상력이 약해집니다.`]);
+  if ((s.custShare[tk] || 0) > 0.48) out.push(['고객', `${cname(tk)} 의존도 ${Math.round(s.custShare[tk] * 100)}%. 가격 협상 때 고객 의존도를 확인하십시오.`]);
   if (W.hq.target > 0) {
     const m = ((s.turn - 1) % 12);
     const pace = m > 0 ? W.hq.ytd / (W.hq.target * m / 12) : 1;
@@ -554,7 +555,7 @@ const STYLE_OPEN = {
 };
 const STYLE_NEXT = {
   grow: '다음 판에는 물량 제안 몇 개를 사양하고, 라인을 쉬게 해보면 무엇이 달라지는지 보십시오.',
-  cash: '다음 판에는 한두 번 크게 걸어보십시오. 안전하게만 가면 본사와 고객이 먼저 떠납니다.',
+  cash: '다음에는 자금 여유가 있을 때 성장 제안을 받아보고 판매량과 현금이 어떻게 달라지는지 비교해 보십시오.',
   cust: '다음 판에는 한 번쯤 가격 요구를 거절해 보십시오. 양보는 기억되고, 다시 옵니다.',
   craft: '다음 판에는 성장 기회를 더 잡아보십시오. 건강한 공장이 돈을 버는 공장과 같지는 않습니다.',
   hq: '다음 판에는 본사에 한 번 "안 됩니다"라고 해보십시오. 코일센터가 먼저 살아 있어야 합니다.',
@@ -578,24 +579,24 @@ function companyProfile(s, W) {
   const main = order[0], sub = order[1];
   const lines = [STYLE_OPEN[main]];
   if (s.overReason && s.overReason !== "COMPLETE")
-    lines.unshift(`회사는 ${h.length}개월 만에 자금이 끊겼습니다. 아래는 그때까지 당신이 만든 회사입니다.`);
+    lines.unshift(`회사는 재임 ${h.length}개월에 ${s.overReason === "CAPITAL_ERODED" ? "자기자본 소진" : "현금 부족"}으로 종료되었습니다. 아래는 그때까지의 기록입니다.`);
   const but = [];
-  if (st.overloadMonths >= 8) but.push(`가동률 90% 넘는 달이 ${st.overloadMonths}개월이었고, 그동안 설비와 품질에 부담이 쌓였습니다`);
+  if (st.overloadMonths >= 8) but.push(`가동률이 90%를 넘은 달은 ${st.overloadMonths}개월이었습니다`);
   if (st.breakdowns >= 2) but.push(`설비가 ${st.breakdowns}번 섰습니다`);
   if (st.claims >= 2) but.push(`품질 클레임이 ${st.claims}건 들어왔습니다`);
-  if (st.concessions >= 4) but.push(`가격을 ${st.concessions}번 양보했고, 양보한 고객은 다시 찾아왔습니다`);
-  if (m.topShare > 0.45) but.push(`마지막 해에는 ${cname(tk)} 의존도가 ${Math.round(m.topShare * 100)}%까지 올라 협상력이 약해졌습니다`);
+  if (st.concessions >= 4) but.push(`가격을 ${st.concessions}번 양보했습니다`);
+  if (m.topShare > 0.45) but.push(`종료 시점의 최대 고객군은 ${cname(tk)}이며 현재 구성비는 ${Math.round(m.topShare * 100)}%입니다`);
   if (st.cashTight >= 6) but.push(`현금이 빠듯한 달이 ${st.cashTight}개월이었습니다`);
   if (st.shortages >= 3) but.push(`납기를 ${st.shortages}번 못 맞췄습니다`);
   if (st.churn >= 3) but.push(`고객 물량이 ${st.churn}번 경쟁사로 빠졌습니다`);
   if (st.hqMiss >= 1) but.push(`본사 연간 목표를 ${st.hqMiss}번 크게 못 채웠습니다`);
   const good = [];
-  if (st.breakdowns === 0) good.push('설비는 한 번도 서지 않았습니다');
-  if (m.quality >= 97.8) good.push(`평균 양품률 ${m.quality.toFixed(1)}%로 품질은 끝까지 좋았습니다`);
+  if (st.breakdowns === 0) good.push('기록된 설비 고장 대응은 0건입니다');
+  if (m.quality >= 97.8) good.push(`재임 기간의 평균 양품률 환산값은 ${m.quality.toFixed(1)}%였습니다`);
   if (st.hqHit >= 2) good.push(`본사 연간 목표를 ${st.hqHit}번 채웠습니다`);
   if (m.margin > 12) good.push(`톤당 평균 영업이익 $${m.margin.toFixed(1)}로 마진이 두꺼웠습니다`);
-  if (m.turnover > 3.2) good.push(`재고를 연 ${m.turnover.toFixed(1)}회 돌려 현금이 창고에 오래 머물지 않았습니다`);
-  if (good.length) lines.push(`그 결과 ${good.slice(0, 2).join(". ")}.`);
+  if (m.turnover > 3.2) good.push(`평균 재고 개월 수로 환산한 회전은 연 ${m.turnover.toFixed(1)}회입니다. 운송 중 물량을 포함합니다`);
+  if (good.length) lines.push(`기록에서 확인되는 점은 다음과 같습니다. ${good.slice(0, 2).join(". ")}.`);
   if (but.length) lines.push(`그러나 ${but.slice(0, 3).join('. ')}.`);
   if (sub && (W.style[sub] || 0) > (W.style[main] || 0) * 0.6)
     lines.push(`한편으로는 ${STYLE_NAME[sub]}의 모습도 강했습니다.`);
@@ -701,11 +702,11 @@ const PROJECTS = {
       for (let i = 0; i < 6; i++) s.effortQueue.push({ amount: 30_000, turnsLeft: CFG.SALES_EFFORT_LAG + i });
     },
     win: (s, W) => { s.myShare = Math.min(0.60, s.myShare * 1.04); W.projBoost.vol = (W.projBoost.vol || 0) + 6;
-      return '신규 거래처 두 곳을 뚫었습니다. 이런 건 여섯 달 붙어야 열립니다. 당분간 수주 얘기가 더 들어올 겁니다.'; },
+      return '시장 점유율 목표를 달성했습니다. 성공 보너스로 점유율을 추가 조정했습니다. 이제 실제 주문과 설비 여유를 확인하겠습니다.'; },
     half: (s, W) => { s.myShare = Math.min(0.60, s.myShare * 1.015); W.projBoost.vol = (W.projBoost.vol || 0) + 3;
-      return '한 곳은 뚫었고 한 곳은 내년을 보자고 합니다. 반쯤 된 겁니다. 반쯤 된 것도 된 겁니다.'; },
+      return '목표 개선량의 일부를 달성했습니다. 점유율을 추가 조정했지만 목표 전부를 채운 것은 아닙니다.'; },
     lose: (s, W) => { s.morale = wClamp(s.morale - 3);
-      return '여섯 달 돌았는데 계약서까지 간 데가 없습니다. 예산만 썼습니다. 제 책임입니다.'; },
+      return '목표 개선량의 55%에 못 미쳤습니다. 성과가 부족했습니다. 제 책임입니다.'; },
   },
 
   quality: {
@@ -731,7 +732,7 @@ const PROJECTS = {
       return '표준작업서를 다시 쓰고 검사 공정을 하나 넣었습니다. 불량률이 눈에 띄게 내려갔습니다. 이제 고객사에 들고 갈 자료가 생겼습니다.'; },
     half: (s, W) => { W.qBoost += 3; W.projBoost.qual = (W.projBoost.qual || 0) + 2;
       return '절반쯤 왔습니다. 표준은 만들었는데 현장에 붙는 데 시간이 더 걸립니다.'; },
-    lose: (s, W) => '서류는 늘었는데 숫자는 그대로입니다. 이런 건 위에서 밀면 안 되는 일이었습니다.',
+    lose: (s, W) => '품질 개선량이 목표의 55%에 못 미쳤습니다. 현재 품질과 설비 상태를 다시 확인하겠습니다.',
   },
 
   cash: {
@@ -778,11 +779,11 @@ const PROJECTS = {
       s.cash += got;
       W.projBoost.credit = (W.projBoost.credit || 0) + 1;
       return got > 1000
-        ? `묵은 현물을 털고 밀린 채권을 걷었습니다. 통장에 $${money1k(got)} 들어왔습니다. 장부는 조금 아프고 통장은 숨을 쉽니다.`
-        : '채권을 다 걷었습니다. 털 재고가 없어서 현금 유입은 크지 않은데, 운전자본은 확실히 줄었습니다.';
+        ? `오래된 재고를 처분해 현금 $${money1k(got)}을 회수했습니다. 받을 고객 대금과 남은 재고는 경영 장부에서 확인하십시오.`
+        : '순운전자본 감소 목표를 달성했습니다. 이번 완료 처리에서 처분한 오래된 재고는 거의 없습니다.';
     },
-    half: (s, W) => '절반쯤 줄였습니다. 큰 데 한 곳이 끝까지 안 줬습니다. 그건 다음 분기 숙제입니다.',
-    lose: (s, W) => '숫자가 안 줄었습니다. 재고는 안 팔리고 채권은 안 들어왔습니다. 독촉만 하고 관계만 상했습니다.',
+    half: (s, W) => '순운전자본 감소량이 목표의 55% 이상이지만 목표 전부에는 못 미쳤습니다. 남은 대금과 재고를 확인하십시오.',
+    lose: (s, W) => '순운전자본 감소량이 목표의 55%에 못 미쳤습니다. 대금을 회수했어도 재고가 늘면 목표를 놓칠 수 있습니다.',
   },
 };
 
@@ -858,7 +859,7 @@ function projectTick(s, W, R, G) {
     { turn: pr.start, date: dateLabel(pr.start), label: `집중 프로젝트 · ${p.name}`,
       gap: p.months, ago: ago(p.months) });
   if (grade === 'win') milestone(W, s, 'proj-win', `첫 집중 프로젝트 성공 — ${p.name}`, p.who,
-    '목표를 숫자로 걸고 여섯 달을 버텨서 그 숫자를 만들었습니다.', '다음 분기에 또 하나 걸어보시죠.');
+    `${p.months}개월 동안 진행한 과제가 목표에 도달했습니다.`, '다음 분기에 또 하나 걸어보시죠.');
   W.project = null;
 }
 
@@ -900,14 +901,14 @@ function checkMilestones(s, W, R) {
     + '이 회사에서 부호가 바뀌는 건 처음입니다.',
     s.cum.op > 0 ? '누계도 이미 흑자입니다. 이제 지키는 싸움입니다.' : '다음은 누계를 흑자로 돌리는 겁니다.');
   if (s.cum.op > 0) milestone(W, s, 'cum-op', '누계 영업이익 흑자 전환', 'han',
-    `부임 이후 합계가 ${money(s.cum.op)}입니다. 그동안 판 게 이제 남기 시작했습니다.`,
+    `부임 이후 누적 영업이익이 ${money(s.cum.op)}으로 0을 넘었습니다. 현금과 순이익은 별도로 확인하십시오.`,
     '여기서부터는 지키는 싸움입니다.');
 
   // 재고 정상화 — 석 달 연속 적정 구간
   const cov = W.coverHist.slice(-3);
   if (cov.length === 3 && cov.every(c => c >= COVER.warn && c <= COVER.ok))
     milestone(W, s, 'stock-ok', '재고 정상화', 'jung',
-      `석 달 연속 재고율 ${COVER.warn}~${COVER.ok}개월. 결품도 없고 창고도 안 넘칩니다.`,
+      `최근 3개월 재고 개월 수가 ${COVER.warn}~${COVER.ok}개월 범위에 있었습니다. 고객별 부족과 창고 공간은 별도로 확인하십시오.`,
       '이 상태를 유지하는 게 제일 어렵습니다.');
 
   // 납기 — 석 달 연속 100%
@@ -918,22 +919,22 @@ function checkMilestones(s, W, R) {
       '단가 협상에서 이 기록을 쓰십시오.');
 
   if (W.quality >= 88) milestone(W, s, 'qual-high', '품질 우수 수준 진입', 'oh',
-    `양품률 ${qualityPct(W.quality).toFixed(1)}%. 고객사 감사에서 지적 나올 일이 거의 없습니다.`,
+    `현재 품질 지수는 ${W.quality}점, 양품률 환산값은 ${qualityPct(W.quality).toFixed(1)}%입니다. 협상 자료를 확인하십시오.`,
     '협상에서 「품질로 설득」이 잘 먹힙니다.');
 
   if (W.solar) milestone(W, s, 'solar', '태양광 가동', 'seo',
     '지붕이 전기를 만들기 시작했습니다. 고지서가 처음으로 줄었어요.',
-    '아낀 돈은 매달 자동으로 들어옵니다.');
+    '고정비가 매달 줄어듭니다. 현금 보너스가 따로 입금되는 것은 아니에요.');
 
   if ((s.lines || []).length > 2) milestone(W, s, 'expand', '설비 증설 가동', 'gu',
     '새 라인이 돕니다. 이제 받을 수 있는 물량이 늘었심더.',
     '늘어난 캐파만큼 소재도 더 걸어야 합니다.');
 
   if (s.turn >= 12 && W.stats.breakdowns === 0) milestone(W, s, 'no-break', '1년 무고장', 'gu',
-    '1년 동안 라인이 한 번도 안 섰심더. 정비를 제때 한 값입니더.',
+    '1년차 이후까지 기록된 설비 고장 대응이 없심더. 정비와 현장 상태를 계속 보이소.',
     '이건 자랑해도 됩니더.');
 
   if (s.trust >= 80) milestone(W, s, 'trust', '본사 신뢰 80 돌파', 'jung',
-    `본사 신뢰 ${Math.round(s.trust)}. 이제 본사가 먼저 물어봅니다.`,
+    `본사 신뢰 ${Math.round(s.trust)}. 현재 신뢰 수준을 다음 협상에서도 확인하십시오.`,
     '한도 협의도 수월해집니다.');
 }

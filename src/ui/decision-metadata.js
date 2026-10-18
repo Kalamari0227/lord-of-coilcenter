@@ -119,7 +119,7 @@ const ccDecisionMetadataTable = Object.freeze(Object.fromEntries(Object.entries(
   'm-rebate.document': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
   'm-rebate.hush': { categories: ["effect","risk"], timing: 'deferred', certainty: 'conditional', note: "6~10개월 뒤 감사에서 적발될 수 있습니다. 적발되면 본사 신뢰와 직원 사기가 떨어집니다." },
   'm-solar.own': { categories: ["cost","cost","risk"], timing: 'immediate-recurring', certainty: 'direct', note: "설치비는 선택 즉시 차감하고, 전기료 절감은 이번 달부터 매달 고정비에 반영합니다. 설치 대기 기간은 없습니다." },
-  'm-solar.lease': { categories: ["cost","cost","effect","risk"], timing: 'recurring', certainty: 'direct', note: "초기 설치비 없이 이번 달부터 매달 고정비를 줄입니다." },
+  'm-solar.lease': { categories: ["cost","cost","effect","cost"], timing: 'recurring', certainty: 'direct', note: "초기 설치비 없이 이번 달부터 매달 고정비를 줄입니다." },
   'm-solar.defer': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
   'm-safety.replace-all': { categories: ["cost","effect","effect"], timing: 'unspecified', certainty: 'unspecified' },
   'm-safety.wire-only': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },

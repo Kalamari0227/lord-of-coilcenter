@@ -38,8 +38,8 @@ const DECK = {
         { displayId: "g-fire.assist", label: '복구를 돕는다', hint: '정비 인력을 보내 고객과의 관계를 지킨다', fx: ['−통장 $80,000', '+본사 신뢰 12'],
           apply: s => { s.cash -= 80_000; s.trust += 12;
             return '우리 정비 인력을 보냈습니다. A자동차가 이걸 아주 오래 기억할 겁니다.'; } },
-        { displayId: "g-fire.wait", label: '기다린다', hint: '추가 비용 없이 두 달을 버틴다', fx: ['+비용 없음', '−판매 물량 8%'],
-          apply: s => { s.myShare *= 0.92; return '두 달을 그냥 보냈습니다.'; } },
+        { displayId: "g-fire.wait", label: '기다린다', hint: '추가 지원 없이 기다린다', fx: ['+비용 없음', '−시장 점유율(상대 변화) 8%'],
+          apply: s => { s.myShare *= 0.92; return '추가 지원 없이 기다리기로 했습니다. 시장 점유율이 이전 값보다 8% 줄었습니다.'; } },
       ] },
 
     { id: 'g-fx', who: 'han', topic: 'big', title: '🚨 환율이 급변했습니다',
@@ -67,9 +67,9 @@ const DECK = {
     { id: 'g-bust', who: 'han', topic: 'big', title: '🚨 경쟁 코일센터가 부도났습니다',
       text: '길 건너 그 회사입니다. 고객이 갈 곳을 찾고 있고, 설비도 헐값에 나왔습니다. 남 일 같지 않습니다만, 기회인 것도 맞습니다.',
       opts: [
-        { displayId: "g-bust.take-customers", label: '그 회사 고객을 데려온다', hint: '영업 인력을 총동원한다', fx: ['−통장 $150,000', '+판매 물량 12%'],
+        { displayId: "g-bust.take-customers", label: '그 회사 고객을 데려온다', hint: '영업 인력을 총동원한다', fx: ['−통장 $150,000', '+시장 점유율(상대 변화) 12%'],
           apply: s => { s.cash -= 150_000; s.myShare *= 1.12;
-            return '영업을 총동원했습니다. 고객 넷을 데려왔습니다.'; } },
+            return '영업에 $150,000을 지급했습니다. 시장 점유율이 이전 값보다 12% 늘었습니다.'; } },
         { displayId: "g-bust.buy-line", label: '설비를 헐값에 산다', hint: '코일을 폭 방향으로 나누는 슬리터 1기를 반값에', fx: ['−통장 $1,200,000', '+넉 달 뒤 슬리터 가동'],
           apply: s => { s.cash -= 1_200_000;
             s.buildQueue = s.buildQueue || [];
@@ -188,9 +188,9 @@ DECK.life = [
           return '단열재로 집을 지어가 옮겼심더. 인자 점심시간마다 거기 다 모입니더. '
                + '지도… 사료 한 포대 사다 놨심더. 아무도 못 본 걸로 합시더.'; } },
       { displayId: "l-cat.leave-row", label: '고양이가 있는 줄의 코일은 옮기지 않는다', hint: '고양이가 알아서 나갈 때까지 기다린다',
-        fx: ['−보관장 코일 이동이 느려짐', '+직원 사기 4'],
+        fx: ['=고양이가 있는 구역 주의', '+직원 사기 4'],
         apply: s => { s.morale += 4;
-          return '그 열은 당분간 안 씁니더. 코일 스무 개가 그대로 묶였고예. '
+          return '고양이가 있는 구역을 조심해서 쓰기로 했심더. 직원 사기는 올랐고예. '
                + '이상하게 아무도 불평을 안 합니더.'; } },
       { displayId: "l-cat.relocate", label: '업체를 불러 내보낸다', hint: '원칙대로',
         fx: ['−통장 $800', '−직원 사기 8'],
@@ -217,7 +217,7 @@ DECK.life = [
         fx: ['−통장 $22,000', '+본사 신뢰 6'],
         apply: s => { s.cash -= 22_000; s.trust += 6;
           return '3분짜리 영상 만들어서 본사 월례회의에 틀었습니다. 제가 직접 나레이션까지 넣었습니다. '
-               + '이제 아무도 베트남이라고 안 합니다. k 썼는데 그 값은 했습니다.'; } },
+               + '이제 이름을 기억하겠지요. 영상 제작에 $22,000을 썼습니다.'; } },
       { displayId: "l-name.accept-name", label: '그냥 베트남 법인 한다', hint: '싸우지 않는다',
         fx: ['=변화 없음', '−직원 사기 2'],
         apply: s => { s.morale -= 2;

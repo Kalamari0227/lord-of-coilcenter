@@ -789,7 +789,7 @@ function resolveTurn(state, decision) {
         s.fa.land += CFG.LAND;
         s.fa.buildingNbv += CFG.BUILDING;
         s.buildings = (s.buildings || 1) + 1;
-        log.push(`공장동을 한 동 더 지었습니다. 인프라 $${(CFG.INFRA_TOTAL / 1e6).toFixed(0)}M — 설비값의 8배입니다.`);
+        log.push(`공장동을 한 동 더 지었습니다. 기반시설에 $${CFG.INFRA_TOTAL.toLocaleString()}을 지급했습니다.`);
       }
       /* 설비는 돈을 낸다고 그 달에 도는 게 아니다. 발주·제작·선적·설치·시운전에 넉 달.
          호황을 보고 지르면 도착했을 때 호황이 끝나 있다. 이게 증설 타이밍의 전부다. */
@@ -1055,7 +1055,7 @@ function resolveTurn(state, decision) {
       // 잃은 고객은 점유율에서 이미 영구히 뺐다. 평판 타격까지 영구로 두면 이중 계산이다.
       s.trust -= Math.min(3, shortRate * 8);
       shortageEvents.push(proc);
-      flags.push(`${proc} 결품 ${Math.round(want - ship)}톤. 그 고객은 돌아오지 않습니다. 점유율 ${(lost * 100).toFixed(1)}% 영구 상실.`);
+      flags.push(`${proc} 납품 부족 ${Math.round(want - ship)}톤. 이 결품으로 시장 점유율이 이전 값 대비 ${(lost * 100).toFixed(1)}% 줄었습니다.`);
     }
   }
 
@@ -1244,7 +1244,7 @@ function resolveTurn(state, decision) {
   if (shippedTotal > 0 && shortageEvents.length === 0) s.trust += s.trust < 60 ? 2 : 1;
   s.morale = Math.max(0, Math.min(100, s.morale));
   s.trust = Math.max(0, Math.min(100, s.trust));
-  if (s.morale < 30) { flags.push('직원들이 떠나고 있습니다.'); }
+  if (s.morale < 30) { flags.push('직원 사기가 낮습니다. 현장 상태와 인력 관련 보고를 확인하십시오.'); }
 
   // 경영지표 — 단월과 누계
   const sales = { C2C: shipped.C2C || 0, SLIT: shipped.SLIT || 0, LEVEL: shipped.LEVEL || 0,
@@ -1371,8 +1371,8 @@ function grade(state, target = 45_000_000) {
 
   if (!survived || !capitalOk) {
     return { ...base, grade: 'F', title: '버티지 못했습니다',
-      desc: survived ? '자본이 잠식되었습니다. 수행률을 따지기 전에 회사가 남아 있어야 합니다.'
-                     : '자금이 끊겼습니다. 본사도 법인도 남은 게 없습니다.' };
+      desc: survived ? '자기자본이 0 이하로 평가되었습니다. 회사의 자본을 지키지 못했습니다.'
+                     : (state.overReason === 'CAPITAL_ERODED' ? '자기자본 소진으로 종료되었습니다. 종료 시점의 자본 기록을 확인하십시오.' : '현금 부족으로 지급을 이어가지 못했습니다. 종료 시점의 현금·차입·자본 기록을 확인하십시오.') };
   }
   const f = (fulfil * 100).toFixed(0);
   const opStr = `${soloOp < 0 ? '−' : ''}$${Math.round(Math.abs(soloOp) / 1000).toLocaleString()}k`;
@@ -1384,35 +1384,35 @@ function grade(state, target = 45_000_000) {
   if (!soloOk) {
     if (fulfil >= 0.90 && consol >= target) {
       return { ...base, grade: 'C', title: '본사만 이겼습니다',
-        desc: `내시 물량 ${f}%를 쳐냈고 모법이익도 목표를 넘겼습니다. 본사 영업본부는 만족할 겁니다. `
-            + `다만 법인 누적 영업이익이 ${opStr}입니다. 주재원이 욕먹어가며 본사 실적을 만든 판이고, `
-            + `현실에서 제일 흔한 결말이기도 합니다. 그래도 좋은 성적표는 아닙니다 — 적자 법인은 언젠가 접습니다.` };
+        desc: `확정 내시 납품률 ${f}%, 모법이익 ${consol.toLocaleString()}달러 / 목표 ${target.toLocaleString()}달러입니다. `
+            + `법인 누적 영업이익은 ${opStr}입니다. `
+            + `본사 목표는 채웠지만 법인 영업손익은 적자입니다.` };
     }
     if (fulfil >= 0.75) {
       return { ...base, grade: 'D', title: '물량은 채웠는데 돈을 잃었습니다',
-        desc: `내시 물량 ${f}%. 본사 기준으로는 문제 삼을 정도가 아닙니다. `
-            + `문제는 법인 누적 영업이익이 ${opStr}이라는 겁니다. 팔수록 손해 보는 구조를 4년 동안 안 고쳤습니다.` };
+        desc: `확정 내시 납품률 ${f}%입니다. `
+            + `법인 누적 영업이익은 ${opStr}입니다. 납품률은 75% 이상이지만 법인 영업손익이 적자입니다.` };
     }
     return { ...base, grade: 'F', title: '둘 다 놓쳤습니다',
-      desc: `내시 물량 ${f}%에 법인 누적 영업이익 ${opStr}. 본사도 법인도 건진 게 없습니다.` };
+      desc: `확정 내시 납품률 ${f}%로 75% 미만이고 법인 누적 영업손익도 ${opStr}로 적자입니다.` };
   }
 
   // 흑자를 낸 판에서만 본사 수행률로 등급을 가른다
   if (fulfil >= 0.90 && consol >= target) {
     return { ...base, grade: 'S', title: '둘 다 이겼습니다',
-      desc: `내시 물량을 ${f}% 쳐냈고 법인도 누적 영업이익 ${opStr}로 흑자입니다. 드문 결말입니다.` };
+      desc: `확정 내시 납품률 ${f}%로 90% 이상, 법인 누적 영업이익 ${opStr}로 0 이상, 모법이익 목표 달성입니다.` };
   }
   if (fulfil >= 0.90) {
     return { ...base, grade: 'A', title: '잘 굴렸습니다',
-      desc: `내시 물량 ${f}%에 법인도 흑자(${opStr})입니다. 모법이익이 목표에 조금 못 미쳤을 뿐입니다.` };
+      desc: `확정 내시 납품률 ${f}%로 90% 이상이며 법인 누적 영업이익은 ${opStr}로 0 이상입니다. 모법이익은 목표에 못 미쳤습니다.` };
   }
   if (fulfil >= 0.75) {
     return { ...base, grade: 'B', title: '무난했습니다',
-      desc: `내시 물량 ${f}%, 법인 누적 영업이익 ${opStr}. 본사 기준으로 문제 삼을 정도는 아닙니다.` };
+      desc: `확정 내시 납품률 ${f}%로 75% 이상 90% 미만이며 법인 누적 영업이익은 ${opStr}로 0 이상입니다.` };
   }
   return { ...base, grade: 'C', title: '혼자만 이겼습니다',
-    desc: `법인 손익은 지켰습니다(${opStr}). 그런데 내시 물량은 ${f}%만 쳐냈습니다. `
-        + `본사가 이 법인을 왜 세웠는지를 생각하면, 이것도 좋은 성적표는 아닙니다.` };
+    desc: `법인 누적 영업이익은 ${opStr}로 0 이상입니다. `
+        + `확정 내시 납품률은 ${f}%로 75% 미만입니다.` };
 }
 
 if (typeof module !== 'undefined') {

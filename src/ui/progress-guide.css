@@ -1,0 +1,47 @@
+.cc-game .cc-progress-guide {
+  padding: var(--cc-space-4);
+  margin-top: var(--cc-space-3);
+}
+.cc-progress-guide h2 {
+  margin: 0 0 var(--cc-space-2);
+  text-wrap: balance;
+  color: var(--cc-gold);
+  font: 700 var(--cc-text-heading)/1.5 var(--cc-font-title);
+}
+.cc-progress-guide .cc-progress-phase {
+  margin: 0 0 var(--cc-space-4);
+  color: var(--cc-muted);
+  font-size: var(--cc-text-small);
+}
+.cc-progress-guide .cc-progress-items {
+  list-style: decimal;
+  margin: 0;
+  padding-left: var(--cc-space-6);
+}
+.cc-progress-guide .cc-progress-item {
+  padding: 0 0 var(--cc-space-4) var(--cc-space-1);
+}
+.cc-progress-guide h3 {
+  margin: 0 0 var(--cc-space-1);
+  font-size: var(--cc-text-label);
+  color: var(--cc-text);
+}
+.cc-progress-guide p { margin: 0 0 var(--cc-space-2); }
+.cc-progress-guide button { min-height: 44px; max-width: 100%; white-space: normal; }
+.cc-progress-guide .cc-progress-chapter {
+  background: var(--cc-dark);
+  border: 1px solid var(--cc-border);
+  padding: var(--cc-space-3);
+  margin-bottom: var(--cc-space-4);
+}
+.cc-progress-chapter[data-progress-chapter="entering"] { animation: cc-progress-enter 240ms ease-out; }
+@keyframes cc-progress-enter { from { opacity: 0; transform: translateY(var(--cc-space-2)); } to { opacity: 1; transform: none; } }
+.nomotion .cc-progress-chapter { animation: none; }
+@media (prefers-reduced-motion: reduce) { .cc-progress-chapter { animation: none; } }
+@media (max-width: 760px) {
+  .cc-game .cc-progress-guide {
+    padding: var(--cc-space-3);
+    scroll-margin-block-end: calc(var(--cc-turn-height, 56px) + var(--cc-space-6) + env(safe-area-inset-bottom));
+  }
+  .cc-progress-guide button { width: 100%; }
+}

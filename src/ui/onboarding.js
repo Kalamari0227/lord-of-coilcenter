@@ -30,7 +30,8 @@ function ccGuidanceReport(person) {
 }
 
 function ccQuarterGuidance() {
-  if (!G || G.s.turn > 4) return null;
+  if (!G) return null;
+  if (G.s.turn > 4) return typeof ccProgressGuidance === 'function' ? ccProgressGuidance() : null;
   const panel = ccElement('section', 'cc-window cc-quarter-guidance');
   panel.id = 'cc-quarter-guidance';
   panel.setAttribute('aria-label', '첫 분기 업무 안내');

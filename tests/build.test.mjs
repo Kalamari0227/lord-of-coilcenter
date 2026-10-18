@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, writeFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, mkdtemp, rm, symlink, readdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { runInNewContext } from 'node:vm';
 import { build, root, developmentRecoveryPage } from '../scripts/build.mjs';
@@ -193,4 +194,83 @@ test('development recovery waits for a real button before updating then returns 
   await button.onclick();
   // Then the existing registration updates once and only this page returns to root.
   assert.equal(updates,1); assert.deepEqual(navigation,['/']); assert.equal(button.disabled,true);
+});
+
+
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
+async function treeDigest(directory) {
+  const rows=[];
+  for(const entry of (await readdir(directory,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))) {
+    const file=path.join(directory,entry.name);
+    rows.push([entry.name,entry.isDirectory()?await treeDigest(file):sha256(await readFile(file))]);
+  }
+  return sha256(JSON.stringify(rows));
+}
+
+test('identical builds have identical release manifests and exact file hashes', async t => {
+  const options=await fixture(t); await build(options);
+  const before=await readFile(path.join(options.outputDir,'release.json'));
+  const second=await build({...options,outputDir:path.join(options.sourceRoot,'second')});
+  const after=await readFile(path.join(second.output,'release.json'));
+  assert.deepEqual(after,before);
+  const release=JSON.parse(after);
+  assert.equal(release.version,second.version); assert.equal(release.sourceRevision,null);
+  assert.deepEqual(release.excludedFiles,['.coilcenter-build.json','release.json']);
+  for(const entry of release.files) {
+    const bytes=await readFile(path.join(second.output,entry.path));
+    assert.equal(entry.bytes,bytes.length); assert.equal(entry.sha256,sha256(bytes));
+  }
+  const context={window:{},render(){}};
+  runInNewContext(await readFile(path.join(second.output,'game.js'),'utf8'),context);
+  assert.equal(context.window.CC_RELEASE.version,second.version);
+  assert.equal(Object.isFrozen(context.window.CC_RELEASE),true);
+  assert.equal(Reflect.set(context.window,'CC_RELEASE',{}),false);
+});
+
+for(const mutation of ['changed art','removed art','stale output','changed webp','changed metadata']) test(`${mutation} produces a clean release`,async t=>{
+  const options=await fixture(t);
+  const extra=mutation==='changed webp'?'art/portrait.webp':'art/portraits.json';
+  await writeFile(path.join(options.sourceRoot,extra),'original');
+  const first=await build(options);
+  if(mutation==='changed webp'||mutation==='changed metadata') await writeFile(path.join(options.sourceRoot,extra),'changed');
+  if(mutation==='changed art') await writeFile(path.join(options.sourceRoot,'art/a.png'),'changed');
+  if(mutation==='removed art') await rm(path.join(options.sourceRoot,'art/a.png'));
+  if(mutation==='stale output') await writeFile(path.join(options.outputDir,'art/stale.png'),'stale');
+  const second=await build(options);
+  if(mutation==='stale output') await assert.rejects(readFile(path.join(options.outputDir,'art/stale.png')),{code:'ENOENT'});
+  else assert.notEqual(first.version,second.version);
+  if(mutation==='removed art') await assert.rejects(readFile(path.join(options.outputDir,'art/a.png')),{code:'ENOENT'});
+  {
+    const handlers={},assets=[];
+    runInNewContext(await readFile(path.join(options.outputDir,'sw.js'),'utf8'),{URL,
+      self:{location:{href:'https://game.test/sw.js'},addEventListener:(kind,handler)=>handlers[kind]=handler},
+      caches:{open:async()=>({addAll:async urls=>assets.push(...urls)})}});
+    let pending;handlers.install({waitUntil:value=>pending=value});await pending;
+    assert.equal(assets.includes('./art/a.png'),mutation!=='removed art');
+    assert.equal(assets.includes('./'+extra),true);
+  }
+});
+
+for(const target of ['source','ancestor','src','art','audio','unmarked','symlink-source','symlink-output','symlink-parent']) test(`rejects ${target} output before mutation`,async t=>{
+  const options=await fixture(t),parent=await mkdtemp(path.join(tmpdir(),'coil-boundary-'));
+  t.after(()=>rm(parent,{recursive:true,force:true}));
+  let outputDir=target==='source'?options.sourceRoot:target==='ancestor'?path.dirname(options.sourceRoot):path.join(parent,'output');
+  if(['src','art','audio'].includes(target)) outputDir=path.join(options.sourceRoot,target,'nested-output');
+  if(target==='unmarked') {await mkdir(outputDir);await writeFile(path.join(outputDir,'personal.txt'),'keep');}
+  if(target==='symlink-source') await symlink(options.sourceRoot,outputDir);
+  if(target==='symlink-output') {await build(options);await symlink(options.outputDir,outputDir);}
+  if(target==='symlink-parent') {await symlink(path.dirname(options.sourceRoot),outputDir);outputDir=path.join(outputDir,path.basename(options.sourceRoot));}
+  const before=await treeDigest(options.sourceRoot);
+  await assert.rejects(build({...options,outputDir}),{code:'ERR_UNSAFE_BUILD_OUTPUT'});
+  assert.equal(await treeDigest(options.sourceRoot),before);
+  if(target==='unmarked') assert.equal(await readFile(path.join(outputDir,'personal.txt'),'utf8'),'keep');
+});
+
+for(const marker of ['invalid-json','foreign-owner','symlink']) test(`rejects ${marker} ownership without clearing output`,async t=>{
+  const options=await fixture(t);await build(options);
+  const ownerFile=path.join(options.outputDir,'.coilcenter-build.json');
+  if(marker==='symlink') {await rm(ownerFile);await symlink(path.join(options.sourceRoot,'manifest.webmanifest'),ownerFile);}
+  else await writeFile(ownerFile,marker==='invalid-json'?'invalid':JSON.stringify({builder:'coilcenter',schemaVersion:1,sourceRoot:'/elsewhere'}));
+  const before=await treeDigest(options.sourceRoot);await assert.rejects(build(options),{code:'ERR_UNSAFE_BUILD_OUTPUT'});
+  assert.equal(await treeDigest(options.sourceRoot),before);
 });

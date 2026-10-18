@@ -1,4 +1,5 @@
-import { readFile, writeFile, mkdir, cp, readdir, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, rm, lstat, realpath } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -6,7 +7,62 @@ import path from 'node:path';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export const output = path.join(root, 'dist');
 
+const ownershipFile = '.coilcenter-build.json';
+const excludedFiles = [ownershipFile, 'release.json'];
+
+async function canonicalPath(file) {
+  try { return await realpath(file); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return path.join(await canonicalPath(path.dirname(file)), path.basename(file));
+  }
+}
+
+async function safeOutput(sourceRoot, outputDir) {
+  const source = await realpath(sourceRoot), requested = path.resolve(outputDir);
+  const target = await canonicalPath(requested);
+  const unsafe = () => Object.assign(new Error(`Unsafe build output: ${requested}. Use a separate empty output directory, or back up the existing generated folder before rebuilding.`), { code: 'ERR_UNSAFE_BUILD_OUTPUT' });
+  if (target === source || source.startsWith(target + path.sep) || target === path.parse(target).root) throw unsafe();
+  for (const directory of ['src', 'art', 'audio']) {
+    const input = await canonicalPath(path.join(source, directory));
+    if (target === input || target.startsWith(input + path.sep)) throw unsafe();
+  }
+  let info;
+  try { info = await lstat(requested); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  if (info && (!info.isDirectory() || info.isSymbolicLink())) throw unsafe();
+  if (info && (await readdir(target)).length) {
+    let owner;
+    try {
+      if (!(await lstat(path.join(target, ownershipFile))).isFile()) throw unsafe();
+      owner = JSON.parse(await readFile(path.join(target, ownershipFile), 'utf8'));
+    } catch { throw unsafe(); }
+    if (owner?.builder !== 'coilcenter' || owner.schemaVersion !== 1 || owner.sourceRoot !== source) throw unsafe();
+  }
+  return { target, owner: { builder: 'coilcenter', schemaVersion: 1, sourceRoot: source } };
+}
+
+async function fileTree(directory, prefix = '') {
+  const files = new Map();
+  for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
+    const relative = prefix + entry.name, file = path.join(directory, entry.name);
+    if (entry.isDirectory()) for (const [name, bytes] of await fileTree(file, relative + '/')) files.set(name, bytes);
+    else if (entry.isFile()) files.set(relative, await readFile(file));
+    else throw new Error(`Unsupported build asset: ${file}`);
+  }
+  return files;
+}
+
+async function writeRelease(outputDir, version, sourceRoot) {
+  const revision = spawnSync('git', ['rev-parse', '--verify', 'HEAD'], { cwd: sourceRoot, encoding: 'utf8' });
+  const sourceRevision = revision.status === 0 && /^[a-f0-9]{40,64}$/.test(revision.stdout.trim()) ? revision.stdout.trim() : null;
+  const files = [...await fileTree(outputDir)].filter(([file]) => !excludedFiles.includes(file))
+    .map(([file, bytes]) => ({ path: file, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') }));
+  await writeFile(path.join(outputDir, 'release.json'), JSON.stringify({ schemaVersion: 1, version, sourceRevision,
+    excludedFiles, files }, null, 2) + '\n');
+}
+
 export async function build({ development = false, sourceRoot = root, outputDir = path.join(sourceRoot, 'dist') } = {}) {
+  const destination = await safeOutput(sourceRoot, outputDir);
   const read = file => readFile(path.join(sourceRoot, file), 'utf8');
   const uiFiles = (await readdir(path.join(sourceRoot, 'src/ui'))).filter(file => file.endsWith('.js')).sort();
   const sources = ['engine.js', 'decks.js', 'world.js', 'issues.js', 'src/platform/audio.js', 'ui.js', 'save.js',
@@ -18,7 +74,8 @@ export async function build({ development = false, sourceRoot = root, outputDir 
   if (!legacyStyle) throw new Error('shell.html의 기본 스타일을 찾지 못했습니다.');
   const cssFiles = (await readdir(path.join(sourceRoot, 'src/ui'))).filter(file => file.endsWith('.css')).sort();
   const css = legacyStyle + '\n' + (await Promise.all(cssFiles.map(file => read(`src/ui/${file}`)))).join('\n');
-  const art = (await readdir(path.join(sourceRoot, 'art'))).filter(file => file.endsWith('.png')).sort();
+  const artFiles = await fileTree(path.join(sourceRoot, 'art'));
+  const art = [...artFiles.keys()];
   const manifest = JSON.stringify({ ...JSON.parse(await read('manifest.webmanifest')),
     background_color: '#0b1b24', theme_color: '#0b1b24' }, null, 2);
   const icons = new Map(await Promise.all(['icon-192.png', 'icon-512.png'].map(async file =>
@@ -27,7 +84,7 @@ export async function build({ development = false, sourceRoot = root, outputDir 
   const fingerprint = createHash('sha256').update(await readFile(new URL(import.meta.url)))
     .update(code).update(css).update(manifest);
   for (const [file, bytes] of icons) fingerprint.update(file).update(bytes);
-  for (const file of art) fingerprint.update(file).update(await readFile(path.join(sourceRoot, 'art', file)));
+  for (const [file, bytes] of artFiles) fingerprint.update(file).update(bytes);
   const audioManifestBytes = await readFile(path.join(sourceRoot, 'audio/manifest.json'));
   const audioManifest = JSON.parse(audioManifestBytes);
   if (!Array.isArray(audioManifest.tracks)) throw new Error('Invalid audio manifest');
@@ -39,12 +96,14 @@ export async function build({ development = false, sourceRoot = root, outputDir 
   for (const file of audioFiles) audio.set(file, await readFile(path.join(sourceRoot, file)));
   for (const [file, bytes] of [...audio].sort(([a], [b]) => a.localeCompare(b))) fingerprint.update(file).update(bytes);
   const version = fingerprint.digest('hex').slice(0, 12);
-  await mkdir(outputDir, { recursive: true });
-  await rm(path.join(outputDir, 'audio'), { recursive: true, force: true });
+  await safeOutput(sourceRoot, outputDir);
+  await rm(destination.target, { recursive: true, force: true });
+  await mkdir(destination.target, { recursive: true });
+  await writeFile(path.join(outputDir, ownershipFile), JSON.stringify(destination.owner) + '\n');
   await mkdir(path.join(outputDir, 'audio'));
   await Promise.all([...audio].map(([file, bytes]) => writeFile(path.join(outputDir, file), bytes)));
   await Promise.all([
-    writeFile(path.join(outputDir, 'game.js'), code),
+    writeFile(path.join(outputDir, 'game.js'), `Object.defineProperty(window, 'CC_RELEASE', { value: Object.freeze({ version: '${version}' }), enumerable: true });\n` + code),
     writeFile(path.join(outputDir, 'game.css'), css),
     writeFile(path.join(outputDir, 'index.html'), `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
@@ -60,7 +119,10 @@ export async function build({ development = false, sourceRoot = root, outputDir 
 <body><a class="cc-skip" href="#app">경영 화면으로 이동</a>
 <div class="wrap" id="app" tabindex="-1"></div>
 <noscript>이 게임은 JavaScript를 켜야 실행됩니다.</noscript></body></html>`),
-    cp(path.join(sourceRoot, 'art'), path.join(outputDir, 'art'), { recursive: true }),
+    ...[...artFiles].map(async ([file, bytes]) => {
+      await mkdir(path.dirname(path.join(outputDir, 'art', file)), { recursive: true });
+      await writeFile(path.join(outputDir, 'art', file), bytes);
+    }),
     ...[...icons].map(([file, bytes]) => writeFile(path.join(outputDir, file), bytes)),
     writeFile(path.join(outputDir, 'manifest.webmanifest'), manifest),
   ]);
@@ -72,6 +134,7 @@ export async function build({ development = false, sourceRoot = root, outputDir 
 self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim().then(() => self.registration.unregister()));
 });\n`);
+    await writeRelease(outputDir, version, sourceRoot);
     return { sources, version, output: outputDir };
   }
   const assets = ['./', './index.html', './game.js', './game.css', './manifest.webmanifest',
@@ -114,6 +177,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(caches.open(CACHE).then(async cache =>
     await cache.match(event.request) || fetch(event.request)));
 });\n`);
+  await writeRelease(outputDir, version, sourceRoot);
   return { sources, version, output: outputDir };
 }
 

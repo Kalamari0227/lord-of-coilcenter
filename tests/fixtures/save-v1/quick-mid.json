@@ -1,0 +1,5935 @@
+{
+  "v": 1,
+  "at": 1792324800000,
+  "s": {
+    "turn": 13,
+    "over": false,
+    "overReason": null,
+    "country": "NV",
+    "companyName": "QA fixture quick",
+    "cash": 2000000,
+    "invRaw": [
+      {
+        "qty": 7355.872135871763,
+        "unitCost": 863.1247286414023,
+        "arrivalTurn": 11,
+        "dt": "FIRM",
+        "gr": "PREMIUM"
+      },
+      {
+        "qty": 15380,
+        "unitCost": 866.366444736337,
+        "arrivalTurn": 12,
+        "dt": "FIRM",
+        "gr": "PREMIUM"
+      }
+    ],
+    "invFg": [
+      {
+        "proc": "SLIT",
+        "qty": 2667.139177332955,
+        "unitCost": 883.6994693945051,
+        "dt": "FIRM",
+        "gr": "PREMIUM",
+        "madeTurn": 12,
+        "ya": 0.98,
+        "ra": 0.275,
+        "yActual": 0.9675019573171315
+      },
+      {
+        "proc": "LEVEL",
+        "qty": 1332.3173761032526,
+        "unitCost": 892.4043120895203,
+        "dt": "FIRM",
+        "gr": "PREMIUM",
+        "madeTurn": 12,
+        "ya": 0.98,
+        "ra": 0.275,
+        "yActual": 0.9671902263901422
+      }
+    ],
+    "poOpen": [
+      {
+        "qty": 15380,
+        "unitPriceFixed": 855.1684793232525,
+        "dt": "FIRM",
+        "gr": "PREMIUM",
+        "etaTurn": 13
+      },
+      {
+        "qty": 15390,
+        "unitPriceFixed": 841.1054838354607,
+        "dt": "FIRM",
+        "gr": "PREMIUM",
+        "etaTurn": 14
+      }
+    ],
+    "ar": [
+      {
+        "amount": 3658862.885748497,
+        "dueTurn": 13,
+        "delayed": true
+      },
+      {
+        "amount": 2732058.3317901017,
+        "dueTurn": 13
+      },
+      {
+        "amount": 7306756.47167374,
+        "dueTurn": 13
+      },
+      {
+        "amount": 3648206.2366816215,
+        "dueTurn": 13
+      },
+      {
+        "amount": 2883349.540556031,
+        "dueTurn": 14
+      },
+      {
+        "amount": 7298529.686509268,
+        "dueTurn": 14
+      },
+      {
+        "amount": 3622029.5045858095,
+        "dueTurn": 14
+      },
+      {
+        "amount": 2944772.7096777274,
+        "dueTurn": 15
+      },
+      {
+        "amount": 7258781.936154062,
+        "dueTurn": 15
+      },
+      {
+        "amount": 3640034.974770006,
+        "dueTurn": 15
+      },
+      {
+        "amount": 79510.81776389394,
+        "dueTurn": 13
+      }
+    ],
+    "ap": [
+      {
+        "amount": 13154020.86449497,
+        "dueTurn": 13
+      },
+      {
+        "amount": 13324715.920044864,
+        "dueTurn": 14
+      }
+    ],
+    "lines": [
+      {
+        "id": "L1",
+        "type": "SLIT",
+        "cap": 8333,
+        "capex": 2000000
+      },
+      {
+        "id": "L2",
+        "type": "LEVEL",
+        "cap": 4167,
+        "capex": 2000000
+      }
+    ],
+    "fa": {
+      "land": 4000000,
+      "buildingNbv": 10600000,
+      "machineCost": 4000000,
+      "machineAccDep": 933333.3333333337
+    },
+    "debt": {
+      "principal": 29368098.277228568,
+      "rate": 0.03,
+      "limit": 90280908.30349712,
+      "extra": 0
+    },
+    "equity": 34622626.99368466,
+    "paidIn": 35000000,
+    "morale": 31.73446572948973,
+    "trust": 79,
+    "lossStreak": 3,
+    "myShare": 0.1222099198616016,
+    "effortQueue": [
+      {
+        "amount": 30000,
+        "turnsLeft": 1
+      },
+      {
+        "amount": 30000,
+        "turnsLeft": 2
+      },
+      {
+        "amount": 30000,
+        "turnsLeft": 3
+      },
+      {
+        "amount": 30000,
+        "turnsLeft": 4
+      },
+      {
+        "amount": 30000,
+        "turnsLeft": 5
+      }
+    ],
+    "market": {
+      "pm": 714.5188764071337,
+      "phase": "NORMAL",
+      "hqRate": 0.05928995675640181,
+      "scrapRate": 0.275
+    },
+    "scenario": [
+      {
+        "phase": "NORMAL",
+        "drift": 0.013,
+        "name": "회복",
+        "brief": "수요가 돌아옵니다. 싸게 사둔 재고가 있는 회사가 웃습니다.",
+        "to": 13,
+        "label": "1막 · 회복"
+      },
+      {
+        "phase": "NORMAL",
+        "drift": -0.018,
+        "name": "공급과잉",
+        "brief": "중국산이 쏟아집니다. 가격이 빠지기 시작합니다. 재고를 많이 든 회사가 아파집니다.",
+        "to": 24,
+        "label": "2막 · 공급과잉"
+      },
+      {
+        "phase": "BUST",
+        "drift": -0.01,
+        "name": "불황",
+        "brief": "자동차가 감산에 들어갔습니다. 내시가 줄고 라인이 놉니다. 본사도 물량을 못 채웁니다.",
+        "to": 35,
+        "label": "3막 · 불황"
+      },
+      {
+        "phase": "BOOM",
+        "drift": 0.016,
+        "name": "호황",
+        "brief": "자동차 생산이 늘고 있습니다. 주문이 밀립니다. 지금 번 돈을 어디에 쓸지가 4년을 가릅니다.",
+        "to": 48,
+        "label": "4막 · 호황"
+      }
+    ],
+    "hq": {
+      "cumMaterialTons": 181550,
+      "cumHqMargin": 8502498.56652543,
+      "cumConsolidated": 8737578.080137027,
+      "cumAutoDemand": 179979,
+      "cumAutoShipped": 179979
+    },
+    "nasi": [
+      {
+        "turn": 13,
+        "tons": {
+          "C2C": 3709,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "potential": {
+          "C2C": 3709,
+          "SLIT": 10110,
+          "LEVEL": 5217,
+          "TRAP": 0,
+          "DIE": 0
+        }
+      },
+      {
+        "turn": 14,
+        "tons": {
+          "C2C": 3471,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "potential": {
+          "C2C": 3471,
+          "SLIT": 9465,
+          "LEVEL": 4884,
+          "TRAP": 0,
+          "DIE": 0
+        }
+      },
+      {
+        "turn": 15,
+        "tons": {
+          "C2C": 3335,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "potential": {
+          "C2C": 3335,
+          "SLIT": 9094,
+          "LEVEL": 4692,
+          "TRAP": 0,
+          "DIE": 0
+        }
+      }
+    ],
+    "buildQueue": [],
+    "custShare": {
+      "JP": 0.40929005383949085,
+      "EU": 0.37850194570598256,
+      "CN": 0.03057395174793141,
+      "PART": 0.11157802828771056,
+      "HOME": 0.07005602041888448
+    },
+    "custQueue": [],
+    "salesMix": {
+      "JP": 30,
+      "EU": 30,
+      "CN": 0,
+      "PART": 25,
+      "HOME": 15
+    },
+    "cum": {
+      "sales": {
+        "C2C": 37479,
+        "SLIT": 94992,
+        "LEVEL": 47508,
+        "BLANK": 0
+      },
+      "revenue": 161041468.40487403,
+      "op": 235079.51361159823,
+      "np": -557235.1911512675
+    },
+    "hqSpotCredit": 0,
+    "buildings": 1,
+    "history": [
+      {
+        "turn": 1,
+        "date": "2026년 1월",
+        "phase": "NORMAL",
+        "pm": 727.6579969378571,
+        "hqPerTon": 46.45680406270174,
+        "sales": {
+          "C2C": 2981,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28328.629220588973,
+          "invValue": 23742831.43032618,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 37997116.67634023,
+          "arDelayed": 0,
+          "ap": 25928344.580888063,
+          "debt": 22321140.72372577,
+          "cash": 2000000,
+          "seaValue": 13593895.941417173,
+          "debtLimit": 84947469.18969247,
+          "debtRoom": 62626328.4659667,
+          "debtUse": 0.26276404625876976,
+          "equity": 35192223.14109098,
+          "interest": 60452.216207089434,
+          "nwc": 35811603.525778346
+        },
+        "cum": {
+          "sales": {
+            "C2C": 2981,
+            "SLIT": 7916,
+            "LEVEL": 3959,
+            "BLANK": 0
+          },
+          "revenue": 12856469.404895063,
+          "op": 72813.17246214076,
+          "np": 12360.95625505133
+        },
+        "custShare": {
+          "JP": 0.3725102937807402,
+          "EU": 0.3355789115801083,
+          "CN": 0.03569572509769827,
+          "PART": 0.19140006618189576,
+          "HOME": 0.06481500335955763
+        },
+        "crashes": [],
+        "revenue": 12856469.404895063,
+        "gp": 512638.5720753372,
+        "ebitda": 156146.5057954741,
+        "op": 72813.17246214076,
+        "np": 12360.95625505133,
+        "hqMargin": 687560.7001279858,
+        "consolidated": 760373.8725901266,
+        "fixedCost": 196000,
+        "varCost": 160492.06627986307,
+        "depreciation": 83333.33333333334,
+        "interest": 60452.216207089434,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 179.62384063551497,
+        "scrapRevenue": 35943.79912175902,
+        "yieldGain": 24316.873854139314,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42492.943830883465,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2981,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7980.742996099179,
+          "LEVEL": 3956.9801020408167,
+          "C2C": 2981
+        },
+        "demand": {
+          "C2C": 2981,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2981,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 2,
+            "tons": {
+              "C2C": 3214,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3214,
+              "SLIT": 8677,
+              "LEVEL": 4496,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 3,
+            "tons": {
+              "C2C": 3062,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3062,
+              "SLIT": 8268,
+              "LEVEL": 4284,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 4,
+            "tons": {
+              "C2C": 3003,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3003,
+              "SLIT": 8109,
+              "LEVEL": 4201,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2981,
+          "SLIT": 8042,
+          "LEVEL": 4168,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 12560768.694089154,
+        "cashOut": 11516056.03268377,
+        "spotExposure": 0,
+        "util": 0.9693877551020408,
+        "shortRatio": 1,
+        "materialTons": 14800,
+        "run": {
+          "SLIT": 8077.551020408164,
+          "LEVEL": 4039.795918367347,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28328.629220588977,
+          "sea": 15890.311904761918,
+          "prod": 14800,
+          "nasi3": 15210.34693877551,
+          "fg": 4218.973098139997
+        },
+        "invTons": 28328.629220588977,
+        "log": [
+          "소재 15,322톤이 입고되었습니다."
+        ],
+        "flags": [
+          "석 달치 44,400톤 걸었습니다. J사 16,550t · E사 14,850t · C사 1,600t · P사 8,500t · H사 2,900t. 무난합니다.",
+          "요구대로 올렸습니다. 조회 분위기는 밝습니다. 내년 이맘때 또 같은 자리에 앉는다는 것만 기억해두시죠.",
+          "고철상보다 조금 나은 값에 넘겼습니다. 손실은 확정됐고 창고는 비었습니다. 둘 다 오늘로 끝났다는 게 중요합니다.",
+          "그대로 받았습니다. 본사 영업본부장이 \"역시\" 하더군요. 이제 채우는 건 제 일입니다."
+        ]
+      },
+      {
+        "turn": 2,
+        "date": "2026년 2월",
+        "phase": "NORMAL",
+        "pm": 707.3824298735567,
+        "hqPerTon": 44.0458179138502,
+        "sales": {
+          "C2C": 3214,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28951.792074560177,
+          "invValue": 24629913.524351604,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 41235409.329766326,
+          "arDelayed": 2347267.842513017,
+          "ap": 26541886.78385523,
+          "debt": 25768804.2654392,
+          "cash": 2000000,
+          "seaValue": 12707819.258522736,
+          "debtLimit": 87290778.84966388,
+          "debtRoom": 61521974.584224686,
+          "debtUse": 0.2952064880738365,
+          "equity": 35197766.2640392,
+          "interest": 55802.85180931442,
+          "nwc": 39323436.0702627
+        },
+        "cum": {
+          "sales": {
+            "C2C": 6195,
+            "SLIT": 15832,
+            "LEVEL": 7918,
+            "BLANK": 0
+          },
+          "revenue": 26030856.977668483,
+          "op": 134159.14721967664,
+          "np": 17904.079203272784
+        },
+        "custShare": {
+          "JP": 0.407688550606384,
+          "EU": 0.3683457579371206,
+          "CN": 0.038159707006618304,
+          "PART": 0.11520503012391753,
+          "HOME": 0.0706009543259595
+        },
+        "crashes": [
+          "PART"
+        ],
+        "revenue": 13174387.57277342,
+        "gp": 502229.090199383,
+        "ebitda": 144679.30809086922,
+        "op": 61345.97475753588,
+        "np": 5543.122948221455,
+        "hqMargin": 651878.105124983,
+        "consolidated": 713224.0798825189,
+        "fixedCost": 196000,
+        "varCost": 161549.78210851375,
+        "depreciation": 83333.33333333334,
+        "interest": 55802.85180931442,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 178.14905079071502,
+        "scrapRevenue": 34655.36481770101,
+        "yieldGain": 37905.50516387176,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 43427.68811184027,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3214,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7915.952550473415,
+          "LEVEL": 3959.242176144038,
+          "C2C": 3214
+        },
+        "demand": {
+          "C2C": 3214,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3214,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 3,
+            "tons": {
+              "C2C": 3062,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3062,
+              "SLIT": 8268,
+              "LEVEL": 4284,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 4,
+            "tons": {
+              "C2C": 3003,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3003,
+              "SLIT": 8109,
+              "LEVEL": 4201,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 5,
+            "tons": {
+              "C2C": 2939,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2939,
+              "SLIT": 8002,
+              "LEVEL": 4131,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3214,
+          "SLIT": 8677,
+          "LEVEL": 4496,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 9970750.284165025,
+        "cashOut": 12980353.738450004,
+        "spotExposure": 0,
+        "util": 0.9642675021926534,
+        "shortRatio": 1,
+        "materialTons": 14800,
+        "run": {
+          "SLIT": 8011.486738674307,
+          "LEVEL": 4041.8570387338605,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28951.792074560177,
+          "sea": 14800,
+          "prod": 14800,
+          "nasi3": 15118.680272108844,
+          "fg": 4219.167824757449
+        },
+        "invTons": 28951.792074560177,
+        "log": [
+          "소재 15,890톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자동차 부품사 내시가 갑자기 빠졌습니다. 그 물량 보고 들여온 소재가 창고에 남습니다.",
+          "자금이 모자라 $3,447,664을 차입했습니다."
+        ]
+      },
+      {
+        "turn": 3,
+        "date": "2026년 3월",
+        "phase": "NORMAL",
+        "pm": 720.8986388505862,
+        "hqPerTon": 43.28059229235323,
+        "sales": {
+          "C2C": 3062,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28631.790276080144,
+          "invValue": 24563106.522151753,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 46203440.604772724,
+          "arDelayed": 6897189.623817287,
+          "ap": 26301715.199939907,
+          "debt": 30855645.9290232,
+          "cash": 2000000,
+          "seaValue": 12353726.755311793,
+          "debtLimit": 91050841.46985805,
+          "debtRoom": 60195195.54083485,
+          "debtUse": 0.3388836987216402,
+          "equity": 35194166.6715015,
+          "interest": 64422.010663598005,
+          "nwc": 44464831.92698458
+        },
+        "cum": {
+          "sales": {
+            "C2C": 9257,
+            "SLIT": 23748,
+            "LEVEL": 11877,
+            "BLANK": 0
+          },
+          "revenue": 39269971.40041178,
+          "op": 194981.56534557414,
+          "np": 14304.48666557228
+        },
+        "custShare": {
+          "JP": 0.4077481210438732,
+          "EU": 0.369479120271389,
+          "CN": 0.03727924183799057,
+          "PART": 0.11521561099176075,
+          "HOME": 0.07027790585498637
+        },
+        "crashes": [],
+        "revenue": 13239114.422743296,
+        "gp": 500767.7425643541,
+        "ebitda": 144155.75145923084,
+        "op": 60822.4181258975,
+        "np": -3599.592537700504,
+        "hqMargin": 640552.7659268278,
+        "consolidated": 701375.1840527253,
+        "fixedCost": 196000,
+        "varCost": 160611.99110512325,
+        "depreciation": 83333.33333333334,
+        "interest": 64422.010663598005,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 183.00179848003455,
+        "scrapRevenue": 36279.5805436532,
+        "yieldGain": 36765.70443027028,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42947.68541412022,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3062,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7912.771872656531,
+          "LEVEL": 3957.3714056415492,
+          "C2C": 3062
+        },
+        "demand": {
+          "C2C": 3062,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3062,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 4,
+            "tons": {
+              "C2C": 3003,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3003,
+              "SLIT": 8109,
+              "LEVEL": 4201,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 5,
+            "tons": {
+              "C2C": 2939,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2939,
+              "SLIT": 8002,
+              "LEVEL": 4131,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 6,
+            "tons": {
+              "C2C": 2922,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2922,
+              "SLIT": 7955,
+              "LEVEL": 4107,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3062,
+          "SLIT": 8268,
+          "LEVEL": 4284,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 8307362.728280554,
+        "cashOut": 12947990.842438059,
+        "spotExposure": 0,
+        "util": 0.964251606142249,
+        "shortRatio": 1,
+        "materialTons": 14800,
+        "run": {
+          "SLIT": 8011.535156558578,
+          "LEVEL": 4041.6099202195364,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28631.790276080144,
+          "sea": 14800,
+          "prod": 14800,
+          "nasi3": 15072.013605442176,
+          "fg": 4214.31110305553
+        },
+        "invTons": 28631.790276080144,
+        "log": [
+          "소재 14,800톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $5,086,842을 차입했습니다."
+        ]
+      },
+      {
+        "turn": 4,
+        "date": "2026년 4월",
+        "phase": "NORMAL",
+        "pm": 723.5309166634132,
+        "hqPerTon": 44.9833773737566,
+        "sales": {
+          "C2C": 3003,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28328.450630427913,
+          "invValue": 24027183.05885967,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 39789342.05407998,
+          "arDelayed": 0,
+          "ap": 25061546.01383453,
+          "debt": 25303550.70793603,
+          "cash": 2000000,
+          "seaValue": 12589773.828886636,
+          "debtLimit": 86630096.33445741,
+          "debtRoom": 61326545.62652138,
+          "debtUse": 0.2920872973550124,
+          "equity": 35124859.47912211,
+          "interest": 77139.114822558,
+          "nwc": 38754979.09910512
+        },
+        "cum": {
+          "sales": {
+            "C2C": 12260,
+            "SLIT": 31664,
+            "LEVEL": 15836,
+            "BLANK": 0
+          },
+          "revenue": 52600975.40387072,
+          "op": 202813.48778873868,
+          "np": -55002.705713821175
+        },
+        "custShare": {
+          "JP": 0.40850166527927156,
+          "EU": 0.3690324511808068,
+          "CN": 0.03626348513069114,
+          "PART": 0.11473386966695354,
+          "HOME": 0.071468528742277
+        },
+        "crashes": [],
+        "revenue": 13331004.003458936,
+        "gp": 486189.8399593849,
+        "ebitda": 91165.25577649788,
+        "op": 7831.922443164542,
+        "np": -69307.19237939345,
+        "hqMargin": 679248.9983437248,
+        "consolidated": 687080.9207868893,
+        "fixedCost": 235000,
+        "varCost": 160024.584182887,
+        "depreciation": 83333.33333333334,
+        "interest": 77139.114822558,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 225.33964565223346,
+        "scrapRevenue": 44836.05510432653,
+        "yieldGain": 19296.61044354916,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42492.675945641866,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3003,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7876.910613497317,
+          "LEVEL": 3955.8506560999103,
+          "C2C": 3003
+        },
+        "demand": {
+          "C2C": 3003,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3003,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 5,
+            "tons": {
+              "C2C": 2939,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2939,
+              "SLIT": 8002,
+              "LEVEL": 4131,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 6,
+            "tons": {
+              "C2C": 2922,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2922,
+              "SLIT": 7955,
+              "LEVEL": 4107,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 7,
+            "tons": {
+              "C2C": 2986,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2986,
+              "SLIT": 8131,
+              "LEVEL": 4198,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3003,
+          "SLIT": 8109,
+          "LEVEL": 4201,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 19789938.609256003,
+        "cashOut": 13593895.941417173,
+        "spotExposure": 0,
+        "util": 0.9646480732199568,
+        "shortRatio": 1,
+        "materialTons": 15100,
+        "run": {
+          "SLIT": 8014.829164051914,
+          "LEVEL": 4043.271751197547,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28328.450630427913,
+          "sea": 14800,
+          "prod": 15100,
+          "nasi3": 15066.34693877551,
+          "fg": 4172.072372652758
+        },
+        "invTons": 28328.450630427913,
+        "log": [
+          "소재 14,800톤이 입고되었습니다."
+        ],
+        "flags": [
+          "석 달치 45,300톤 걸었습니다. J사 18,450t · E사 16,750t · C사 1,700t · P사 5,200t · H사 3,200t. 무난합니다.",
+          "특근 돌립니더. 이번 달은 버팁니다. 다음 달은 모르겠고예.",
+          "일주일 세아놓고 전부 뜯었심더. 기름 묻은 손으로 \"인자 됐습니더\" 한마디 하고 나가데예. 당분간은 이 얘기 안 할 겁니더.",
+          "사인했습니다. 물량은 받아왔는데 구 공장장이 뭐라 할 겁니다. 라인이 꽉 찼거든요.",
+          "사인했습니다. 단가는 내줬는데… 솔직히 물량은 안 늘 겁니다. 제가 말씀은 드렸습니다.",
+          "품질·납기 개선으로 걸었습니다. 양품률이 97.6%입니다. 이 수치로는 단가 협상에서 우리가 할 말이 없습니다. 목표는 품질 지수 +6이고, 2026년 10월에 결과 보고드리겠습니다. 진척은 매달 첫 화면에 띄워두겠습니다.",
+          "일본계 자동차 30, 미주·구주 자동차 30, 자동차 부품사 25, 가전·강건재 15으로 짰습니다. 일본계 자동차과 미주·구주 자동차에 같은 무게로 공동 1순위입니다. 중국 전기차는 사실상 손 놓는 겁니다. 나중에 딴말 없기입니다. 숫자는 2026년 7월부터 움직입니다."
+        ]
+      },
+      {
+        "turn": 5,
+        "date": "2026년 5월",
+        "phase": "NORMAL",
+        "pm": 742.3493661787936,
+        "hqPerTon": 57.795361943432546,
+        "sales": {
+          "C2C": 2939,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28079.155380892655,
+          "invValue": 23821625.37416684,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 43379403.3922384,
+          "arDelayed": 3525450.5482306713,
+          "ap": 24943500.58419843,
+          "debt": 28802156.673611045,
+          "cash": 2000000,
+          "seaValue": 12891873.873108696,
+          "debtLimit": 89556762.61445594,
+          "debtRoom": 60754605.94084489,
+          "debtUse": 0.3216078365584187,
+          "equity": 35071923.625228606,
+          "interest": 63258.87676984008,
+          "nwc": 42257528.18220681
+        },
+        "cum": {
+          "sales": {
+            "C2C": 15199,
+            "SLIT": 39580,
+            "LEVEL": 19795,
+            "BLANK": 0
+          },
+          "revenue": 65836775.21985294,
+          "op": 213136.51066507553,
+          "np": -107938.5596073244
+        },
+        "custShare": {
+          "JP": 0.4085442077208759,
+          "EU": 0.3701523909178684,
+          "CN": 0.035425284982869294,
+          "PART": 0.11473959158317716,
+          "HOME": 0.0711385247952093
+        },
+        "crashes": [],
+        "revenue": 13235799.815982219,
+        "gp": 488502.9042260349,
+        "ebitda": 93656.3562096702,
+        "op": 10323.02287633685,
+        "np": -52935.85389350323,
+        "hqMargin": 872709.9653458315,
+        "consolidated": 883032.9882221683,
+        "fixedCost": 235000,
+        "varCost": 159846.5480163647,
+        "depreciation": 83333.33333333334,
+        "interest": 63258.87676984008,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 235.29524953525865,
+        "scrapRevenue": 48034.6018232796,
+        "yieldGain": 6348.181602232444,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42118.733071338975,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2939,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7909.987897777073,
+          "LEVEL": 3955.9185132460802,
+          "C2C": 2939
+        },
+        "demand": {
+          "C2C": 2939,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2939,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 6,
+            "tons": {
+              "C2C": 2922,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2922,
+              "SLIT": 7955,
+              "LEVEL": 4107,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 7,
+            "tons": {
+              "C2C": 2986,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2986,
+              "SLIT": 8131,
+              "LEVEL": 4198,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 8,
+            "tons": {
+              "C2C": 3279,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3279,
+              "SLIT": 8931,
+              "LEVEL": 4610,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2939,
+          "SLIT": 8002,
+          "LEVEL": 4131,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 9693773.079647075,
+        "cashOut": 12707819.258522736,
+        "spotExposure": 0,
+        "util": 0.968096132844673,
+        "shortRatio": 1,
+        "materialTons": 15100,
+        "run": {
+          "SLIT": 8054.716293136284,
+          "LEVEL": 4046.4853674221285,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28079.15538089265,
+          "sea": 15100,
+          "prod": 15100,
+          "nasi3": 15179.680272108844,
+          "fg": 4162.978783675911
+        },
+        "invTons": 28079.15538089265,
+        "log": [
+          "소재 14,800톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $3,498,606을 차입했습니다."
+        ]
+      },
+      {
+        "turn": 6,
+        "date": "2026년 6월",
+        "phase": "NORMAL",
+        "pm": 733.0918517635982,
+        "hqPerTon": 52.626249667507366,
+        "sales": {
+          "C2C": 2922,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28125.96616410157,
+          "invValue": 23997703.80783274,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 39775067.28115274,
+          "arDelayed": 0,
+          "ap": 25481647.70199533,
+          "debt": 24836362.985782072,
+          "cash": 2000000,
+          "seaValue": 13227181.006573744,
+          "debtLimit": 87045788.72932398,
+          "debtRoom": 62209425.74354191,
+          "debtUse": 0.28532526786577556,
+          "equity": 35014103.64573703,
+          "interest": 72005.3916840276,
+          "nwc": 38291123.386990145
+        },
+        "cum": {
+          "sales": {
+            "C2C": 18121,
+            "SLIT": 47496,
+            "LEVEL": 23754,
+            "BLANK": 0
+          },
+          "revenue": 78993390.86904624,
+          "op": 227321.9228575267,
+          "np": -165758.53909890086
+        },
+        "custShare": {
+          "JP": 0.4085768255268791,
+          "EU": 0.3712667070772888,
+          "CN": 0.0346056181593424,
+          "PART": 0.1147425253590691,
+          "HOME": 0.07080832387742059
+        },
+        "crashes": [],
+        "revenue": 13156615.649193296,
+        "gp": 492468.02226879075,
+        "ebitda": 97518.7455257845,
+        "op": 14185.412192451156,
+        "np": -57819.97949157645,
+        "hqMargin": 794656.3699793612,
+        "consolidated": 808841.7821718124,
+        "fixedCost": 235000,
+        "varCost": 159949.27674300625,
+        "depreciation": 83333.33333333334,
+        "interest": 72005.3916840276,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 256.18921679108496,
+        "scrapRevenue": 51647.812518291656,
+        "yieldGain": -4211.520235852122,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42188.949246152355,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2922,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7902.225455702421,
+          "LEVEL": 3952.0661604902607,
+          "C2C": 2922
+        },
+        "demand": {
+          "C2C": 2922,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2922,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 7,
+            "tons": {
+              "C2C": 2986,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2986,
+              "SLIT": 8131,
+              "LEVEL": 4198,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 8,
+            "tons": {
+              "C2C": 3279,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3279,
+              "SLIT": 8931,
+              "LEVEL": 4610,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 9,
+            "tons": {
+              "C2C": 3213,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3213,
+              "SLIT": 8752,
+              "LEVEL": 4518,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2922,
+          "SLIT": 7955,
+          "LEVEL": 4107,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 16812599.572797246,
+        "cashOut": 12353726.755311793,
+        "spotExposure": 0,
+        "util": 0.9688384666387012,
+        "shortRatio": 1,
+        "materialTons": 15100,
+        "run": {
+          "SLIT": 8060.851091322944,
+          "LEVEL": 4049.629741660822,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28125.96616410157,
+          "sea": 15100,
+          "prod": 15100,
+          "nasi3": 15276.680272108844,
+          "fg": 4142.270399868592
+        },
+        "invTons": 28125.96616410157,
+        "log": [
+          "소재 15,100톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": 7,
+        "date": "2026년 7월",
+        "phase": "NORMAL",
+        "pm": 733.8129671191311,
+        "hqPerTon": 57.462556915354405,
+        "sales": {
+          "C2C": 2986,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28062.024413391122,
+          "invValue": 24373509.354698956,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 39692459.03189891,
+          "arDelayed": 0,
+          "ap": 26119054.87968244,
+          "debt": 24999054.306229517,
+          "cash": 2000000,
+          "seaValue": 13062230.614723794,
+          "debtLimit": 87739315.50104126,
+          "debtRoom": 62740261.19481175,
+          "debtUse": 0.2849242003253699,
+          "equity": 34970244.4045961,
+          "interest": 62090.90746445518,
+          "nwc": 37946913.50691542
+        },
+        "cum": {
+          "sales": {
+            "C2C": 21107,
+            "SLIT": 55412,
+            "LEVEL": 27713,
+            "BLANK": 0
+          },
+          "revenue": 92232301.22490753,
+          "op": 245553.58918105022,
+          "np": -209617.7802398325
+        },
+        "custShare": {
+          "JP": 0.4103005655929841,
+          "EU": 0.37392557208244986,
+          "CN": 0.034469070170159724,
+          "PART": 0.11121656217772011,
+          "HOME": 0.07008822997668603
+        },
+        "crashes": [],
+        "revenue": 13238910.355861291,
+        "gp": 448668.10701586865,
+        "ebitda": 101564.99965685687,
+        "op": 18231.666323523532,
+        "np": -43859.24114093165,
+        "hqMargin": 875154.7418208476,
+        "consolidated": 893386.4081443711,
+        "fixedCost": 187000,
+        "varCost": 160103.10735901177,
+        "depreciation": 83333.33333333334,
+        "interest": 62090.90746445518,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 302.94175071044504,
+        "scrapRevenue": 61133.210862101354,
+        "yieldGain": -28168.131617820243,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42093.036620086685,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2986,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7873.860891237687,
+          "LEVEL": 3940.094106821321,
+          "C2C": 2986
+        },
+        "demand": {
+          "C2C": 2986,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2986,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 8,
+            "tons": {
+              "C2C": 3279,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3279,
+              "SLIT": 8931,
+              "LEVEL": 4610,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 9,
+            "tons": {
+              "C2C": 3213,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3213,
+              "SLIT": 8752,
+              "LEVEL": 4518,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 10,
+            "tons": {
+              "C2C": 3136,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3136,
+              "SLIT": 8545,
+              "LEVEL": 4410,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2986,
+          "SLIT": 8131,
+          "LEVEL": 4198,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 13382651.815977227,
+        "cashOut": 12589773.828886636,
+        "spotExposure": 0,
+        "util": 0.9693517399015563,
+        "shortRatio": 1,
+        "materialTons": 15230,
+        "run": {
+          "SLIT": 8074.906748769453,
+          "LEVEL": 4041.99,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28062.024413391122,
+          "sea": 15100,
+          "prod": 15230,
+          "nasi3": 15326.680272108844,
+          "fg": 4081.2253979275997
+        },
+        "invTons": 28062.024413391122,
+        "log": [
+          "석 달 전에 바꾼 영업 자원 배분이 이제부터 숫자로 나옵니다.",
+          "소재 15,100톤이 입고되었습니다."
+        ],
+        "flags": [
+          "석 달치 45,700톤 걸었습니다. J사 18,650t · E사 16,950t · C사 1,600t · P사 5,250t · H사 3,250t. 무난합니다.",
+          "정중하게 \"확인 부탁드립니다\" 한 줄 보냈습니다. 비서실에서 바로 정정해줬고요. 그 뒤로는 우리 이름을 또박또박 부르십니다. 이런 건 말해야 바뀝니다.",
+          "설치했습니다! 석 달 걸렸고요, 지난달 전기료 고지서가 처음으로 줄었어요. 제가 그거 보고 좀… 뿌듯했습니다.",
+          "두 군데 톤당 4불씩, 2027년 1월까지만 내렸습니다. 물량 옵니다, 그건 확실합니다. 본사 소재 판매도 같이 올라갑니다. 대신 그때까지 우리 이익은 얇아집니다. 이건 제 책임이 아니라 사장님 결재입니다.",
+          "사인했습니다. 물량은 받아왔는데 구 공장장이 뭐라 할 겁니다. 라인이 꽉 찼거든요.",
+          "사인했습니다. 물량은 받아왔는데 구 공장장이 뭐라 할 겁니다. 라인이 꽉 찼거든요.",
+          "레벨러 캐파를 넘겨 가동을 0% 줄였습니다."
+        ]
+      },
+      {
+        "turn": 8,
+        "date": "2026년 8월",
+        "phase": "NORMAL",
+        "pm": 724.2738728329508,
+        "hqPerTon": 45.508773659005904,
+        "sales": {
+          "C2C": 3279,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27694.395399463898,
+          "invValue": 24119995.046676785,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 40162129.07963764,
+          "arDelayed": 0,
+          "ap": 26289411.62129754,
+          "debt": 25028502.195366755,
+          "cash": 2000000,
+          "seaValue": 13187646.357284753,
+          "debtLimit": 87864319.26396209,
+          "debtRoom": 62835817.068595335,
+          "debtUse": 0.2848539931229206,
+          "equity": 34929294.61118344,
+          "interest": 62497.635765573796,
+          "nwc": 37992712.505016886
+        },
+        "cum": {
+          "sales": {
+            "C2C": 24386,
+            "SLIT": 63328,
+            "LEVEL": 31672,
+            "BLANK": 0
+          },
+          "revenue": 105936437.14183937,
+          "op": 267101.4315339717,
+          "np": -250567.57365248483
+        },
+        "custShare": {
+          "JP": 0.4103175637604283,
+          "EU": 0.3750368423529546,
+          "CN": 0.03367023491445392,
+          "PART": 0.11121513421735749,
+          "HOME": 0.0697602247548057
+        },
+        "crashes": [],
+        "revenue": 13704135.91693184,
+        "gp": 450858.1518370826,
+        "ebitda": 104881.1756862548,
+        "op": 21547.842352921463,
+        "np": -40949.79341265233,
+        "hqMargin": 693098.6228266599,
+        "consolidated": 714646.4651795814,
+        "fixedCost": 187000,
+        "varCost": 158976.97615082777,
+        "depreciation": 83333.33333333334,
+        "interest": 62497.635765573796,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 313.62901392722466,
+        "scrapRevenue": 62467.15765120889,
+        "yieldGain": -45189.46373936217,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41541.593099195845,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3279,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7761.682364876127,
+          "LEVEL": 3880.0645158224156,
+          "C2C": 3279
+        },
+        "demand": {
+          "C2C": 3279,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3279,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 9,
+            "tons": {
+              "C2C": 3213,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3213,
+              "SLIT": 8752,
+              "LEVEL": 4518,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 10,
+            "tons": {
+              "C2C": 3136,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3136,
+              "SLIT": 8545,
+              "LEVEL": 4410,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 11,
+            "tons": {
+              "C2C": 3353,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3353,
+              "SLIT": 9139,
+              "LEVEL": 4716,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3279,
+          "SLIT": 8931,
+          "LEVEL": 4610,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 13296933.02684432,
+        "cashOut": 12891873.873108696,
+        "spotExposure": 0,
+        "util": 0.9564300715700614,
+        "shortRatio": 1,
+        "materialTons": 15230,
+        "run": {
+          "SLIT": 7969.931786393322,
+          "LEVEL": 3985.444108232446,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27694.395399463894,
+          "sea": 15230,
+          "prod": 15230,
+          "nasi3": 15351.34693877551,
+          "fg": 3847.9722786261427
+        },
+        "invTons": 27694.395399463894,
+        "log": [
+          "소재 15,100톤이 입고되었습니다."
+        ],
+        "flags": [
+          "슬리터 캐파를 넘겨 가동을 2% 줄였습니다.",
+          "레벨러 캐파를 넘겨 가동을 2% 줄였습니다."
+        ]
+      },
+      {
+        "turn": 9,
+        "date": "2026년 9월",
+        "phase": "NORMAL",
+        "pm": 731.4616344418664,
+        "hqPerTon": 41.49704596607808,
+        "sales": {
+          "C2C": 3213,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27515.428740582014,
+          "invValue": 23924150.04871359,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 40778121.212578885,
+          "arDelayed": 0,
+          "ap": 26249876.97200855,
+          "debt": 25468295.44603478,
+          "cash": 2000000,
+          "seaValue": 13016215.478230093,
+          "debtLimit": 88513221.1840736,
+          "debtRoom": 63044925.738038816,
+          "debtUse": 0.2877343644863007,
+          "equity": 34892157.85317812,
+          "interest": 62571.255488416886,
+          "nwc": 38452394.289283924
+        },
+        "cum": {
+          "sales": {
+            "C2C": 27599,
+            "SLIT": 71244,
+            "LEVEL": 35631,
+            "BLANK": 0
+          },
+          "revenue": 119706949.01247567,
+          "op": 292535.9290170693,
+          "np": -287704.3316578041
+        },
+        "custShare": {
+          "JP": 0.41032498085360763,
+          "EU": 0.37614263164701484,
+          "CN": 0.03288914498625068,
+          "PART": 0.11121110930886824,
+          "HOME": 0.06943213320425873
+        },
+        "crashes": [],
+        "revenue": 13770511.870636307,
+        "gp": 451583.5845378116,
+        "ebitda": 108767.83081643097,
+        "op": 25434.497483097628,
+        "np": -37136.75800531926,
+        "hqMargin": 632414.98052303,
+        "consolidated": 657849.4780061276,
+        "fixedCost": 187000,
+        "varCost": 155815.7537213806,
+        "depreciation": 83333.33333333334,
+        "interest": 62571.255488416886,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 320.9666588818825,
+        "scrapRevenue": 64563.06914944887,
+        "yieldGain": -56261.864937317674,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41273.14311087302,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3213,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7557.165265683304,
+          "LEVEL": 3777.8248099356583,
+          "C2C": 3213
+        },
+        "demand": {
+          "C2C": 3213,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3213,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 10,
+            "tons": {
+              "C2C": 3136,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3136,
+              "SLIT": 8545,
+              "LEVEL": 4410,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 11,
+            "tons": {
+              "C2C": 3353,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3353,
+              "SLIT": 9139,
+              "LEVEL": 4716,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 12,
+            "tons": {
+              "C2C": 3391,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3391,
+              "SLIT": 9244,
+              "LEVEL": 4770,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3213,
+          "SLIT": 8752,
+          "LEVEL": 4518,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 13219082.806844505,
+        "cashOut": 13227181.006573744,
+        "spotExposure": 0,
+        "util": 0.9324765387600675,
+        "shortRatio": 1,
+        "materialTons": 15240,
+        "run": {
+          "SLIT": 7770.326997487643,
+          "LEVEL": 3885.6297370132015,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27515.428740582014,
+          "sea": 15230,
+          "prod": 15240,
+          "nasi3": 15410.680272108844,
+          "fg": 3307.962354245105
+        },
+        "invTons": 27515.428740582014,
+        "log": [
+          "소재 15,230톤이 입고되었습니다."
+        ],
+        "flags": [
+          "슬리터 캐파를 넘겨 가동을 6% 줄였습니다.",
+          "레벨러 캐파를 넘겨 가동을 7% 줄였습니다."
+        ]
+      },
+      {
+        "turn": 10,
+        "date": "2026년 10월",
+        "phase": "NORMAL",
+        "pm": 734.2088514714721,
+        "hqPerTon": 47.05972145304743,
+        "sales": {
+          "C2C": 3136,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27389.121388765576,
+          "invValue": 23630776.532215387,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 41231388.94911361,
+          "arDelayed": 0,
+          "ap": 26203861.835514843,
+          "debt": 26146364.48828616,
+          "cash": 2000000,
+          "seaValue": 13154020.86449497,
+          "debtLimit": 88988507.01474033,
+          "debtRoom": 62842142.52645417,
+          "debtUse": 0.29381731827409124,
+          "equity": 34803314.26596371,
+          "interest": 63670.73861508696,
+          "nwc": 38658303.64581415
+        },
+        "cum": {
+          "sales": {
+            "C2C": 30735,
+            "SLIT": 79160,
+            "LEVEL": 39590,
+            "BLANK": 0
+          },
+          "revenue": 133393970.05262113,
+          "op": 267363.0804177479,
+          "np": -376547.9188722124
+        },
+        "custShare": {
+          "JP": 0.4093144692804565,
+          "EU": 0.37631581726256985,
+          "CN": 0.032046478213104405,
+          "PART": 0.1115967957151487,
+          "HOME": 0.0707264395287207
+        },
+        "crashes": [],
+        "revenue": 13687021.040145464,
+        "gp": 447152.1668171603,
+        "ebitda": 58160.48473401196,
+        "op": -25172.848599321384,
+        "np": -88843.58721440834,
+        "hqMargin": 723778.5159478695,
+        "consolidated": 698605.6673485481,
+        "fixedCost": 226000,
+        "varCost": 162991.68208314836,
+        "depreciation": 83333.33333333334,
+        "interest": 63670.73861508696,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 345.3073518164391,
+        "scrapRevenue": 69720.12139999591,
+        "yieldGain": -60029.370718821316,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41083.682083148364,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3136,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8103.670260860725,
+          "LEVEL": 4051.022387322836,
+          "C2C": 3136
+        },
+        "demand": {
+          "C2C": 3136,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3136,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 11,
+            "tons": {
+              "C2C": 3353,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3353,
+              "SLIT": 9139,
+              "LEVEL": 4716,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 12,
+            "tons": {
+              "C2C": 3391,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3391,
+              "SLIT": 9244,
+              "LEVEL": 4770,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 13,
+            "tons": {
+              "C2C": 3709,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3709,
+              "SLIT": 10110,
+              "LEVEL": 5217,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3136,
+          "SLIT": 8545,
+          "LEVEL": 4410,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 13303473.42501074,
+        "cashOut": 13062230.614723794,
+        "spotExposure": 0,
+        "util": 1,
+        "shortRatio": 1,
+        "materialTons": 15380,
+        "run": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27389.121388765576,
+          "sea": 15240,
+          "prod": 15380,
+          "nasi3": 15601.680272108844,
+          "fg": 3587.6550024286657
+        },
+        "invTons": 27389.121388765576,
+        "log": [
+          "소재 15,230톤이 입고되었습니다."
+        ],
+        "flags": [
+          "석 달치 46,150톤 걸었습니다. J사 18,950t · E사 17,350t · C사 1,500t · P사 5,150t · H사 3,200t. 무난합니다.",
+          "특근 돌립니더. 이번 달은 버팁니다. 다음 달은 모르겠고예.",
+          "나눴습니다. 린 매니저 말로는 현장 반응이 좋다는데, 저는 통장 잔고를 보고 있었습니다.",
+          "사인했습니다. 물량은 받아왔는데 구 공장장이 뭐라 할 겁니다. 라인이 꽉 찼거든요.",
+          "사인했습니다. 단가는 내줬는데… 솔직히 물량은 안 늘 겁니다. 제가 말씀은 드렸습니다.",
+          "신규 고객 개척으로 걸었습니다. 점유율이 11.7%입니다. 이 시장에서 이 크기로는 협상 테이블에서 목소리가 안 납니다. 목표는 우리 시장 점유율 9% 증가 (상대)이고, 2027년 4월에 결과 보고드리겠습니다. 진척은 매달 첫 화면에 띄워두겠습니다.",
+          "제작사에서 사람이 와가 이틀 만에 잡았습니다. 비싸긴 한데 라인은 거의 안 섰심더."
+        ]
+      },
+      {
+        "turn": 11,
+        "date": "2026년 11월",
+        "phase": "NORMAL",
+        "pm": 724.7190502739429,
+        "hqPerTon": 43.65381989270771,
+        "sales": {
+          "C2C": 3353,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27026.954020881065,
+          "invValue": 23359588.06822541,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 48510204.92175539,
+          "arDelayed": 7174192.568960901,
+          "ap": 26170236.34272506,
+          "debt": 33215117.700876,
+          "cash": 2000000,
+          "seaValue": 13324715.920044864,
+          "debtLimit": 93888007.36009608,
+          "debtRoom": 60672889.659220085,
+          "debtUse": 0.35377380599295755,
+          "equity": 34718785.70390612,
+          "interest": 65365.9112207154,
+          "nwc": 45699556.64725574
+        },
+        "cum": {
+          "sales": {
+            "C2C": 34088,
+            "SLIT": 87076,
+            "LEVEL": 43549,
+            "BLANK": 0
+          },
+          "revenue": 147197878.78427222,
+          "op": 248200.42958086965,
+          "np": -461076.4809298061
+        },
+        "custShare": {
+          "JP": 0.40930677990863734,
+          "EU": 0.3774114650196648,
+          "CN": 0.03130190268353645,
+          "PART": 0.11158864348657721,
+          "HOME": 0.07039120890158426
+        },
+        "crashes": [],
+        "revenue": 13803908.731651109,
+        "gp": 453270.1135277767,
+        "ebitda": 64170.68249645509,
+        "op": -19162.650836878252,
+        "np": -84528.56205759366,
+        "hqMargin": 671395.7499498446,
+        "consolidated": 652233.0991129663,
+        "fixedCost": 226000,
+        "varCost": 163099.43103132158,
+        "depreciation": 83333.33333333334,
+        "interest": 65365.9112207154,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 374.1673678845082,
+        "scrapRevenue": 74570.7103616095,
+        "yieldGain": -72837.47557328327,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 40540.4310313216,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3353,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8084.431019749107,
+          "LEVEL": 4041.4016123663846,
+          "C2C": 3353
+        },
+        "demand": {
+          "C2C": 3353,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3353,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 12,
+            "tons": {
+              "C2C": 3391,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3391,
+              "SLIT": 9244,
+              "LEVEL": 4770,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 13,
+            "tons": {
+              "C2C": 3709,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3709,
+              "SLIT": 10110,
+              "LEVEL": 5217,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 14,
+            "tons": {
+              "C2C": 3471,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3471,
+              "SLIT": 9465,
+              "LEVEL": 4884,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3353,
+          "SLIT": 9139,
+          "LEVEL": 4716,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 6599663.469370932,
+        "cashOut": 13187646.357284753,
+        "spotExposure": 0,
+        "util": 1,
+        "shortRatio": 1,
+        "materialTons": 15380,
+        "run": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27026.954020881065,
+          "sea": 15380,
+          "prod": 15380,
+          "nasi3": 15641.013605442176,
+          "fg": 3838.487634544157
+        },
+        "invTons": 27026.954020881065,
+        "log": [
+          "소재 15,240톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $7,068,753을 차입했습니다."
+        ]
+      },
+      {
+        "turn": 12,
+        "date": "2026년 12월",
+        "phase": "NORMAL",
+        "pm": 712.8012574876786,
+        "hqPerTon": 37.689996790673426,
+        "sales": {
+          "C2C": 3391,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 26735.32868930797,
+          "invValue": 23219666.308556803,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 45072893.09591076,
+          "arDelayed": 3658862.885748497,
+          "ap": 26478736.784539834,
+          "debt": 29368098.277228568,
+          "cash": 2000000,
+          "seaValue": 13152491.211991625,
+          "debtLimit": 90280908.30349712,
+          "debtRoom": 60912810.02626856,
+          "debtUse": 0.3252968853448162,
+          "equity": 34622626.99368466,
+          "interest": 83037.79425219001,
+          "nwc": 41813822.61992772
+        },
+        "cum": {
+          "sales": {
+            "C2C": 37479,
+            "SLIT": 94992,
+            "LEVEL": 47508,
+            "BLANK": 0
+          },
+          "revenue": 161041468.40487403,
+          "op": 235079.51361159823,
+          "np": -557235.1911512675
+        },
+        "custShare": {
+          "JP": 0.40929005383949096,
+          "EU": 0.37850194570598267,
+          "CN": 0.030573951747931417,
+          "PART": 0.11157802828771059,
+          "HOME": 0.0700560204188845
+        },
+        "crashes": [],
+        "revenue": 13843589.620601796,
+        "gp": 458462.75865221024,
+        "ebitda": 70212.41736406193,
+        "op": -13120.915969271417,
+        "np": -96158.71022146143,
+        "hqMargin": 580049.050608464,
+        "consolidated": 566928.1346391926,
+        "fixedCost": 226000,
+        "varCost": 162250.3412881483,
+        "depreciation": 83333.33333333334,
+        "interest": 83037.79425219001,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 405.62533157309645,
+        "scrapRevenue": 79510.81776389394,
+        "yieldGain": -92629.53884004177,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 40102.99303396196,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3391,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8009.137988720069,
+          "LEVEL": 4026.8309301719814,
+          "C2C": 3391
+        },
+        "demand": {
+          "C2C": 3391,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3391,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 13,
+            "tons": {
+              "C2C": 3709,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3709,
+              "SLIT": 10110,
+              "LEVEL": 5217,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 14,
+            "tons": {
+              "C2C": 3471,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3471,
+              "SLIT": 9465,
+              "LEVEL": 4884,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 15,
+            "tons": {
+              "C2C": 3335,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3335,
+              "SLIT": 9094,
+              "LEVEL": 4692,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3391,
+          "SLIT": 9244,
+          "LEVEL": 4770,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 17360412.26421032,
+        "cashOut": 13016215.478230093,
+        "spotExposure": 0,
+        "util": 0.9953275400372117,
+        "shortRatio": 1,
+        "materialTons": 15390,
+        "run": {
+          "SLIT": 8278.162052435831,
+          "LEVEL": 4163.432198029316,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 26735.32868930797,
+          "sea": 15380,
+          "prod": 15390,
+          "nasi3": 15622.34693877551,
+          "fg": 3999.4565534362077
+        },
+        "invTons": 26735.32868930797,
+        "log": [
+          "영업 투자 효과가 나타났습니다. 점유율 +0.24%p",
+          "소재 15,380톤이 입고되었습니다."
+        ],
+        "flags": []
+      }
+    ],
+    "rng": 820890265,
+    "prelude": [
+      {
+        "turn": -11,
+        "date": "2025년 1월",
+        "phase": "NORMAL",
+        "pm": 708.5046607710524,
+        "hqPerTon": 54.43030386370842,
+        "sales": {
+          "C2C": 2873,
+          "SLIT": 7736,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 26382.948350530613,
+          "invValue": 23034666.434086528,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 39728988.798578106,
+          "arDelayed": 0,
+          "ap": 40262158.71677789,
+          "debt": 9468290.775945852,
+          "cash": 2000000,
+          "seaValue": 12565644.979071273,
+          "debtLimit": 84775001.46886769,
+          "debtRoom": 75306710.69292183,
+          "debtUse": 0.111687297102825,
+          "equity": 34790237.62588091,
+          "interest": 0,
+          "nwc": 22501496.51588674
+        },
+        "cum": {
+          "sales": {
+            "C2C": 8523,
+            "SLIT": 22691,
+            "LEVEL": 11569,
+            "BLANK": 0
+          },
+          "revenue": 39679973.17197117,
+          "op": -209762.37411908296,
+          "np": -209762.37411908296
+        },
+        "custShare": {
+          "JP": 0.35139651639638364,
+          "EU": 0.30563602050044597,
+          "CN": 0.04463672718108065,
+          "PART": 0.18066917967761512,
+          "HOME": 0.11766155624447472
+        },
+        "crashes": [],
+        "revenue": 13449438.534210283,
+        "gp": 517836.6221023798,
+        "ebitda": 182143.19957658387,
+        "op": 98809.86624325052,
+        "np": 98809.86624325052,
+        "hqMargin": 842673.1527114141,
+        "consolidated": 941483.0189546647,
+        "fixedCost": 175000,
+        "varCost": 160693.42252579593,
+        "depreciation": 83333.33333333334,
+        "interest": 0,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 251.57017600000026,
+        "scrapRevenue": 49015.62660692339,
+        "yieldGain": -1084.4218536083147,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 39574.42252579592,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2873,
+          "SLIT": 7736,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8165.29325787136,
+          "LEVEL": 4083.13656612864,
+          "C2C": 2873
+        },
+        "demand": {
+          "C2C": 2873,
+          "SLIT": 7736,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2873,
+          "SLIT": 7736,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 6,
+            "tons": {
+              "C2C": 2764,
+              "SLIT": 7444,
+              "LEVEL": 3861,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2764,
+              "SLIT": 7444,
+              "LEVEL": 3861,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 7,
+            "tons": {
+              "C2C": 2844,
+              "SLIT": 7661,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2844,
+              "SLIT": 7661,
+              "LEVEL": 3973,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 8,
+            "tons": {
+              "C2C": 2759,
+              "SLIT": 7434,
+              "LEVEL": 3855,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2759,
+              "SLIT": 7434,
+              "LEVEL": 3855,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2873,
+          "SLIT": 7736,
+          "LEVEL": 4013,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 101278.5067723577,
+        "cashOut": 21078229.224489797,
+        "spotExposure": 0,
+        "util": 1,
+        "shortRatio": 1,
+        "materialTons": 15481.691133333341,
+        "run": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 26382.948350530613,
+          "sea": 14868.090340136048,
+          "prod": 15481.691133333341,
+          "nasi3": 14426.414965986394,
+          "fg": 2481.9320239999997
+        },
+        "invTons": 26382.948350530613,
+        "log": [
+          "소재 23,190톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $9,468,291을 차입했습니다."
+        ]
+      },
+      {
+        "turn": -10,
+        "date": "2025년 2월",
+        "phase": "NORMAL",
+        "pm": 690.6088461290336,
+        "hqPerTon": 48.383652166563806,
+        "sales": {
+          "C2C": 2764,
+          "SLIT": 7444,
+          "LEVEL": 3861,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 26931.469128746663,
+          "invValue": 23132605.86511872,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 38758059.641243644,
+          "arDelayed": 0,
+          "ap": 32760051.164370947,
+          "debt": 15979239.09537527,
+          "cash": 2000000,
+          "seaValue": 12943243.383009767,
+          "debtLimit": 84200019.32256494,
+          "debtRoom": 68220780.22718967,
+          "debtUse": 0.18977714285503683,
+          "equity": 34847820.94928181,
+          "interest": 23670.726939864628,
+          "nwc": 29130614.341991417
+        },
+        "cum": {
+          "sales": {
+            "C2C": 11287,
+            "SLIT": 30135,
+            "LEVEL": 15430,
+            "BLANK": 0
+          },
+          "revenue": 52600867.7794685,
+          "op": -128508.32377831644,
+          "np": -152179.05071818107
+        },
+        "custShare": {
+          "JP": 0.3516447631595086,
+          "EU": 0.30674819335458886,
+          "CN": 0.0436312477458291,
+          "PART": 0.18078700372387838,
+          "HOME": 0.11718879201619496
+        },
+        "crashes": [],
+        "revenue": 12920894.607497325,
+        "gp": 500776.58736721985,
+        "ebitda": 164587.38367409987,
+        "op": 81254.05034076652,
+        "np": 57583.32340090189,
+        "hqMargin": 675276.2879874443,
+        "consolidated": 756530.3383282109,
+        "fixedCost": 175000,
+        "varCost": 161189.20369311998,
+        "depreciation": 83333.33333333334,
+        "interest": 23670.726939864628,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 250.5695619199999,
+        "scrapRevenue": 47587.527908972865,
+        "yieldGain": -470.52949619533865,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 40397.20369312,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2764,
+          "SLIT": 7444,
+          "LEVEL": 3861,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8165.960307241651,
+          "LEVEL": 4083.4701308383487,
+          "C2C": 2764
+        },
+        "demand": {
+          "C2C": 2764,
+          "SLIT": 7444,
+          "LEVEL": 3861,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2764,
+          "SLIT": 7444,
+          "LEVEL": 3861,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 7,
+            "tons": {
+              "C2C": 2844,
+              "SLIT": 7661,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2844,
+              "SLIT": 7661,
+              "LEVEL": 3973,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 8,
+            "tons": {
+              "C2C": 2759,
+              "SLIT": 7434,
+              "LEVEL": 3855,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2759,
+              "SLIT": 7434,
+              "LEVEL": 3855,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 9,
+            "tons": {
+              "C2C": 3084,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3084,
+              "SLIT": 8309,
+              "LEVEL": 4309,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2764,
+          "SLIT": 7444,
+          "LEVEL": 3861,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 13939411.292740757,
+        "cashOut": 20067752.531478215,
+        "spotExposure": 0,
+        "util": 1,
+        "shortRatio": 1,
+        "materialTons": 13956.703509333332,
+        "run": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 26931.469128746663,
+          "sea": 15481.691133333341,
+          "prod": 13956.703509333332,
+          "nasi3": 14726.959183673469,
+          "fg": 3426.3624620799997
+        },
+        "invTons": 26931.469128746663,
+        "log": [
+          "소재 14,868톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $6,510,948을 차입했습니다."
+        ]
+      },
+      {
+        "turn": -9,
+        "date": "2025년 3월",
+        "phase": "NORMAL",
+        "pm": 705.3755419013823,
+        "hqPerTon": 54.33951329631334,
+        "sales": {
+          "C2C": 2844,
+          "SLIT": 7661,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27706.274381911047,
+          "invValue": 23413173.145683438,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 48486510.54533001,
+          "arDelayed": 8940225.471663238,
+          "ap": 25508888.36208104,
+          "debt": 33126771.52715216,
+          "cash": 2000000,
+          "seaValue": 11373575.029487958,
+          "debtLimit": 91840887.19607723,
+          "debtRoom": 58714115.66892507,
+          "debtUse": 0.36069742506327934,
+          "equity": 34903425.29007525,
+          "interest": 39948.09773843818,
+          "nwc": 46390795.32893242
+        },
+        "cum": {
+          "sales": {
+            "C2C": 14131,
+            "SLIT": 37796,
+            "LEVEL": 19389,
+            "BLANK": 0
+          },
+          "revenue": 65729705.12760796,
+          "op": -32955.88524643742,
+          "np": -96574.70992474022
+        },
+        "custShare": {
+          "JP": 0.3518830341389605,
+          "EU": 0.30785553222307027,
+          "CN": 0.042647187281183246,
+          "PART": 0.18089968599597134,
+          "HOME": 0.11671456036081443
+        },
+        "crashes": [],
+        "revenue": 13128837.348139454,
+        "gp": 513275.82951411046,
+        "ebitda": 178885.77186521236,
+        "op": 95552.43853187902,
+        "np": 55604.34079344084,
+        "hqMargin": 858142.4305218069,
+        "consolidated": 953694.8690536859,
+        "fixedCost": 175000,
+        "varCost": 159390.0576488981,
+        "depreciation": 83333.33333333334,
+        "interest": 39948.09773843818,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 242.8858801689592,
+        "scrapRevenue": 47114.5838197028,
+        "yieldGain": -102.67500849886865,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41559.411572866564,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2844,
+          "SLIT": 7661,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7817.7481282789895,
+          "LEVEL": 4083.66,
+          "C2C": 2844
+        },
+        "demand": {
+          "C2C": 2844,
+          "SLIT": 7661,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2844,
+          "SLIT": 7661,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 8,
+            "tons": {
+              "C2C": 2759,
+              "SLIT": 7434,
+              "LEVEL": 3855,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2759,
+              "SLIT": 7434,
+              "LEVEL": 3855,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 9,
+            "tons": {
+              "C2C": 3084,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3084,
+              "SLIT": 8309,
+              "LEVEL": 4309,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 10,
+            "tons": {
+              "C2C": 2841,
+              "SLIT": 7658,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2841,
+              "SLIT": 7658,
+              "LEVEL": 3970,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2844,
+          "SLIT": 7661,
+          "LEVEL": 3973,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 3447501.0278727957,
+        "cashOut": 20194406.185299672,
+        "spotExposure": 0,
+        "util": 0.9715435206758359,
+        "shortRatio": 1,
+        "materialTons": 15792.236228586677,
+        "run": {
+          "SLIT": 7977.294008447949,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27706.274381911044,
+          "sea": 13956.703509333332,
+          "prod": 15792.236228586677,
+          "nasi3": 14724.938775510203,
+          "fg": 3707.770590358989
+        },
+        "invTons": 27706.274381911044,
+        "log": [
+          "소재 15,482톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $17,147,532을 차입했습니다."
+        ]
+      },
+      {
+        "turn": -8,
+        "date": "2025년 4월",
+        "phase": "NORMAL",
+        "pm": 697.059365615474,
+        "hqPerTon": 48.66153698267444,
+        "sales": {
+          "C2C": 2759,
+          "SLIT": 7434,
+          "LEVEL": 3855,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27381.54503410152,
+          "invValue": 22690036.834148392,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 45263603.70371256,
+          "arDelayed": 6618742.468246003,
+          "ap": 24316818.412497725,
+          "debt": 30310768.84196318,
+          "cash": 2000000,
+          "seaValue": 13144559.481337283,
+          "debtLimit": 89435116.28032842,
+          "debtRoom": 59124347.43836524,
+          "debtUse": 0.33891350626700245,
+          "equity": 34906298.86346537,
+          "interest": 82816.9288178804,
+          "nwc": 43636822.12536323
+        },
+        "cum": {
+          "sales": {
+            "C2C": 16890,
+            "SLIT": 45230,
+            "LEVEL": 23244,
+            "BLANK": 0
+          },
+          "revenue": 78280087.35362643,
+          "op": 52734.61696156347,
+          "np": -93701.13653461973
+        },
+        "custShare": {
+          "JP": 0.3521114867730748,
+          "EU": 0.3089581117934702,
+          "CN": 0.04168413990396438,
+          "PART": 0.1810073082630345,
+          "HOME": 0.11623895326645618
+        },
+        "crashes": [],
+        "revenue": 12550382.226018481,
+        "gp": 498417.93880677223,
+        "ebitda": 169023.83554133424,
+        "op": 85690.5022080009,
+        "np": 2873.573390120495,
+        "hqMargin": 715177.9219416854,
+        "consolidated": 800868.4241496862,
+        "fixedCost": 175000,
+        "varCost": 154394.103265438,
+        "depreciation": 83333.33333333334,
+        "interest": 82816.9288178804,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 233.43285714285736,
+        "scrapRevenue": 44747.053811297126,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41072.31755115228,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2759,
+          "SLIT": 7434,
+          "LEVEL": 3855,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7354.550000000001,
+          "LEVEL": 4083.66,
+          "C2C": 2759
+        },
+        "demand": {
+          "C2C": 2759,
+          "SLIT": 7434,
+          "LEVEL": 3855,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2759,
+          "SLIT": 7434,
+          "LEVEL": 3855,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 9,
+            "tons": {
+              "C2C": 3084,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3084,
+              "SLIT": 8309,
+              "LEVEL": 4309,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 10,
+            "tons": {
+              "C2C": 2841,
+              "SLIT": 7658,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2841,
+              "SLIT": 7658,
+              "LEVEL": 3970,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 11,
+            "tons": {
+              "C2C": 2595,
+              "SLIT": 6996,
+              "LEVEL": 3627,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2595,
+              "SLIT": 6996,
+              "LEVEL": 3627,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2759,
+          "SLIT": 7434,
+          "LEVEL": 3855,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 15818036.12144722,
+        "cashOut": 12565644.979071273,
+        "spotExposure": 0,
+        "util": 0.9337314285714287,
+        "shortRatio": 1,
+        "materialTons": 14696.985880168948,
+        "run": {
+          "SLIT": 7504.642857142859,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27381.54503410152,
+          "sea": 15792.236228586677,
+          "prod": 14696.985880168948,
+          "nasi3": 14443.741496598639,
+          "fg": 3856.98059035899
+        },
+        "invTons": 27381.54503410152,
+        "log": [
+          "소재 13,957톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": -7,
+        "date": "2025년 5월",
+        "phase": "NORMAL",
+        "pm": 680.0885219847602,
+        "hqPerTon": 37.327329815508236,
+        "sales": {
+          "C2C": 3084,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27966.447385137173,
+          "invValue": 23203678.69030942,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 38836838.2177693,
+          "arDelayed": 0,
+          "ap": 24518134.51082524,
+          "debt": 24104067.272229698,
+          "cash": 2000000,
+          "seaValue": 12088712.551826373,
+          "debtLimit": 85059548.65956426,
+          "debtRoom": 60955481.387334555,
+          "debtUse": 0.2833787346874123,
+          "equity": 34935937.710486576,
+          "interest": 75776.92210490795,
+          "nwc": 37522382.39725348
+        },
+        "cum": {
+          "sales": {
+            "C2C": 19974,
+            "SLIT": 53146,
+            "LEVEL": 27203,
+            "BLANK": 0
+          },
+          "revenue": 91391261.51680863,
+          "op": 158150.3860876802,
+          "np": -64062.28951341094
+        },
+        "custShare": {
+          "JP": 0.3523302765340518,
+          "EU": 0.31005600623704443,
+          "CN": 0.040741705288132014,
+          "PART": 0.18110995126588844,
+          "HOME": 0.11576206067488343
+        },
+        "crashes": [],
+        "revenue": 13111174.163182203,
+        "gp": 526701.018435115,
+        "ebitda": 188749.10245945008,
+        "op": 105415.76912611673,
+        "np": 29638.847021208785,
+        "hqMargin": 481655.67098814633,
+        "consolidated": 587071.4401142631,
+        "fixedCost": 175000,
+        "varCost": 162951.91597566492,
+        "depreciation": 83333.33333333334,
+        "interest": 75776.92210490795,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 248.33387755102058,
+        "scrapRevenue": 46444.480429164956,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41949.67107770576,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 3084,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8084.699999999998,
+          "LEVEL": 4083.66,
+          "C2C": 3084
+        },
+        "demand": {
+          "C2C": 3084,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 3084,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 10,
+            "tons": {
+              "C2C": 2841,
+              "SLIT": 7658,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2841,
+              "SLIT": 7658,
+              "LEVEL": 3970,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 11,
+            "tons": {
+              "C2C": 2595,
+              "SLIT": 6996,
+              "LEVEL": 3627,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2595,
+              "SLIT": 6996,
+              "LEVEL": 3627,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 12,
+            "tons": {
+              "C2C": 2980,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2980,
+              "SLIT": 8033,
+              "LEVEL": 4165,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 3084,
+          "SLIT": 8309,
+          "LEVEL": 4309,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 19584384.129554622,
+        "cashOut": 12943243.383009767,
+        "spotExposure": 0,
+        "util": 0.9933355102040815,
+        "shortRatio": 1,
+        "materialTons": 12903.566190476202,
+        "run": {
+          "SLIT": 8249.693877551019,
+          "LEVEL": 4167,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27966.447385137173,
+          "sea": 14696.985880168948,
+          "prod": 12903.566190476202,
+          "nasi3": 14409.074829931973,
+          "fg": 4150.340590358988
+        },
+        "invTons": 27966.447385137173,
+        "log": [
+          "소재 15,792톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": -6,
+        "date": "2025년 6월",
+        "phase": "NORMAL",
+        "pm": 695.5315704678534,
+        "hqPerTon": 42.39023793844212,
+        "sales": {
+          "C2C": 2841,
+          "SLIT": 7658,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27970.073889599167,
+          "invValue": 23156048.995380096,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 41909126.420329265,
+          "arDelayed": 3597942.0380421123,
+          "ap": 25233272.033163656,
+          "debt": 26316635.82759096,
+          "cash": 2000000,
+          "seaValue": 10355169.365399908,
+          "debtLimit": 87684237.08720484,
+          "debtRoom": 61367601.25961389,
+          "debtUse": 0.30012960940081174,
+          "equity": 34974240.12540091,
+          "interest": 60260.16818057425,
+          "nwc": 39831903.38254571
+        },
+        "cum": {
+          "sales": {
+            "C2C": 22815,
+            "SLIT": 60804,
+            "LEVEL": 31162,
+            "BLANK": 0
+          },
+          "revenue": 103995872.0439374,
+          "op": 256712.9691825861,
+          "np": -25759.874599079303
+        },
+        "custShare": {
+          "JP": 0.3525395569149779,
+          "EU": 0.31114928918173057,
+          "CN": 0.03981948868515173,
+          "PART": 0.18120769471063958,
+          "HOME": 0.11528397050750033
+        },
+        "crashes": [],
+        "revenue": 12604610.527128777,
+        "gp": 513285.74633076973,
+        "ebitda": 181895.91642823923,
+        "op": 98562.58309490589,
+        "np": 38302.41491433164,
+        "hqMargin": 637441.8130609093,
+        "consolidated": 736004.3961558151,
+        "fixedCost": 175000,
+        "varCost": 156389.8299025305,
+        "depreciation": 83333.33333333334,
+        "interest": 60260.16818057425,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 235.35937570695967,
+        "scrapRevenue": 45017.46595769368,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41955.11083439874,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2841,
+          "SLIT": 7658,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7567.700000000002,
+          "LEVEL": 3964.909409641012,
+          "C2C": 2841
+        },
+        "demand": {
+          "C2C": 2841,
+          "SLIT": 7658,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2841,
+          "SLIT": 7658,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 11,
+            "tons": {
+              "C2C": 2595,
+              "SLIT": 6996,
+              "LEVEL": 3627,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2595,
+              "SLIT": 6996,
+              "LEVEL": 3627,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 12,
+            "tons": {
+              "C2C": 2980,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2980,
+              "SLIT": 8033,
+              "LEVEL": 4165,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 13,
+            "tons": {
+              "C2C": 2731,
+              "SLIT": 7365,
+              "LEVEL": 3818,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2731,
+              "SLIT": 7365,
+              "LEVEL": 3818,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2841,
+          "SLIT": 7658,
+          "LEVEL": 3970,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 9577339.790526507,
+        "cashOut": 11373575.029487958,
+        "spotExposure": 0,
+        "util": 0.9414375028278379,
+        "shortRatio": 1,
+        "materialTons": 15037.467210884352,
+        "run": {
+          "SLIT": 7722.142857142859,
+          "LEVEL": 4045.8259282051145,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27970.073889599164,
+          "sea": 12903.566190476202,
+          "prod": 15037.467210884352,
+          "nasi3": 14224.78911564626,
+          "fg": 4065.9500000000016
+        },
+        "invTons": 27970.073889599164,
+        "log": [
+          "소재 14,697톤이 입고되었습니다."
+        ],
+        "flags": [
+          "자금이 모자라 $2,212,569을 차입했습니다."
+        ]
+      },
+      {
+        "turn": -5,
+        "date": "2025년 7월",
+        "phase": "NORMAL",
+        "pm": 693.6567603040924,
+        "hqPerTon": 44.0337152051408,
+        "sales": {
+          "C2C": 2595,
+          "SLIT": 6996,
+          "LEVEL": 3627,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27445.94416170802,
+          "invValue": 22411821.366158437,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 39622849.291891664,
+          "arDelayed": 2339783.0451560454,
+          "ap": 22443881.91722628,
+          "debt": 26014320.524521686,
+          "cash": 2000000,
+          "seaValue": 12341659.158353388,
+          "debtLimit": 85962639.80181235,
+          "debtRoom": 59948319.277290665,
+          "debtUse": 0.30262356512664035,
+          "equity": 34974682.68479381,
+          "interest": 65791.5895689774,
+          "nwc": 39590788.74082382
+        },
+        "cum": {
+          "sales": {
+            "C2C": 25410,
+            "SLIT": 67800,
+            "LEVEL": 34789,
+            "BLANK": 0
+          },
+          "revenue": 115523152.92773153,
+          "op": 322947.1181444629,
+          "np": -25317.315206179926
+        },
+        "custShare": {
+          "JP": 0.352739479419109,
+          "EU": 0.31223803368679304,
+          "CN": 0.038917100938788446,
+          "PART": 0.18130061726345026,
+          "HOME": 0.11480476869185928
+        },
+        "crashes": [],
+        "revenue": 11527280.883794129,
+        "gp": 467884.5618030783,
+        "ebitda": 149567.48229521012,
+        "op": 66234.14896187678,
+        "np": 442.5593928993767,
+        "hqMargin": 607240.7573264233,
+        "consolidated": 673474.9062883001,
+        "fixedCost": 175000,
+        "varCost": 143317.07950786815,
+        "depreciation": 83333.33333333334,
+        "interest": 65791.5895689774,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 209.69591836734713,
+        "scrapRevenue": 40000.672630513494,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41168.91624256202,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2595,
+          "SLIT": 6996,
+          "LEVEL": 3627,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 6764.299999999999,
+          "LEVEL": 3510.8,
+          "C2C": 2595
+        },
+        "demand": {
+          "C2C": 2595,
+          "SLIT": 6996,
+          "LEVEL": 3627,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2595,
+          "SLIT": 6996,
+          "LEVEL": 3627,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 12,
+            "tons": {
+              "C2C": 2980,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2980,
+              "SLIT": 8033,
+              "LEVEL": 4165,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 13,
+            "tons": {
+              "C2C": 2731,
+              "SLIT": 7365,
+              "LEVEL": 3818,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2731,
+              "SLIT": 7365,
+              "LEVEL": 3818,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 14,
+            "tons": {
+              "C2C": 2855,
+              "SLIT": 7698,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2855,
+              "SLIT": 7698,
+              "LEVEL": 3991,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2595,
+          "SLIT": 6996,
+          "LEVEL": 3627,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 13853558.684862241,
+        "cashOut": 13144559.481337283,
+        "spotExposure": 0,
+        "util": 0.8387836734693878,
+        "shortRatio": 1,
+        "materialTons": 13790.359375706954,
+        "run": {
+          "SLIT": 6902.346938775509,
+          "LEVEL": 3582.448979591837,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27445.944161708016,
+          "sea": 15037.467210884352,
+          "prod": 13790.359375706954,
+          "nasi3": 14663.156462585035,
+          "fg": 3718.050000000001
+        },
+        "invTons": 27445.944161708016,
+        "log": [
+          "소재 12,904톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": -4,
+        "date": "2025년 8월",
+        "phase": "NORMAL",
+        "pm": 692.263260814478,
+        "hqPerTon": 44.40088934372456,
+        "sales": {
+          "C2C": 2980,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27378.584025653596,
+          "invValue": 22384470.95949783,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 37027832.214058645,
+          "arDelayed": 0,
+          "ap": 22696828.523753297,
+          "debt": 23039987.836479865,
+          "cash": 2000000,
+          "seaValue": 11287615.68941882,
+          "debtLimit": 84256714.04769854,
+          "debtRoom": 61216726.21121868,
+          "debtUse": 0.2734498739582546,
+          "equity": 35015814.60610998,
+          "interest": 65035.80131130422,
+          "nwc": 36715474.64980318
+        },
+        "cum": {
+          "sales": {
+            "C2C": 28390,
+            "SLIT": 75716,
+            "LEVEL": 38748,
+            "BLANK": 0
+          },
+          "revenue": 128371533.50006333,
+          "op": 429114.8407719388,
+          "np": 15814.6061099918
+        },
+        "custShare": {
+          "JP": 0.35293019355131544,
+          "EU": 0.31332231221905443,
+          "CN": 0.038034158494589104,
+          "PART": 0.18138879654642162,
+          "HOME": 0.11432453918861929
+        },
+        "crashes": [],
+        "revenue": 12848380.572331805,
+        "gp": 526931.2381217387,
+        "ebitda": 189501.0559608093,
+        "op": 106167.72262747595,
+        "np": 41131.92131617173,
+        "hqMargin": 691574.7509229315,
+        "consolidated": 797742.4735504074,
+        "fixedCost": 175000,
+        "varCost": 162430.18216092937,
+        "depreciation": 83333.33333333334,
+        "interest": 65035.80131130422,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 249.82734693877572,
+        "scrapRevenue": 47560.23080392837,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41067.87603848039,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2980,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8166.34,
+          "LEVEL": 4075.1999999999994,
+          "C2C": 2980
+        },
+        "demand": {
+          "C2C": 2980,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2980,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 13,
+            "tons": {
+              "C2C": 2731,
+              "SLIT": 7365,
+              "LEVEL": 3818,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2731,
+              "SLIT": 7365,
+              "LEVEL": 3818,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 14,
+            "tons": {
+              "C2C": 2855,
+              "SLIT": 7698,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2855,
+              "SLIT": 7698,
+              "LEVEL": 3991,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 15,
+            "tons": {
+              "C2C": 2789,
+              "SLIT": 7524,
+              "LEVEL": 3900,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2789,
+              "SLIT": 7524,
+              "LEVEL": 3900,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2980,
+          "SLIT": 8033,
+          "LEVEL": 4165,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 15490957.880968763,
+        "cashOut": 12088712.551826373,
+        "spotExposure": 0,
+        "util": 0.999309387755102,
+        "shortRatio": 1,
+        "materialTons": 15575.69591836736,
+        "run": {
+          "SLIT": 8333,
+          "LEVEL": 4158.367346938775,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27378.584025653592,
+          "sea": 13790.359375706954,
+          "prod": 15575.69591836736,
+          "nasi3": 14446.08843537415,
+          "fg": 4084.5900000000006
+        },
+        "invTons": 27378.584025653592,
+        "log": [
+          "소재 15,037톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": -3,
+        "date": "2025년 9월",
+        "phase": "NORMAL",
+        "pm": 695.0526792641026,
+        "hqPerTon": 34.972431490198154,
+        "sales": {
+          "C2C": 2731,
+          "SLIT": 7365,
+          "LEVEL": 3818,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27030.19931972789,
+          "invValue": 22165950.76871639,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 36375888.43821026,
+          "arDelayed": 0,
+          "ap": 23629274.84777221,
+          "debt": 21148491.661317922,
+          "cash": 2000000,
+          "seaValue": 12723328.814166417,
+          "debtLimit": 83854310.62750089,
+          "debtRoom": 62705818.96618297,
+          "debtUse": 0.25220518185718716,
+          "equity": 35044099.26935522,
+          "interest": 57599.96959119966,
+          "nwc": 34912564.35915443
+        },
+        "cum": {
+          "sales": {
+            "C2C": 31121,
+            "SLIT": 83081,
+            "LEVEL": 42566,
+            "BLANK": 0
+          },
+          "revenue": 140328803.01372358,
+          "op": 514999.47360838123,
+          "np": 44099.26935523455
+        },
+        "custShare": {
+          "JP": 0.35311184681158814,
+          "EU": 0.31440219663066155,
+          "CN": 0.03717028340431115,
+          "PART": 0.18147230913453732,
+          "HOME": 0.11384336401890185
+        },
+        "crashes": [],
+        "revenue": 11957269.513660256,
+        "gp": 494091.10188406147,
+        "ebitda": 169217.96616977575,
+        "op": 85884.63283644241,
+        "np": 28284.66324524275,
+        "hqMargin": 491054.69568139646,
+        "consolidated": 576939.3285178388,
+        "fixedCost": 175000,
+        "varCost": 149873.13571428572,
+        "depreciation": 83333.33333333334,
+        "interest": 57599.96959119966,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 224.74408163265326,
+        "scrapRevenue": 42957.46842406961,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 40545.29897959183,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2731,
+          "SLIT": 7365,
+          "LEVEL": 3818,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7243.8099999999995,
+          "LEVEL": 3768.65,
+          "C2C": 2731
+        },
+        "demand": {
+          "C2C": 2731,
+          "SLIT": 7365,
+          "LEVEL": 3818,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2731,
+          "SLIT": 7365,
+          "LEVEL": 3818,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 14,
+            "tons": {
+              "C2C": 2855,
+              "SLIT": 7698,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2855,
+              "SLIT": 7698,
+              "LEVEL": 3991,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 15,
+            "tons": {
+              "C2C": 2789,
+              "SLIT": 7524,
+              "LEVEL": 3900,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2789,
+              "SLIT": 7524,
+              "LEVEL": 3900,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 16,
+            "tons": {
+              "C2C": 2971,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2971,
+              "SLIT": 8014,
+              "LEVEL": 4154,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2731,
+          "SLIT": 7365,
+          "LEVEL": 3818,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 12652170.757932706,
+        "cashOut": 10355169.365399908,
+        "spotExposure": 0,
+        "util": 0.8989763265306123,
+        "shortRatio": 1,
+        "materialTons": 14041.194013605433,
+        "run": {
+          "SLIT": 7391.642857142857,
+          "LEVEL": 3845.561224489796,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27030.19931972789,
+          "sea": 15575.69591836736,
+          "prod": 14041.194013605433,
+          "nasi3": 14761.462585034014,
+          "fg": 3914.05
+        },
+        "invTons": 27030.19931972789,
+        "log": [
+          "소재 13,790톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": -2,
+        "date": "2025년 10월",
+        "phase": "NORMAL",
+        "pm": 701.3673477440763,
+        "hqPerTon": 38.63288850226104,
+        "sales": {
+          "C2C": 2855,
+          "SLIT": 7698,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27852.61156462587,
+          "invValue": 22847437.163999513,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 37406954.84767721,
+          "arDelayed": 42957.46842406961,
+          "ap": 24010944.503585238,
+          "debt": 22375623.44291554,
+          "cash": 2000000,
+          "seaValue": 11516056.03268377,
+          "debtLimit": 85269307.00395338,
+          "debtRoom": 62893683.56103784,
+          "debtUse": 0.2624112266079297,
+          "equity": 35090478.01083822,
+          "interest": 52871.22915329481,
+          "nwc": 36243447.50809148
+        },
+        "cum": {
+          "sales": {
+            "C2C": 33976,
+            "SLIT": 90779,
+            "LEVEL": 46525,
+            "BLANK": 0
+          },
+          "revenue": 152840612.472203,
+          "op": 614249.444244668,
+          "np": 90478.01083822649
+        },
+        "custShare": {
+          "JP": 0.35328458469050894,
+          "EU": 0.3154777581383334,
+          "CN": 0.0363251033255466,
+          "PART": 0.1815512305536177,
+          "HOME": 0.11336132329199336
+        },
+        "crashes": [],
+        "revenue": 12511809.458479408,
+        "gp": 516504.8743777834,
+        "ebitda": 182583.3039696201,
+        "op": 99249.97063628674,
+        "np": 46378.741482991936,
+        "hqMargin": 605921.2140332115,
+        "consolidated": 705171.1846694982,
+        "fixedCost": 175000,
+        "varCost": 158921.5704081633,
+        "depreciation": 83333.33333333334,
+        "interest": 52871.22915329481,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 241.28367346938802,
+        "scrapRevenue": 46537.83478167242,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41778.9173469388,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2855,
+          "SLIT": 7698,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7814.550000000001,
+          "LEVEL": 4008.3500000000004,
+          "C2C": 2855
+        },
+        "demand": {
+          "C2C": 2855,
+          "SLIT": 7698,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2855,
+          "SLIT": 7698,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 15,
+            "tons": {
+              "C2C": 2789,
+              "SLIT": 7524,
+              "LEVEL": 3900,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2789,
+              "SLIT": 7524,
+              "LEVEL": 3900,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 16,
+            "tons": {
+              "C2C": 2971,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2971,
+              "SLIT": 8014,
+              "LEVEL": 4154,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 17,
+            "tons": {
+              "C2C": 2981,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2981,
+              "SLIT": 8042,
+              "LEVEL": 4168,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2855,
+          "SLIT": 7698,
+          "LEVEL": 3991,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 11527280.883794129,
+        "cashOut": 12341659.158353388,
+        "spotExposure": 0,
+        "util": 0.9651346938775511,
+        "shortRatio": 1,
+        "materialTons": 15684.077414965985,
+        "run": {
+          "SLIT": 7974.030612244899,
+          "LEVEL": 4090.15306122449,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27852.611564625866,
+          "sea": 14041.194013605433,
+          "prod": 15684.077414965985,
+          "nasi3": 14877.612244897959,
+          "fg": 4079.9500000000016
+        },
+        "invTons": 27852.611564625866,
+        "log": [
+          "소재 15,576톤이 입고되었습니다."
+        ],
+        "flags": []
+      },
+      {
+        "turn": -1,
+        "date": "2025년 11월",
+        "phase": "NORMAL",
+        "pm": 716.1320299803124,
+        "hqPerTon": 42.01711426117086,
+        "sales": {
+          "C2C": 2789,
+          "SLIT": 7524,
+          "LEVEL": 3900,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 27449.327006802727,
+          "invValue": 22540177.985781517,
+          "longTons": 0,
+          "longValue": 0,
+          "ar": 36796739.83499082,
+          "arDelayed": 0,
+          "ap": 24239384.846850187,
+          "debt": 21135904.64474204,
+          "cash": 2000000,
+          "seaValue": 12980353.738450004,
+          "debtLimit": 85097857.47417611,
+          "debtRoom": 63961952.82943407,
+          "debtUse": 0.24837176013692197,
+          "equity": 35126844.923193924,
+          "interest": 55939.058607288855,
+          "nwc": 35097532.97392215
+        },
+        "cum": {
+          "sales": {
+            "C2C": 36765,
+            "SLIT": 98303,
+            "LEVEL": 50425,
+            "BLANK": 0
+          },
+          "revenue": 165122686.79975927,
+          "op": 706555.4152076624,
+          "np": 126844.92319393196
+        },
+        "custShare": {
+          "JP": 0.37236284141549947,
+          "EU": 0.333488735281156,
+          "CN": 0.03739788938204079,
+          "PART": 0.191345069880531,
+          "HOME": 0.06540546404077266
+        },
+        "crashes": [
+          "HOME"
+        ],
+        "revenue": 12282074.327556282,
+        "gp": 504345.6519493889,
+        "ebitda": 175639.30429632767,
+        "op": 92305.97096299432,
+        "np": 36366.91235570547,
+        "hqMargin": 643803.7461321374,
+        "consolidated": 736109.7170951318,
+        "fixedCost": 175000,
+        "varCost": 153706.34765306124,
+        "depreciation": 83333.33333333334,
+        "interest": 55939.058607288855,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 231.47857142857163,
+        "scrapRevenue": 45586.53529487358,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 41173.990510204094,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2789,
+          "SLIT": 7524,
+          "LEVEL": 3900,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 7463.1,
+          "LEVEL": 3879.3499999999995,
+          "C2C": 2789
+        },
+        "demand": {
+          "C2C": 2789,
+          "SLIT": 7524,
+          "LEVEL": 3900,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2789,
+          "SLIT": 7524,
+          "LEVEL": 3900,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 16,
+            "tons": {
+              "C2C": 2971,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2971,
+              "SLIT": 8014,
+              "LEVEL": 4154,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 17,
+            "tons": {
+              "C2C": 2981,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2981,
+              "SLIT": 8042,
+              "LEVEL": 4168,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 18,
+            "tons": {
+              "C2C": 3214,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3214,
+              "SLIT": 8677,
+              "LEVEL": 4496,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2789,
+          "SLIT": 7524,
+          "LEVEL": 3900,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 12937875.875537546,
+        "cashOut": 11287615.68941882,
+        "spotExposure": 0,
+        "util": 0.9259142857142858,
+        "shortRatio": 1,
+        "materialTons": 15322.417006802716,
+        "run": {
+          "SLIT": 7615.408163265307,
+          "LEVEL": 3958.5204081632646,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 27449.327006802727,
+          "sea": 15684.077414965985,
+          "prod": 15322.417006802716,
+          "nasi3": 15172.680272108844,
+          "fg": 3998.4000000000015
+        },
+        "invTons": 27449.327006802727,
+        "log": [
+          "소재 14,041톤이 입고되었습니다."
+        ],
+        "flags": [
+          "가전·강건재 내시가 갑자기 빠졌습니다. 그 물량 보고 들여온 소재가 창고에 남습니다."
+        ]
+      },
+      {
+        "turn": 0,
+        "date": "2025년 12월",
+        "phase": "NORMAL",
+        "pm": 724.9858194639238,
+        "hqPerTon": 47.624574014418904,
+        "sales": {
+          "C2C": 2971,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "BLANK": 0
+        },
+        "bs": {
+          "invTons": 28041.836054421772,
+          "invValue": 23174615.219829604,
+          "longTons": 2400,
+          "longValue": 1908000,
+          "ar": 37665472.166412555,
+          "arDelayed": 0,
+          "ap": 24496409.771133773,
+          "debt": 24180886.482835773,
+          "cash": 2000000,
+          "seaValue": 12947990.842438059,
+          "debtLimit": 86346783.96032035,
+          "debtRoom": 64073897.477484584,
+          "debtUse": 0.2579469143062817,
+          "equity": 35179862.18483593,
+          "interest": 52839.76161185511,
+          "nwc": 36343677.615108386
+        },
+        "cum": {
+          "sales": {
+            "C2C": 39736,
+            "SLIT": 106219,
+            "LEVEL": 54384,
+            "BLANK": 0
+          },
+          "revenue": 177945315.9445264,
+          "op": 812412.4384615252,
+          "np": 179862.18483593973
+        },
+        "custShare": {
+          "JP": 0.3724411123362006,
+          "EU": 0.3345362797483384,
+          "CN": 0.03653734269257462,
+          "PART": 0.19137490507058696,
+          "HOME": 0.0651103601522994
+        },
+        "crashes": [],
+        "revenue": 12822629.144767122,
+        "gp": 525671.8759749513,
+        "ebitda": 189190.3565871962,
+        "op": 105857.02325386286,
+        "np": 53017.261642007754,
+        "hqMargin": 756769.3354205359,
+        "consolidated": 862626.3586743987,
+        "fixedCost": 175000,
+        "varCost": 161481.5193877551,
+        "depreciation": 83333.33333333334,
+        "interest": 52839.76161185511,
+        "valuationLoss": 0,
+        "badDebt": 0,
+        "scrapTon": 245.568367346939,
+        "scrapRevenue": 48959.23560974557,
+        "yieldGain": 0,
+        "degradeLoss": 0,
+        "degradeTon": 0,
+        "dumpLoss": 0,
+        "dumpTon": 0,
+        "carryCost": 42062.75408163266,
+        "overTons": 0,
+        "shortageEvents": [],
+        "hqSpotOffer": 0,
+        "hqSpotTon": 0,
+        "shipped": {
+          "C2C": 2971,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "produced": {
+          "SLIT": 8053.199999999999,
+          "LEVEL": 3979.6500000000005,
+          "C2C": 2971
+        },
+        "demand": {
+          "C2C": 2971,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandAuto": {
+          "C2C": 2971,
+          "SLIT": 7916,
+          "LEVEL": 3959,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "demandCommon": {
+          "C2C": 0,
+          "SLIT": 0,
+          "LEVEL": 0,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "nasi": [
+          {
+            "turn": 17,
+            "tons": {
+              "C2C": 2981,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 2981,
+              "SLIT": 8042,
+              "LEVEL": 4168,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 18,
+            "tons": {
+              "C2C": 3214,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3214,
+              "SLIT": 8677,
+              "LEVEL": 4496,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          },
+          {
+            "turn": 19,
+            "tons": {
+              "C2C": 3062,
+              "SLIT": 7916,
+              "LEVEL": 3959,
+              "TRAP": 0,
+              "DIE": 0
+            },
+            "potential": {
+              "C2C": 3062,
+              "SLIT": 8268,
+              "LEVEL": 4284,
+              "TRAP": 0,
+              "DIE": 0
+            }
+          }
+        ],
+        "nasiPotential": {
+          "C2C": 2971,
+          "SLIT": 8014,
+          "LEVEL": 4154,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "commonShareOfSales": 0,
+        "hqSpotCredit": 0,
+        "cashIn": 12002856.04895513,
+        "cashOut": 12723328.814166417,
+        "spotExposure": 0,
+        "util": 0.9822734693877551,
+        "shortRatio": 1,
+        "materialTons": 15890.311904761918,
+        "run": {
+          "SLIT": 8217.551020408162,
+          "LEVEL": 4060.8673469387763,
+          "TRAP": 0,
+          "DIE": 0
+        },
+        "capNow": {
+          "SLIT": 8333,
+          "LEVEL": 4167,
+          "BLANK": 0
+        },
+        "stock": {
+          "onhand": 28041.836054421772,
+          "sea": 15322.417006802716,
+          "prod": 15890.311904761918,
+          "nasi3": 15203.013605442176,
+          "fg": 4156.250000000001
+        },
+        "invTons": 28041.836054421772,
+        "log": [
+          "소재 15,684톤이 입고되었습니다."
+        ],
+        "flags": []
+      }
+    ],
+    "running": true,
+    "mods": {
+      "capMult": 0.9559472393247523,
+      "yieldAdj": -0.004476747992871317
+    }
+  },
+  "W": {
+    "equip": 42.307551810704325,
+    "quality": 63.71580891970039,
+    "fatigue": 100,
+    "rel": {
+      "JP": 69.22958402721619,
+      "EU": 62.20592704289271,
+      "CN": 62.46571521050425,
+      "PART": 64.82049412974217,
+      "HOME": 74.0932621071651
+    },
+    "cut": {
+      "JP": 6,
+      "EU": 2,
+      "CN": 5,
+      "PART": 5,
+      "HOME": 12
+    },
+    "temp": {},
+    "pledge": {},
+    "concede": {
+      "JP": 1,
+      "EU": 0,
+      "CN": 0,
+      "PART": 1,
+      "HOME": 2
+    },
+    "relHigh": {
+      "JP": 0,
+      "EU": 0,
+      "CN": 0,
+      "PART": 0,
+      "HOME": 0
+    },
+    "threat": {
+      "JP": true,
+      "PART": true
+    },
+    "comp": 37.20127040453927,
+    "deferMaint": 0,
+    "maintAge": 9,
+    "maintCool": 13,
+    "negoTurn": {
+      "JP": 4,
+      "HOME": 10,
+      "CN": 7,
+      "PART": 10
+    },
+    "project": {
+      "key": "newcust",
+      "start": 10,
+      "end": 16,
+      "base": 0.11664514874893733,
+      "goal": 0.1271432121363417,
+      "lower": false,
+      "progress": 0.5300759680438688
+    },
+    "projectLog": [
+      {
+        "key": "quality",
+        "name": "품질·납기 개선",
+        "start": 4,
+        "end": 10,
+        "pct": 0,
+        "grade": "lose"
+      }
+    ],
+    "projBoost": {},
+    "projCapHit": 1,
+    "miles": [
+      {
+        "key": "first-op",
+        "turn": 2,
+        "date": "2026년 2월",
+        "title": "첫 흑자 · 누계 흑자 전환",
+        "who": "han",
+        "msg": "2026년 2월 한 달 영업이익 $72,813, 부임 이후 누계 $72,813. 한 달 흑자와 누계 흑자가 같은 달에 왔습니다. 이 회사에서 부호가 바뀌는 건 처음입니다.",
+        "next": "여기서부터는 지키는 싸움입니다."
+      },
+      {
+        "key": "cum-op",
+        "turn": 2,
+        "date": "2026년 2월",
+        "title": "누계 영업이익 흑자 전환"
+      },
+      {
+        "key": "ontime",
+        "turn": 4,
+        "date": "2026년 4월",
+        "title": "납기 석 달 연속 완납",
+        "who": "oh",
+        "msg": "석 달 동안 한 고객도 못 채운 적이 없습니다. 이건 운이 아니라 관리입니다.",
+        "next": "단가 협상에서 이 기록을 쓰십시오."
+      },
+      {
+        "key": "solar",
+        "turn": 8,
+        "date": "2026년 8월",
+        "title": "태양광 가동",
+        "who": "seo",
+        "msg": "지붕이 전기를 만들기 시작했습니다. 고지서가 처음으로 줄었어요.",
+        "next": "아낀 돈은 매달 자동으로 들어옵니다."
+      },
+      {
+        "key": "trust",
+        "turn": 9,
+        "date": "2026년 9월",
+        "title": "본사 신뢰 80 돌파",
+        "who": "jung",
+        "msg": "본사 신뢰 80. 이제 본사가 먼저 물어봅니다.",
+        "next": "한도 협의도 수월해집니다."
+      }
+    ],
+    "newMiles": [
+      {
+        "key": "first-op",
+        "turn": 2,
+        "date": "2026년 2월",
+        "title": "첫 흑자 · 누계 흑자 전환",
+        "who": "han",
+        "msg": "2026년 2월 한 달 영업이익 $72,813, 부임 이후 누계 $72,813. 한 달 흑자와 누계 흑자가 같은 달에 왔습니다. 이 회사에서 부호가 바뀌는 건 처음입니다.",
+        "next": "여기서부터는 지키는 싸움입니다."
+      },
+      {
+        "key": "ontime",
+        "turn": 4,
+        "date": "2026년 4월",
+        "title": "납기 석 달 연속 완납",
+        "who": "oh",
+        "msg": "석 달 동안 한 고객도 못 채운 적이 없습니다. 이건 운이 아니라 관리입니다.",
+        "next": "단가 협상에서 이 기록을 쓰십시오."
+      },
+      {
+        "key": "solar",
+        "turn": 8,
+        "date": "2026년 8월",
+        "title": "태양광 가동",
+        "who": "seo",
+        "msg": "지붕이 전기를 만들기 시작했습니다. 고지서가 처음으로 줄었어요.",
+        "next": "아낀 돈은 매달 자동으로 들어옵니다."
+      },
+      {
+        "key": "trust",
+        "turn": 9,
+        "date": "2026년 9월",
+        "title": "본사 신뢰 80 돌파",
+        "who": "jung",
+        "msg": "본사 신뢰 80. 이제 본사가 먼저 물어봅니다.",
+        "next": "한도 협의도 수월해집니다."
+      }
+    ],
+    "priceDir": -1,
+    "priceRumor": 0,
+    "policy": "normal",
+    "hq": {
+      "target": 0,
+      "ytd": 15390,
+      "commit": "full",
+      "log": [
+        {
+          "year": 1,
+          "target": 201000,
+          "ytd": 166160,
+          "r": 0.8266666666666667,
+          "commit": "full"
+        }
+      ]
+    },
+    "mem": [
+      {
+        "turn": 1,
+        "tag": "hq-full",
+        "label": "본사 목표 전량 수용"
+      },
+      {
+        "turn": 1,
+        "tag": "risk",
+        "label": "1년차 본사 소재 목표",
+        "risk": "연간 목표 201,000t"
+      },
+      {
+        "turn": 1,
+        "tag": "cleanup",
+        "label": "묵은 재고 정리"
+      },
+      {
+        "turn": 1,
+        "tag": "wage-high",
+        "label": "임금 요구 수용"
+      },
+      {
+        "turn": 1,
+        "tag": "risk",
+        "label": "임금 12% 인상",
+        "risk": "고정비 월 $21k 증가"
+      },
+      {
+        "turn": 1,
+        "tag": "normal-buy",
+        "label": "소재 발주 44,400톤 (권장의 100%)"
+      },
+      {
+        "turn": 4,
+        "tag": "salesplan",
+        "label": "영업 자원 배분 J사 30 · E사 30 · P사 25 · H사 15"
+      },
+      {
+        "turn": 4,
+        "tag": "risk",
+        "label": "반기 영업 자원 배분",
+        "risk": "C사는 무관리 — 매달 물량이 조금씩 빠집니다"
+      },
+      {
+        "turn": 4,
+        "tag": "focus",
+        "label": "집중 프로젝트 · 품질·납기 개선"
+      },
+      {
+        "turn": 4,
+        "tag": "risk",
+        "label": "집중 프로젝트 · 품질·납기 개선",
+        "risk": null
+      },
+      {
+        "turn": 4,
+        "tag": "concede",
+        "label": "J사 단가 −$3 · 물량 확대",
+        "cust": "JP"
+      },
+      {
+        "turn": 4,
+        "tag": "risk",
+        "label": "J사 단가 −$3 · 물량 확대",
+        "risk": "물량 없이 단가만 내준 셈"
+      },
+      {
+        "turn": 4,
+        "tag": "concede",
+        "label": "H사 단가 −$3 · 물량 확대",
+        "cust": "HOME"
+      },
+      {
+        "turn": 4,
+        "tag": "maint",
+        "label": "전면 정비"
+      },
+      {
+        "turn": 4,
+        "tag": "risk",
+        "label": "전면 정비",
+        "risk": "이번 달 매출 감소"
+      },
+      {
+        "turn": 4,
+        "tag": "overtime",
+        "label": "잔업으로 버티기"
+      },
+      {
+        "turn": 4,
+        "tag": "risk",
+        "label": "잔업·특근",
+        "risk": "설비·품질 부담"
+      },
+      {
+        "turn": 4,
+        "tag": "normal-buy",
+        "label": "소재 발주 45,300톤 (권장의 100%)"
+      },
+      {
+        "turn": 7,
+        "tag": "concede",
+        "label": "C사 단가 −$4 · 물량 확대",
+        "cust": "CN"
+      },
+      {
+        "turn": 7,
+        "tag": "concede",
+        "label": "H사 단가 −$4 · 물량 확대",
+        "cust": "HOME"
+      },
+      {
+        "turn": 7,
+        "tag": "volume",
+        "label": "하반기 본사 물량 만회용 한시 인하",
+        "cust": "JP"
+      },
+      {
+        "turn": 7,
+        "tag": "risk",
+        "label": "하반기 물량 만회 — 여섯 달 한시 인하",
+        "risk": "2027년 1월에 원복 · 2~4개월 뒤 설비·품질 부담"
+      },
+      {
+        "turn": 7,
+        "tag": "solar",
+        "label": "지붕 태양광 설치"
+      },
+      {
+        "turn": 7,
+        "tag": "risk",
+        "label": "지붕 태양광 설치",
+        "risk": "고정비 월 $9k 영구 절감"
+      },
+      {
+        "turn": 7,
+        "tag": "normal-buy",
+        "label": "소재 발주 45,700톤 (권장의 100%)"
+      },
+      {
+        "turn": 10,
+        "tag": "breakdown",
+        "label": "1호 라인 고장"
+      },
+      {
+        "turn": 10,
+        "tag": "risk",
+        "label": "1호 라인 고장 수리",
+        "risk": "이번 달 캐파 감소"
+      },
+      {
+        "turn": 10,
+        "tag": "focus",
+        "label": "집중 프로젝트 · 신규 고객 개척"
+      },
+      {
+        "turn": 10,
+        "tag": "risk",
+        "label": "집중 프로젝트 · 신규 고객 개척",
+        "risk": "2027년 4월에 우리 시장 점유율 9% 증가 (상대) 달성 여부가 판가름 납니다"
+      },
+      {
+        "turn": 10,
+        "tag": "concede",
+        "label": "P사 단가 −$3 · 물량 확대",
+        "cust": "PART"
+      },
+      {
+        "turn": 10,
+        "tag": "risk",
+        "label": "P사 단가 −$3 · 물량 확대",
+        "risk": "물량 없이 단가만 내준 셈"
+      },
+      {
+        "turn": 10,
+        "tag": "concede",
+        "label": "H사 단가 −$4 · 물량 확대",
+        "cust": "HOME"
+      },
+      {
+        "turn": 10,
+        "tag": "overtime",
+        "label": "잔업으로 버티기"
+      },
+      {
+        "turn": 10,
+        "tag": "risk",
+        "label": "잔업·특근",
+        "risk": "설비·품질 부담"
+      },
+      {
+        "turn": 10,
+        "tag": "normal-buy",
+        "label": "소재 발주 46,150톤 (권장의 100%)"
+      }
+    ],
+    "impacts": [],
+    "lastImpacts": [
+      {
+        "label": "1호 라인 고장 수리",
+        "rows": [
+          [
+            "−",
+            "현금 −$200k"
+          ],
+          [
+            "+",
+            "설비 위험 → 위험"
+          ],
+          [
+            "?",
+            "이번 달 캐파 감소"
+          ]
+        ]
+      },
+      {
+        "label": "집중 프로젝트 · 신규 고객 개척",
+        "rows": [
+          [
+            "−",
+            "현금 −$180k"
+          ],
+          [
+            "?",
+            "2027년 4월에 우리 시장 점유율 9% 증가 (상대) 달성 여부가 판가름 납니다"
+          ]
+        ]
+      },
+      {
+        "label": "P사 단가 −$3 · 물량 확대",
+        "rows": [
+          [
+            "+",
+            "판매량 +30t"
+          ],
+          [
+            "=",
+            "가동률 +0.1%p"
+          ],
+          [
+            "−",
+            "P사 단가 인하 −$3/t"
+          ],
+          [
+            "−",
+            "월 이익 −$15k"
+          ],
+          [
+            "+",
+            "P사 관계 보통 (+6)"
+          ],
+          [
+            "?",
+            "물량 없이 단가만 내준 셈"
+          ]
+        ]
+      },
+      {
+        "label": "H사 단가 −$4 · 물량 확대",
+        "rows": [
+          [
+            "+",
+            "판매량 +82t"
+          ],
+          [
+            "=",
+            "가동률 +0.2%p"
+          ],
+          [
+            "−",
+            "H사 단가 인하 −$4/t"
+          ],
+          [
+            "−",
+            "월 이익 −$13k"
+          ],
+          [
+            "+",
+            "H사 관계 우호적 (+6)"
+          ]
+        ]
+      },
+      {
+        "label": "연말 성과급",
+        "rows": [
+          [
+            "−",
+            "현금 −$60k"
+          ]
+        ]
+      },
+      {
+        "label": "잔업·특근",
+        "rows": [
+          [
+            "−",
+            "현장 한계"
+          ],
+          [
+            "?",
+            "설비·품질 부담"
+          ]
+        ]
+      }
+    ],
+    "fired": [
+      {
+        "turn": 12,
+        "kind": "hq",
+        "text": "1년차 본사 소재 판매 83% — 약속한 목표에 못 미쳤습니다. 본사가 아쉬워합니다.",
+        "why": "연초에 본사 요구를 그대로 받았습니다"
+      },
+      {
+        "turn": 13,
+        "kind": "tempEnd",
+        "text": "J사(일본계 자동차) 한시 인하 $4/t가 끝났습니다. 단가가 계약 수준으로 돌아갑니다.",
+        "why": "물량 확보용 한시 인하"
+      },
+      {
+        "turn": 13,
+        "kind": "tempEnd",
+        "text": "E사(미주·구주 자동차) 한시 인하 $4/t가 끝났습니다. 단가가 계약 수준으로 돌아갑니다.",
+        "why": "물량 확보용 한시 인하"
+      }
+    ],
+    "lastFired": [
+      {
+        "turn": 12,
+        "kind": "hq",
+        "text": "1년차 본사 소재 판매 83% — 약속한 목표에 못 미쳤습니다. 본사가 아쉬워합니다.",
+        "why": "연초에 본사 요구를 그대로 받았습니다"
+      },
+      {
+        "turn": 13,
+        "kind": "tempEnd",
+        "text": "J사(일본계 자동차) 한시 인하 $4/t가 끝났습니다. 단가가 계약 수준으로 돌아갑니다.",
+        "why": "물량 확보용 한시 인하"
+      },
+      {
+        "turn": 13,
+        "kind": "tempEnd",
+        "text": "E사(미주·구주 자동차) 한시 인하 $4/t가 끝났습니다. 단가가 계약 수준으로 돌아갑니다.",
+        "why": "물량 확보용 한시 인하"
+      }
+    ],
+    "snaps": [
+      {
+        "turn": 1,
+        "sales": 14846,
+        "op": 105857.02325386286,
+        "cash": 2000000,
+        "raw": 26285.586054421772,
+        "util": 0.9822734693877551,
+        "quality": 97.7,
+        "equip": 62,
+        "rel": 63.083164934582236,
+        "trust": 65,
+        "morale": 72,
+        "hqPace": null
+      },
+      {
+        "turn": 4,
+        "sales": 44882,
+        "op": 194981.56534557414,
+        "cash": 2000000,
+        "raw": 24417.479173024614,
+        "util": 0.964251606142249,
+        "quality": 97.58786249163826,
+        "equip": 48.19808173812953,
+        "rel": 63.68591295188608,
+        "trust": 72,
+        "morale": 78.8039235339121,
+        "hqPace": 0.6626865671641791
+      },
+      {
+        "turn": 7,
+        "sales": 44489,
+        "op": 32340.35751195255,
+        "cash": 2000000,
+        "raw": 23983.695764232976,
+        "util": 0.9688384666387012,
+        "quality": 97.58913912226967,
+        "equip": 62.84416838419999,
+        "rel": 66.15715365141529,
+        "trust": 75,
+        "morale": 55.597082044332545,
+        "hqPace": 0.7650319829424307
+      },
+      {
+        "turn": 10,
+        "sales": 45103,
+        "op": 65214.00615954262,
+        "cash": 2000000,
+        "raw": 24207.46638633691,
+        "util": 0.9324765387600675,
+        "quality": 97.39325163937824,
+        "equip": 44.46680983118808,
+        "rel": 68.73448026243331,
+        "trust": 81,
+        "morale": 47.94033262293721,
+        "hqPace": 0.8083582089552239
+      },
+      {
+        "turn": 13,
+        "sales": 45505,
+        "op": -57456.41540547105,
+        "cash": 2000000,
+        "raw": 22735.872135871763,
+        "util": 0.9953275400372117,
+        "quality": 97.18579044598502,
+        "equip": 42.307551810704325,
+        "rel": 66.2130903674232,
+        "trust": 79,
+        "morale": 31.73446572948973,
+        "hqPace": null
+      }
+    ],
+    "utilHist": [
+      0.9693877551020408,
+      0.9642675021926534,
+      0.964251606142249,
+      0.9646480732199568,
+      0.968096132844673,
+      0.9688384666387012,
+      0.9693517399015563,
+      0.9564300715700614,
+      0.9324765387600675,
+      1,
+      1,
+      0.9953275400372117
+    ],
+    "coverHist": [
+      2.907161901259741,
+      2.893889631046309,
+      2.881618303502451,
+      2.862568531422196,
+      2.844536551947676,
+      2.8295392319639423,
+      2.8161365440588213,
+      2.796132194175251,
+      2.7737535258547417,
+      2.7323416866178025,
+      2.711266359753429,
+      2.6958387785368823
+    ],
+    "shareHist": {
+      "JP": [
+        0.3725102937807402,
+        0.407688550606384,
+        0.4077481210438732,
+        0.40850166527927156,
+        0.4085442077208759,
+        0.4085768255268791,
+        0.4103005655929841,
+        0.4103175637604283,
+        0.41032498085360763,
+        0.4093144692804565,
+        0.40930677990863734,
+        0.40929005383949096
+      ],
+      "EU": [
+        0.3355789115801083,
+        0.3683457579371206,
+        0.369479120271389,
+        0.3690324511808068,
+        0.3701523909178684,
+        0.3712667070772888,
+        0.37392557208244986,
+        0.3750368423529546,
+        0.37614263164701484,
+        0.37631581726256985,
+        0.3774114650196648,
+        0.37850194570598267
+      ],
+      "CN": [
+        0.03569572509769827,
+        0.038159707006618304,
+        0.03727924183799057,
+        0.03626348513069114,
+        0.035425284982869294,
+        0.0346056181593424,
+        0.034469070170159724,
+        0.03367023491445392,
+        0.03288914498625068,
+        0.032046478213104405,
+        0.03130190268353645,
+        0.030573951747931417
+      ],
+      "PART": [
+        0.19140006618189576,
+        0.11520503012391753,
+        0.11521561099176075,
+        0.11473386966695354,
+        0.11473959158317716,
+        0.1147425253590691,
+        0.11121656217772011,
+        0.11121513421735749,
+        0.11121110930886824,
+        0.1115967957151487,
+        0.11158864348657721,
+        0.11157802828771059
+      ],
+      "HOME": [
+        0.06481500335955763,
+        0.0706009543259595,
+        0.07027790585498637,
+        0.071468528742277,
+        0.0711385247952093,
+        0.07080832387742059,
+        0.07008822997668603,
+        0.0697602247548057,
+        0.06943213320425873,
+        0.0707264395287207,
+        0.07039120890158426,
+        0.0700560204188845
+      ]
+    },
+    "breakdown": {
+      "turn": 13,
+      "sev": 1
+    },
+    "claim": null,
+    "capHit": 1,
+    "qBoost": 6,
+    "stats": {
+      "breakdowns": 1,
+      "claims": 0,
+      "shortages": 0,
+      "concessions": 6,
+      "deferrals": 0,
+      "maint": 1,
+      "overloadMonths": 12,
+      "utilSum": 11.65307542640917,
+      "months": 12,
+      "churn": 0,
+      "hqHit": 0,
+      "hqMiss": 1,
+      "cashTight": 0,
+      "qualSum": 840.6884054313487,
+      "projects": 0,
+      "dropped": 0,
+      "spot": 0
+    },
+    "style": {
+      "grow": 11,
+      "cash": 2,
+      "cust": 6,
+      "craft": 8,
+      "hq": 4
+    },
+    "needHist": [
+      15210.34693877551,
+      15118.680272108844,
+      15072.013605442176,
+      15066.34693877551,
+      15179.680272108844,
+      15276.680272108844,
+      15326.680272108844,
+      15351.34693877551,
+      15410.680272108844,
+      15601.680272108844,
+      15641.013605442176,
+      15622.34693877551
+    ],
+    "churnAt": {},
+    "solar": "own"
+  },
+  "mode": "quick",
+  "mpt": 3,
+  "diffKey": "normal",
+  "ui": {
+    "cover": 2.9,
+    "hqTake": 0,
+    "expandPick": null,
+    "overtime": false,
+    "yieldSpend": 0,
+    "salesSpend": 0,
+    "orderTon": null,
+    "orderBy": null,
+    "orderPlan": null,
+    "custFocus": null,
+    "salesMix": null
+  },
+  "seen": {
+    "w-hq-annual": 1,
+    "w-legacy": 1,
+    "h-wage": 1,
+    "sales-plan": 4,
+    "proj-pick": 10,
+    "w-nego-JP": 4,
+    "w-nego-HOME": 10,
+    "w-maint": 4,
+    "w-load": 10,
+    "w-nego-CN": 7,
+    "w-hq-mid": 7,
+    "m-solar": 7,
+    "l-name": 7,
+    "w-break": 10,
+    "w-nego-PART": 10,
+    "h-bonus": 10
+  },
+  "picks": {},
+  "bigPlan": {
+    "13": "g-slow",
+    "34": "g-dump",
+    "40": "g-bust"
+  },
+  "turnDiscount": 0,
+  "yieldPenalty": 0,
+  "extraFixed": 12000,
+  "resultLines": [],
+  "pending": []
+}

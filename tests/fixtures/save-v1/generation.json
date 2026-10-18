@@ -1,0 +1,92 @@
+[
+  {
+    "name": "normal-new",
+    "route": "newGame",
+    "eventSeed": 20261018,
+    "turn": 1,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "normal-mid",
+    "route": "12 monthly settlements; first option, recommended order, existing sales mix",
+    "eventSeed": 20261018,
+    "turn": 13,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "normal-completed",
+    "route": "all settlements; first option, recommended order, existing sales mix",
+    "eventSeed": 20261018,
+    "turn": 49,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": "COMPLETE"
+  },
+  {
+    "name": "quick-new",
+    "route": "newGame",
+    "eventSeed": 20261018,
+    "turn": 1,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "quick-mid",
+    "route": "12 monthly settlements; first option, recommended order, existing sales mix",
+    "eventSeed": 20261018,
+    "turn": 13,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "quick-completed",
+    "route": "all settlements; first option, recommended order, existing sales mix",
+    "eventSeed": 20261018,
+    "turn": 49,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": "COMPLETE"
+  },
+  {
+    "name": "pending-credit",
+    "route": "newGame then actual creditCard option 0; isolated boundary fixture",
+    "eventSeed": 20261018,
+    "turn": 1,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "pending-rebate",
+    "route": "newGame then actual rebateCard option 2; isolated boundary fixture",
+    "eventSeed": 20261018,
+    "turn": 1,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "pending-safety",
+    "route": "newGame then actual safetyCard option 2; isolated boundary fixture",
+    "eventSeed": 20261018,
+    "turn": 1,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  },
+  {
+    "name": "project-active",
+    "route": "newGame then actual startProject quality; isolated boundary fixture",
+    "eventSeed": 20261018,
+    "turn": 1,
+    "engineRngAfterPrelude": 543893169,
+    "engineSeed": 442769956,
+    "overReason": null
+  }
+]

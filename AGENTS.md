@@ -25,7 +25,7 @@
 | 현재 화면과 스타일 | `src/ui/` | 하위 `AGENTS.md` 적용 |
 | 현재 정적 빌드·개발 서버 | `scripts/build.mjs`, `scripts/dev.mjs` | 출력은 `dist/` |
 | 기본 스타일 | `shell.html` | 여러 `<style>` 블록 모두 필요 |
-| 이미지 | `art/` | 새 게임은 원본 PNG를 직접 제공 |
+| 이미지 | `art/`, `source-art/` | 배포 그림은 PNG와 인물 WebP atlas를 함께 사용. neutral 초상 원본 PNG는 `source-art/strategy-officers.png`에 보존하며 배포하지 않음 |
 | 회귀 검사 | `tests/*.test.mjs` | Node test + VM으로 공유 스크립트 로딩 |
 | 원본 단일 파일 경로 | `build.sh`, `assets.js`, `index.html`, `sw.js` | 현재 dist 경로와 구별 |
 
@@ -79,9 +79,9 @@ npm run audio:verify                                # 음원·해시·루프·�
 npm run check                                       # 음원 검사·테스트·프로덕션 빌드
 ```
 
-- `tests/build.test.mjs`는 임시 출력 디렉터리로 빌드한다. `npm run build`와 `npm run check`의 마지막 빌드는 `dist/`를 다시 쓴다.
-- `npm run check` 뒤 개발 서버를 계속 쓸 때는 개발 서버를 재시작해 개발용 dist를 복원한다. 결재 중인 탭을 새로고침하지 않는다.
-- dev는 파일 변경 후 재빌드하며 브라우저는 수동 새로고침이다. scripts/manifest/icon 변경은 서버 재시작이 필요하다.
+- `tests/build.test.mjs`는 임시 출력 디렉터리로 빌드한다. `npm run build`와 `npm run check`의 마지막 빌드는 소유 확인된 `dist/` 전체를 다시 생성한다. 공유 체크아웃에서는 [출시 체크리스트](docs/release-checklist.md)의 격리 출력 빌드를 사용하고, 전체 `npm run check`는 자신이 소유한 별도 소스 복사본에서 실행한다.
+- 자신의 체크아웃에서 `npm run check` 뒤 개발 서버를 계속 쓸 때는 해당 서버를 재시작해 개발용 dist를 복원한다. 사용자 공유 서버·탭은 건드리지 않으며 결재 중인 탭을 새로고침하지 않는다.
+- dev는 파일 변경 후 재빌드하며 브라우저는 수동 새로고침이다. scripts/manifest/icon/package.json 변경은 서버 재시작이 필요하다.
 - VM 테스트는 실제 브라우저 UI·서비스워커를 검증하지 않는다. 관련 화면·저장·캐시 변경은 해당 표면에서 별도로 확인한다.
 
 ## 빌드·자산 함정
@@ -90,8 +90,9 @@ npm run check                                       # 음원 검사·테스트·
 - `bash build.sh`는 루트 `index.html`을 덮어쓰는 **원본 빌드**이며 새 `src` 화면을 포함하지 않는다.
 - `make-assets.ps1`은 Windows 절대 경로가 고정된 원본 보조 도구다. 현재 환경의 일반 실행 명령으로 사용하지 않는다.
 - 현재 SW는 `scripts/build.mjs`의 템플릿에서 생성된다. 루트 `sw.js` 변경은 dist SW에 적용되지 않는다.
-- 캐시 hash는 코드·CSS·art PNG·audio manifest/WAV 바이트를 포함한다. 음원은 필수 precache에서 제외하고 요청 성공 때만 캐시한다. 미캐시 오프라인 음원 실패가 shell 설치를 막으면 안 된다.
-- dev는 새 SW 등록을 막고, 개발용 sw.js가 기존 production 등록의 정상 update 때 캐시 가로채기를 종료한다. 열린 게임을 자동 새로고침하거나 저장·캐시를 삭제하지 않는다. 자동 갱신 뒤에도 이전 화면이면 개발 전용 `/__dev/recover`의 「개발 화면 복구」를 누른다. 기존 등록을 갱신·해제한 뒤 그 탭만 루트로 돌아간다. build는 audio 외 오래된 출력 파일을 청소하지 않는다.
+- build는 안전한 출력 경로를 확인한 뒤 출력 디렉터리 전체를 재생성하여 오래된 파일도 제거한다. 비어 있지 않은 출력은 같은 소스의 유효한 `.coilcenter-build.json` 소유 표시가 있어야 한다. 표시 없는 기존 dist는 거절하므로 해당 서버를 정리하고 폴더를 별도로 백업한 뒤 빈 출력 위치를 사용한다. 소유 표시를 수동으로 만들어 강제 채택하지 않는다.
+- 콘텐츠·캐시 hash는 빌드 템플릿·코드·CSS·package.json·manifest·아이콘과 `art/` 아래 모든 일반 파일(하위 폴더 포함)의 경로·바이트, audio manifest 및 그 목록의 WAV를 반영한다. 음원은 필수 precache에서 제외하고 요청 성공 때만 캐시한다. 미캐시 오프라인 음원 실패가 shell 설치를 막으면 안 된다.
+- dev는 새 SW 등록을 막고, 개발용 sw.js가 기존 production 등록의 정상 update 때 캐시 가로채기를 종료한다. 열린 게임을 자동 새로고침하거나 저장·캐시를 삭제하지 않는다. 자동 갱신 뒤에도 이전 화면이면 개발 전용 `/__dev/recover`의 「개발 화면 복구」를 누른다. 기존 등록을 갱신·해제한 뒤 그 탭만 루트로 돌아간다.
 
 ## 문서 선택
 

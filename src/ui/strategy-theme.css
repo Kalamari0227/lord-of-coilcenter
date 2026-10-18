@@ -33,7 +33,7 @@ body:has(.cc-app)::before,body:has(.cc-app)::after { display:none; }
 .cc-game .cc-person small { color:var(--cc-muted); font-size:12px; line-height:1.4; }
 .cc-game .cc-person[aria-pressed='true'] b::before { content:none; }
 .cc-game .cc-person[aria-pressed='true'] b { color:var(--cc-gold); }
-.cc-portrait { display:inline-block; flex:none; width:54px; height:65px; background-image:url('art/strategy-officers.png'); background-size:300% 200%; background-position:var(--portrait-x) var(--portrait-y); image-rendering:pixelated; border:1px solid var(--cc-border); }
+.cc-portrait { display:inline-block; flex:none; width:54px; height:65px; background-image:url('art/strategy-officers.webp'); background-size:300% 200%; background-position:var(--portrait-x) var(--portrait-y); image-rendering:pixelated; border:1px solid var(--cc-border); }
 .cc-game .cc-scene { position:relative; aspect-ratio:8/5; overflow:hidden; padding:3px; }
 .cc-scene-art { width:100%; height:100%; display:block; object-fit:cover; image-rendering:pixelated; }
 .cc-scene-caption { position:absolute; right:8px; bottom:8px; background:var(--cc-dark); padding:4px 8px; border:1px solid var(--cc-border); font-size:var(--cc-text-small); }

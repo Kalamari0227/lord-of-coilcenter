@@ -57,4 +57,4 @@
 
 ## 8. 구현과 자산
 engine/world/decks/issues의 경제·사건은 그대로 연결. src/ui는게임화면·명령·초상, src/platform은저장, scripts는빌드. 달러·톤·48개월·월/분기·여섯인물·모법이익 목표를 유지한다.
-새 자산: art/strategy-map.png, art/strategy-office.png, art/strategy-officers.png. 현대 산업항·제철가공사업을 고전PC게임 도트로 표현. 초상3열×2행 순서 정 부장/서 대리/구 공장장/한 부장/오 과장/린 매니저. CSS 프레임으로 표시하며 모든 글자·지표·버튼은 HTML이다. 생성 원문·원본경로는 docs/media-production.md에 기록한다.
+새 자산: art/strategy-map.png, art/strategy-office.png, art/strategy-officers.webp. neutral PNG 원본은 source-art/strategy-officers.png에 바이트 그대로 보존하고 배포본은 무손실 WebP로 제공한다. 현대 산업항·제철가공사업을 고전PC게임 도트로 표현. 초상3열×2행 순서 정 부장/서 대리/구 공장장/한 부장/오 과장/린 매니저. 세 표정 경로·셀·fallback은 art/staff-expressions.json에 정의한다. CSS 프레임으로 표시하며 모든 글자·지표·버튼은 HTML이다. 생성 원문·원본경로는 docs/media-production.md에 기록한다.

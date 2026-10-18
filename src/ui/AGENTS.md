@@ -43,7 +43,7 @@
 
 ## 그림과 CSS
 
-- 사람 초상은 `art/strategy-officers.png`의 3열×2행 atlas다: 위 `jung, seo, gu`, 아래 `han, oh, lin`.
+- 사람 초상은 `art/strategy-officers.webp`의 3열×2행 atlas다: 위 `jung, seo, gu`, 아래 `han, oh, lin`. neutral 원본 PNG 바이트는 `source-art/strategy-officers.png`에 보존한다. 세 표정 경로·셀·fallback 계약은 `art/staff-expressions.json`에 있다.
 - `background-size: 300% 200%`; 열 위치는 `0%/50%/100%`, 행 위치는 `0%/100%`다. `ccOfficers` 순서와 함께 맞춘다.
 - 지도·집무실 그림 위 거점은 실제 HTML 버튼이다. 글자·수치·행동을 그림에 구워 넣지 않는다.
 - CSS는 `strategy-theme.css` 다음 `theme.css` 순으로 결합된다. 전략 스타일이 나중에 덮는다고 가정하지 말고 선택자 명시도와 계산된 스타일을 확인한다.

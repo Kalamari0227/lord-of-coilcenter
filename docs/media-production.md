@@ -25,9 +25,9 @@ Created 2026-10-14 using the built-in `image_gen.imagegen` tool through the imag
 |---|---|---|
 | `art/strategy-map.png` | 1586 × 992 | Industrial coastal map, central plant, upper-left headquarters, upper-right automotive factories, lower-left coil storage, lower-right cargo port; no UI or text. |
 | `art/strategy-office.png` | 1586 × 992 | Manager office, telephone, plans, sunrise coil-yard window; no people or UI. |
-| `art/strategy-officers.png` | 1536 × 1024 | Three columns × two rows of six distinct human busts; 512 × 512 cells. Row order: Jung, Seo, Gu / Han, Oh, Lin. No names or frames. |
+| `source-art/strategy-officers.png` → `art/strategy-officers.webp` | 1536 × 1024 | Original neutral PNG preserved byte-for-byte; lossless WebP delivery added 2026-10-18. Three columns × two rows, 512 × 512 cells: Jung, Seo, Gu / Han, Oh, Lin. |
 
-Binary dimensions were verified with `sips -g pixelWidth -g pixelHeight art/strategy-map.png art/strategy-office.png art/strategy-officers.png`. The generated images were visually inspected directly in tool output before copying unchanged into `art/`. Matching dimensions and six complete portrait cells are observable in the PNG files themselves. Runtime integration and browser layout are verified separately by the implementing agent.
+The 2026-10-14 inspection used `sips -g pixelWidth -g pixelHeight` on the three original PNGs, then inspected the generated images before copying them into `art/`. Neutral has since moved unchanged to `source-art/strategy-officers.png`; the 2026-10-18 delivery and pixel verification is recorded below. Map and office paths are unchanged.
 
 ## Generation prompts
 
@@ -48,3 +48,21 @@ Use case: stylized-concept. Asset type: original six-person portrait atlas for a
 - Map: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-50d27376-c603-48c2-9f45-780313e58cac.png`
 - Office: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-2fbe0971-c49a-4c10-a88f-9412901fbbe4.png`
 - Officers: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-0929af83-66a8-46ae-9b4e-d51856ab15e9.png`
+
+## Staff expressions — 2026-10-18 (T9)
+
+Built-in `image_gen.imagegen` edited the viewed original officer atlas twice, using `identity-preserve` prompts: concerned and positive. No external images, paid API, tint substitution, palette quantization or resampling were used. The requested edits were eyebrows, eyes and mouth; identity, apparent age, hair, clothing, pose, hands, props, cell placement and teal background were retained by visual comparison. Generative edits are not claimed to preserve every background pixel. Neutral means the unchanged baseline artwork, which already includes smiles on Jung and Lin.
+
+The exact prompts are in [generation-prompts.json](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/generation-prompts.json). Sources are `/Users/ethanlee/.codex/generated_images/01a14f0a-c84f-7b21-a34f-e63f8351c352/exec-52238584-cbab-4d3a-9914-040a78ed907b.png` (concerned) and `/Users/ethanlee/.codex/generated_images/01a14f0a-c84f-7b21-a34f-e63f8351c352/exec-afc4d287-acb7-496e-840b-c720fe5f9244.png` (positive). Source SHA-256 values respectively: `d41cb7223c10edb9c35ef9d02f8cc6af3e74d517e53d2f931cfa686edeadd210`, `f68092d9e8d415965794ca9a62d3b1b124a652fd472e04f78df0ffaa2af0a10e`.
+
+All three delivery atlases are 1536×1024, 3 columns × 2 rows of 512×512 cells, encoded with `/opt/homebrew/bin/cwebp -lossless -z 9 INPUT -o OUTPUT`. [pixel-proof.json](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/pixel-proof.json) verifies decoded RGBA equality against each PNG, and the exact original neutral PNG bytes against the 2026-10-14 generation source. Moving that PNG to `source-art/` preserves the original without shipping both encodings; current build only ships `art/`.
+
+| Delivered asset | Bytes | SHA-256 |
+|---|---:|---|
+| `art/strategy-officers.webp` | 1,588,854 | `94e34492059c124e201389d53a7ad27d2b189c055a064acfb4ea4eb73195258e` |
+| `art/strategy-officers-concerned.webp` | 1,491,592 | `1877b380c6cd08938168fbdde2ae724fa61f2b1c4d37bde2e3a0ac5977835bab` |
+| `art/strategy-officers-positive.webp` | 1,507,602 | `acd0b6c6aebb3aed9def79ed4af8893c183b2b263bba8eba71eca1989a8e1268` |
+
+Preserved source: `source-art/strategy-officers.png`, SHA-256 `2848705ba69d47ed3477e5c60248bf9600d43956876dbb7c622250fc23ca6d56`. [staff-expressions.json](../art/staff-expressions.json) provides all 18 identity/state/file/cell mappings and the fallback order: requested state → neutral → readable name and role. It has no economic state or RNG logic. The current game displays the neutral WebP through the existing portrait CSS; T16 owns runtime expression selection and runtime failure handling. T9's failure handling is explicitly exercised in a labelled gallery fixture, alongside a separate actual game on port 4204.
+
+The [visual review](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/visual-review.md) links the rendered 18-image contact sheet, full-size comparison, forced HTTP 404 fallbacks, live game command checks, exact shell/art budget and cleanup. The AVIF lossless probe was larger than WebP and was rejected; only WebP is delivered. Provenance verification does not independently certify commercial rights.

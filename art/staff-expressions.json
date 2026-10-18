@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "artDirection": "original PC98 pixel portraits",
+  "states": [
+    "neutral",
+    "concerned",
+    "positive"
+  ],
+  "atlas": {
+    "width": 1536,
+    "height": 1024,
+    "columns": 3,
+    "rows": 2,
+    "cellWidth": 512,
+    "cellHeight": 512
+  },
+  "fallbackOrder": [
+    "requested-state",
+    "neutral",
+    "name-and-role"
+  ],
+  "fallbackBehavior": "On image load/decode error, retry neutral once; if neutral fails, retain readable name and role; never block commands.",
+  "identities": [
+    {
+      "id": "jung",
+      "name": "정 부장",
+      "role": "영업 · 소재 발주",
+      "cell": {
+        "column": 0,
+        "row": 0,
+        "x": 0,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "states": {
+        "neutral": {
+          "path": "art/strategy-officers.webp",
+          "identity": "jung",
+          "state": "neutral",
+          "fallback": {
+            "identity": "jung",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "정 부장 · 영업 · 소재 발주"
+          }
+        },
+        "concerned": {
+          "path": "art/strategy-officers-concerned.webp",
+          "identity": "jung",
+          "state": "concerned",
+          "fallback": {
+            "identity": "jung",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "정 부장 · 영업 · 소재 발주"
+          }
+        },
+        "positive": {
+          "path": "art/strategy-officers-positive.webp",
+          "identity": "jung",
+          "state": "positive",
+          "fallback": {
+            "identity": "jung",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "정 부장 · 영업 · 소재 발주"
+          }
+        }
+      }
+    },
+    {
+      "id": "seo",
+      "name": "서 대리",
+      "role": "구매 · 자재",
+      "cell": {
+        "column": 1,
+        "row": 0,
+        "x": 512,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "states": {
+        "neutral": {
+          "path": "art/strategy-officers.webp",
+          "identity": "seo",
+          "state": "neutral",
+          "fallback": {
+            "identity": "seo",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "서 대리 · 구매 · 자재"
+          }
+        },
+        "concerned": {
+          "path": "art/strategy-officers-concerned.webp",
+          "identity": "seo",
+          "state": "concerned",
+          "fallback": {
+            "identity": "seo",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "서 대리 · 구매 · 자재"
+          }
+        },
+        "positive": {
+          "path": "art/strategy-officers-positive.webp",
+          "identity": "seo",
+          "state": "positive",
+          "fallback": {
+            "identity": "seo",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "서 대리 · 구매 · 자재"
+          }
+        }
+      }
+    },
+    {
+      "id": "gu",
+      "name": "구 공장장",
+      "role": "생산",
+      "cell": {
+        "column": 2,
+        "row": 0,
+        "x": 1024,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "states": {
+        "neutral": {
+          "path": "art/strategy-officers.webp",
+          "identity": "gu",
+          "state": "neutral",
+          "fallback": {
+            "identity": "gu",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "구 공장장 · 생산"
+          }
+        },
+        "concerned": {
+          "path": "art/strategy-officers-concerned.webp",
+          "identity": "gu",
+          "state": "concerned",
+          "fallback": {
+            "identity": "gu",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "구 공장장 · 생산"
+          }
+        },
+        "positive": {
+          "path": "art/strategy-officers-positive.webp",
+          "identity": "gu",
+          "state": "positive",
+          "fallback": {
+            "identity": "gu",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "구 공장장 · 생산"
+          }
+        }
+      }
+    },
+    {
+      "id": "han",
+      "name": "한 부장",
+      "role": "관리 · 재무·인사·총무",
+      "cell": {
+        "column": 0,
+        "row": 1,
+        "x": 0,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "states": {
+        "neutral": {
+          "path": "art/strategy-officers.webp",
+          "identity": "han",
+          "state": "neutral",
+          "fallback": {
+            "identity": "han",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "한 부장 · 관리 · 재무·인사·총무"
+          }
+        },
+        "concerned": {
+          "path": "art/strategy-officers-concerned.webp",
+          "identity": "han",
+          "state": "concerned",
+          "fallback": {
+            "identity": "han",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "한 부장 · 관리 · 재무·인사·총무"
+          }
+        },
+        "positive": {
+          "path": "art/strategy-officers-positive.webp",
+          "identity": "han",
+          "state": "positive",
+          "fallback": {
+            "identity": "han",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "한 부장 · 관리 · 재무·인사·총무"
+          }
+        }
+      }
+    },
+    {
+      "id": "oh",
+      "name": "오 과장",
+      "role": "품질",
+      "cell": {
+        "column": 1,
+        "row": 1,
+        "x": 512,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "states": {
+        "neutral": {
+          "path": "art/strategy-officers.webp",
+          "identity": "oh",
+          "state": "neutral",
+          "fallback": {
+            "identity": "oh",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "오 과장 · 품질"
+          }
+        },
+        "concerned": {
+          "path": "art/strategy-officers-concerned.webp",
+          "identity": "oh",
+          "state": "concerned",
+          "fallback": {
+            "identity": "oh",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "오 과장 · 품질"
+          }
+        },
+        "positive": {
+          "path": "art/strategy-officers-positive.webp",
+          "identity": "oh",
+          "state": "positive",
+          "fallback": {
+            "identity": "oh",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "오 과장 · 품질"
+          }
+        }
+      }
+    },
+    {
+      "id": "lin",
+      "name": "린 매니저",
+      "role": "현지",
+      "cell": {
+        "column": 2,
+        "row": 1,
+        "x": 1024,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "states": {
+        "neutral": {
+          "path": "art/strategy-officers.webp",
+          "identity": "lin",
+          "state": "neutral",
+          "fallback": {
+            "identity": "lin",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "린 매니저 · 현지"
+          }
+        },
+        "concerned": {
+          "path": "art/strategy-officers-concerned.webp",
+          "identity": "lin",
+          "state": "concerned",
+          "fallback": {
+            "identity": "lin",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "린 매니저 · 현지"
+          }
+        },
+        "positive": {
+          "path": "art/strategy-officers-positive.webp",
+          "identity": "lin",
+          "state": "positive",
+          "fallback": {
+            "identity": "lin",
+            "state": "neutral",
+            "path": "art/strategy-officers.webp",
+            "text": "린 매니저 · 현지"
+          }
+        }
+      }
+    }
+  ],
+  "neutralSource": "source-art/strategy-officers.png"
+}

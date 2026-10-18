@@ -40,9 +40,14 @@ L은 과거 [`art-prompts.md`](../art-prompts.md)의 파일명·생성 지시와
 | `art/slit_on.png` | 기존 PNG | L: [프롬프트](../art-prompts.md), [포장](../make-assets.ps1) | UNVERIFIED — 개별 생성 원본·저작자·허가문 미확인 | `8404448` 최초 유입; 이후 파일 변경 없음 |
 | `art/strategy-map.png` | 전략 PNG | S: [제작 기록](media-production.md), 원본 `exec-c80d3cea-77e2-48a8-ac70-bf474e9caf91.png` | SOURCE_VERIFIED — 기록된 로컬 생성 원본과 SHA-256 일치; 상세 결과는 [검증 기록](../.omo/evidence/ulw/commercial-20261018-01a139fb/G002-baseline-qa/a1/task-5/inventory.json)의 generatedOriginals 참조; 권리 근거 미확인 | 2026-10-14 초기 지도에서 제련 시설을 냉간 가공시설로 수정; `bc41730` 유입 |
 | `art/strategy-office.png` | 전략 PNG | S: [제작 기록](media-production.md), 원본 `exec-d06030f5-94f8-4ce9-a449-9346bb670df1.png` | SOURCE_VERIFIED — 기록된 로컬 생성 원본과 SHA-256 일치; 상세 결과는 [검증 기록](../.omo/evidence/ulw/commercial-20261018-01a139fb/G002-baseline-qa/a1/task-5/inventory.json)의 generatedOriginals 참조; 권리 근거 미확인 | 2026-10-14 초기 사무실의 원경 및 도면을 냉간 가공시설로 수정; `bc41730` 유입 |
-| `art/strategy-officers.png` | 전략 PNG | S: [제작 기록](media-production.md), 원본 `exec-0929af83-66a8-46ae-9b4e-d51856ab15e9.png` | SOURCE_VERIFIED — 기록된 로컬 생성 원본과 SHA-256 일치; 상세 결과는 [검증 기록](../.omo/evidence/ulw/commercial-20261018-01a139fb/G002-baseline-qa/a1/task-5/inventory.json)의 generatedOriginals 참조; 권리 근거 미확인 | 2026-10-14 6인 3열×2행 초상 아틀라스 신규 제작; `bc41730` 유입 |
+| `art/strategy-officers.webp` | neutral 무손실 WebP | S: [제작 기록](media-production.md#staff-expressions--2026-10-18-t9), 원본 `source-art/strategy-officers.png` | SOURCE_VERIFIED — [pixel-proof.json](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/pixel-proof.json)의 원본 RGBA 일치; 권리 근거 미확인 | 2026-10-18 원본 PNG 보존 후 배포 인코딩 변경 |
+| `art/strategy-officers-concerned.webp` | concerned 무손실 WebP | [T9 제작 기록](media-production.md#staff-expressions--2026-10-18-t9), 내장 imagegen 원본 `exec-52238584-cbab-4d3a-9914-040a78ed907b.png` | SOURCE_VERIFIED — 생성 PNG와 디코딩 RGBA 일치; 별도 권리 인증 아님 | 2026-10-18 원본 6인 표정 편집 |
+| `art/strategy-officers-positive.webp` | positive 무손실 WebP | [T9 제작 기록](media-production.md#staff-expressions--2026-10-18-t9), 내장 imagegen 원본 `exec-afc4d287-acb7-496e-840b-c720fe5f9244.png` | SOURCE_VERIFIED — 생성 PNG와 디코딩 RGBA 일치; 별도 권리 인증 아님 | 2026-10-18 원본 6인 표정 편집 |
+| `art/staff-expressions.json` | 초상 상태 manifest | [T9 계약](../art/staff-expressions.json), `ui.js`의 여섯 직원 identity/이름/담당 | SOURCE_VERIFIED — 18개 상태·실재 파일·셀·neutral 및 이름/담당 fallback 검증 | 2026-10-18 추가; 경제·난수와 무관 |
 | `icon-192.png` | 앱 PNG 아이콘 | [manifest](../manifest.webmanifest), [빌드](../scripts/build.mjs)에서 배포 참조 확인 | UNVERIFIED — 생성 원본·저작자·라이선스 근거 미확인 | `8404448` 최초 유입; 이후 파일 변경 없음 |
 | `icon-512.png` | 앱 PNG 아이콘 | [manifest](../manifest.webmanifest), [빌드](../scripts/build.mjs)에서 배포 참조 확인 | UNVERIFIED — 생성 원본·저작자·라이선스 근거 미확인 | `8404448` 최초 유입; 이후 파일 변경 없음 |
+
+`source-art/strategy-officers.png`는 2026-10-14 원본을 바이트 그대로 보존한 **비배포 제작 소스**다. SHA-256 `2848705ba69d47ed3477e5c60248bf9600d43956876dbb7c622250fc23ca6d56`이며 기록된 로컬 생성 원본과 대조했다. 기존 `art/strategy-officers.png`를 이동했으며 이력·과거 QA의 PNG 경로는 당시 기록이다. 현재 배포는 위 WebP 세 장과 JSON이다.
 
 ## 음악·징글·효과음
 
@@ -105,4 +110,4 @@ L은 과거 [`art-prompts.md`](../art-prompts.md)의 파일명·생성 지시와
 
 [검사 스크립트](../.omo/evidence/ulw/commercial-20261018-01a139fb/G002-baseline-qa/a1/task-5/verify-inventory.mjs)는 T5 전용 임시 디렉터리에 실제 빌드를 만들고 PNG 28개(art 26 + 아이콘 2), WAV 21개, CSS family 13개를 표의 식별자와 비교한다. 표의 설명 문구를 시험하는 방식이 아니라 실제 배포 파일과 CSS 의존성 집합의 누락·잉여를 검사한다. 임시 빌드의 inventory fixture에 신규 PNG를 추가하면 누락 1개로 검출해야 하며 제거 후 다시 누락 0개여야 한다. 최종 정리 기록까지 [provenance-review.md](../.omo/evidence/ulw/commercial-20261018-01a139fb/G002-baseline-qa/a1/task-5/provenance-review.md)에 연결한다.
 
-미확인 출처를 해결하거나 파일을 새로 배포하기 전에는 이 목록의 근거와 상태를 갱신한다. 현재 자료만으로 모든 자산의 상업 배포 권리가 확인되었다고 결론 내리지 않는다. 본 작업은 새 자산 생성, 기존 파일 삭제, 제품 코드 변경을 포함하지 않는다.
+T5 검사 기록은 2026-10-18 표정 추가 전의 역사적 inventory다. T9 이후 배포 파일·원본 픽셀·상태 manifest·용량의 직접 재검증은 [task-9/visual-review.md](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/visual-review.md)를 따른다. 미확인 출처를 해결하거나 파일을 새로 배포하기 전에는 이 목록의 근거와 상태를 갱신한다. 현재 자료만으로 모든 자산의 상업 배포 권리가 확인되었다고 결론 내리지 않는다.

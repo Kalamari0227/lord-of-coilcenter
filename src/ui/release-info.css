@@ -1,0 +1,6 @@
+.cc-release-version { margin: .6rem 0 0; color: var(--ink); font-size: calc(.875rem * var(--cc-text-scale, 1)); overflow-wrap: anywhere; }
+.cc-release-info .cc-dossier-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--cc-space-3); padding: var(--cc-space-4); border-bottom: 1px solid var(--cc-border); }
+.cc-release-info .cc-dossier-content { padding: var(--cc-space-4); overflow-wrap: anywhere; }
+.cc-release-info h3 { margin: 1.4em 0 .4em; }
+.cc-release-info a { color: var(--ink); text-decoration: underline; text-underline-offset: .2em; }
+.cc-release-info a:focus-visible { outline: 3px solid var(--cc-gold); outline-offset: 3px; }

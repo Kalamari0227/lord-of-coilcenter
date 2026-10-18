@@ -1,7 +1,7 @@
 {
   "name": "lord-of-coilcenter-foundation",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "코일센터의 제왕 경영 화면 개편 기반",
   "engines": {
     "node": ">=22"

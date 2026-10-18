@@ -1,0 +1,53 @@
+# 0.2.0 출고 후보 · 출시와 지원
+
+이 문서는 로컬 출고 후보를 확인하는 절차다. 태그·push·배포가 완료되었다는 선언이 아니다.
+
+## 확인할 내용
+
+- `package.json.version`은 제품 버전이다. `release.json.productVersion`과 화면의 제품 버전이 같아야 한다. `release.json.version`은 빌드 입력의 SHA-256 앞 12자리이며 업데이트·캐시 구분에 사용한다. 타이틀과 「게임 정보 · 도움말」에 둘 다 표시한다. 메타데이터가 없거나 잘못되면 「버전 정보 확인 불가」로 표시한다.
+- `release.json.files`의 경로·바이트·SHA-256을 배포할 실제 파일과 대조한다. `sourceRevision`은 확인 가능한 Git HEAD 또는 null이며 미커밋 변경이 없다는 증명이 아니다. 입력 파일 해시와 실제 제공 파일 해시를 별도로 남긴다.
+- [자산 등록부](asset-register.md)의 원본 그림 23개·아이콘 2개는 출처/권리 미확인이다. WebP atlas 3개와 WAV 21개의 제작 출처 기록도 법적 이용 허락과 다르다. 미확인 사항이 해결되었다고 주장하거나 임의 LICENSE를 붙이지 않는다.
+- [오디오 검증 기록](audio-verification.md)의 기술 검사와 사람의 청취를 구분한다. 물리 iOS/Safari 설치·헤드폰/스피커 청취·전체 캠페인·최종 통합 QA는 실제 해당 증거가 있을 때만 통과 처리한다.
+
+## 로컬 명령
+
+Node.js 22 이상, 외부 패키지 설치 없이 실행한다. 아래 명령은 저장소 루트 기준이다.
+
+```sh
+npm run audio:verify
+npm test
+```
+
+공유 `dist/`를 건드리지 않는 프로덕션 빌드:
+
+```sh
+node --input-type=module -e 'import {build} from "./scripts/build.mjs"; import {mkdtemp} from "node:fs/promises"; import {tmpdir} from "node:os"; const outputDir=await mkdtemp(tmpdir()+"/coil-release-"); console.log(await build({outputDir}));'
+```
+
+출력 경로의 `index.html`, `game.js`, `game.css`, `sw.js`, manifest, art, audio와 release.json 전체가 한 배포 단위다. `/lord-of-coilcenter/` 같은 하위 경로에서도 상대 링크를 확인한다. 빌드 전에 입력을 고정한 별도 복사본에서 명령을 실행하면 다른 작업자의 편집과 분리할 수 있다.
+
+자신이 소유한 새 체크아웃에서는 `npm run check`로 위 두 검사와 `npm run build`를 함께 실행한다. 이 명령은 그 체크아웃의 `dist/`를 다시 생성한다. 이미 내용이 있지만 `.coilcenter-build.json`이 없거나 다른 소스의 표시가 있는 폴더는 거절한다. 기존 실행 서버를 종료하고 폴더를 삭제하지 말고 별도 경로로 백업한 뒤, 빈 출력 위치로 빌드한다. 소유 표시를 수동으로 만들어 기존 폴더를 강제 채택하지 않는다. 기존 사용자 탭/저장소는 정리 대상이 아니다.
+
+개발 전용은 `npm run dev` (4186), 별도 포트는 `PORT=4190 npm run dev`다. 개발 서버는 자신의 dist를 갱신하므로 공유 체크아웃에서는 실행하지 않는다. `npm run audio:render`는 음원을 재생성하는 제작 명령으로 일반 출시 검사에는 불필요하다.
+
+## PR 검사와 배포 구분
+
+[checks.yml](../.github/workflows/checks.yml)은 `pull_request`에서 `contents: read`만 갖고 `npm run check`를 실행한다. 환경·비밀·배포 단계가 없으며 checkout 인증 정보도 남기지 않는다. 기존 [pages.yml](../.github/workflows/pages.yml)은 main push/수동 실행의 배포 경로로 유지한다. 로컬 검사 성공은 GitHub 호스팅 실행 성공과 다르다.
+
+권한 생략 시 나머지는 none이라는 규칙과 이벤트 구분은 [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)를 따른다. PR 코드를 실행하는 검사는 `pull_request_target`을 사용하지 않는다.
+
+## 플레이어 지원
+
+타이틀·게임 메뉴의 「게임 정보 · 도움말」은 버전, 저장 복구, 업데이트, 오프라인 조건, 제작자와 감사 인사를 담는다. 「저장 관리」에서 마지막 확인 기록을 내보내고, 손상 시 이전 정상본이나 파일의 미리보기를 확인해 복원한다. 결재 중 선택은 저장되지 않는다. 충돌 시 다른 탭의 변경을 먼저 확인하고 최신 기록을 읽는다. 안전한 탭 간 잠금(Web Locks) 미지원 환경은 메모리 진행이며 창을 닫으면 사라질 수 있다. 잠금 지원 환경에서도 저장소 읽기·쓰기가 실패하면 새 게임·결재 진행이 거절될 수 있으므로 실패 안내에 따라 저장 관리에서 재확인·복구한다. [저장 계약](save-contract.md) 참조.
+
+업데이트는 「기록 확인 후 새 버전 적용」으로 요청하고 저장 실패·결재 중이면 미룬다. 다른 탭은 자동 새로고침하지 않는다. 첫 로드에는 온라인이 필요하며 오프라인 음원은 해당 파일을 성공적으로 받아 캐시에 남긴 경우에만 가능하다. 사이트 데이터 삭제나 저장 공간 부족 후에는 다시 받아야 한다.
+
+대상은 JavaScript를 지원하는 현대 데스크톱/모바일 브라우저다. HTTPS 또는 localhost에서 저장·설치 기능을 사용한다. Web Audio·Service Worker·Web Locks 등 실제 지원 여부에 따라 제한 안내가 표시된다. 모바일 크기 Chromium 검증을 물리 iOS/Safari 검증으로 대신하지 않는다. 전용 고객지원 서버·계정 동기화·기기 간 자동 복구는 없다. 문제를 제작자에게 전달할 때 제품/콘텐츠 버전, 기기/브라우저, 게임 연월, 재현 순서, 오류 화면을 포함하고 저장 파일의 개인 정보를 검토한다.
+
+## 롤백 절차
+
+1. 새 버전 적용을 미루고 확인된 기록을 JSON으로 내보낸다. 진행 중 결재는 마지막 확인 기록까지만 보존된다.
+2. 운영 담당자는 이전 검증된 배포 단위 전체와 release.json 해시를 확인한다. JS·CSS·art·audio·SW를 서로 다른 빌드에서 섞지 않는다.
+3. 배포 권한이 있는 승인된 작업에서만 이전 단위로 되돌린다. 이 PR 검사는 롤백/배포를 실행하지 않는다.
+4. 프로토콜을 지원하는 새 worker는 대기 후 명시적으로 적용한다. 프로토콜이 없는 구버전으로 되돌리면 자동 안전 적용을 보장할 수 없으므로 파일 백업 뒤 모든 해당 게임 탭·설치 앱을 닫고 온라인에서 다시 연다. 사이트 저장소를 먼저 지우지 않는다.
+5. 제품/콘텐츠 버전, 제공 파일 해시, 기록 미리보기와 이어하기를 확인한다. 이전 코드가 저장을 거절하면 원본 파일을 유지하고 호환되는 검증 버전에서 복구한다.

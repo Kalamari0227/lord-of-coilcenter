@@ -1,8 +1,17 @@
 # v1 checkpoint 소비 계약
 
-2026-10-18 T3 조사. 이 문서는 현재 생성 데이터와 실제 소비 경계를 기록한다. 검증기 강화·백업·가져오기 UI는 후속 T6/T11 작업이며 이 문서로 구현 완료를 주장하지 않는다.
+2026-10-18 T3에서 고정한 v1 생성 데이터·소비 경계 조사와 이후 T6/T11/T15의 현재 저장 동작을 함께 기록한다. 아래 필드 표·코퍼스·당시 결함 관측은 T3 기준선이며 재생성하거나 현행 결함으로 재분류하지 않았다.
 
-## 저장 경계와 코퍼스
+## 현재 저장·복구·업데이트 계약 (T6/T11/T15 반영)
+
+- 현재 구현은 `src/platform/session-save.js`, `src/ui/save-manager.js`, `src/ui/update-manager.js`다. v1 내부 형식을 유지하며 검증기는 중첩 레코드·참조·비유한 수·지원하지 않는 필드와 위험한 문자열을 검사한다. 아래 T3 손상 사례의 당시 통과 결과는 현재 허용 계약이 아니다. 고정 코퍼스의 정상 roundtrip과 손상 거절은 `tests/save-v1-corpus.test.mjs`, `tests/save.test.mjs`가 검증한다.
+- Web Locks로 협력하는 탭의 작업을 직렬화하고 잠금 안에서 관측했던 primary raw가 여전히 최신인지 확인한다. 확인된 이전 primary를 backup에 쓰고 재확인한 뒤 새 primary를 쓰고 재확인한다. backup 실패는 primary를 바꾸지 않는다. primary 쓰기/재확인 실패는 실패로 보고하고 이전 정상본 복구를 안내한다.
+- primary 쓰기와 재확인이 성공한 뒤 별도 revision/hash 보조 정보 쓰기만 실패하면 `metadata-failed`로 안내하되 **게임 기록 저장은 성공**이다. 저장 실패와 혼동하지 않는다. 충돌 검사는 primary raw를 기준으로 한다.
+- 「저장 관리」는 마지막 확인 기록 내보내기, UTF-8 JSON 10MiB 이하 가져오기 미리보기·확정, 이전 정상본 복구를 제공한다. 취소·검증 거절은 게임과 저장을 바꾸지 않는다. 결재 중 내보내기는 진행 중 선택을 제외한 이전 확정 기록이며 부분 결재 저장·가져오기·업데이트 적용은 거절한다.
+- 안전한 탭 간 잠금(Web Locks) 미지원은 자동 쓰기를 끄고 메모리 진행과 확인된 기록 내보내기를 제공한다. 반면 잠금 지원 환경의 저장소 읽기·쓰기 실패는 메모리 진행을 자동 보장하지 않으며 새 게임·결재 시작을 거절할 수 있다. 실패 안내에 따라 재확인·복구한다. 협력하지 않는 구 버전 탭의 쓰기를 완전히 방지할 수 없고, 탭 종료 시 비동기 저장 완료도 보장하지 않는다.
+- 「설치 · 업데이트」의 명시적 적용은 `ccPrepareUpdateCheckpoint` 성공과 대기 worker의 동일 버전을 확인한 뒤 요청 탭만 새로고침한다. 저장 실패·결재 중에는 적용하지 않고 나중으로 미룰 수 있다. 다른 탭은 자동 새로고침하지 않는다. 관련 동작은 `tests/save-manager.test.mjs`, `tests/update.test.mjs`에서 검증한다.
+
+## T3 기준선: 저장 경계와 고정 코퍼스
 
 키는 `coilcenter:foundation:v1`, `v=1`이다. `coilcenter.save.v1`은 별개 원본 키이며 자동 변환·삭제 대상이 아니다. `save.js:serializeGame`의 데이터에서 플랫폼 어댑터가 `pendingTurns`를 빼고 `bigPlan`을 카드 ID로, `pending`을 `{turn,effect}`로 바꾼다. 함수·DOM·현재 결재 큐는 저장하지 않는다. 신규 게임, 결재 시작 직전, 결산 직후가 checkpoint다. 부분 결재는 저장하지 않는다.
 
@@ -19,7 +28,7 @@ node --test tests/save-v1-corpus.test.mjs tests/save.test.mjs
 
 ## 읽는 법
 
-**필수**는 현재 생성기가 쓰고 소비자가 직접 읽는 필드다. **선택**은 실제 소비자에 fallback이 있거나 특정 사건이 발생할 때만 생성되는 필드다. **참조**는 코드 소유 사전에 재연결해야 하는 값이다. 현재 validator가 필수 여부를 모두 검사한다는 뜻은 아니다. 모든 수치는 유한한 number여야 하며 경제 금액·비율에 임의 상한을 추가하지 않는다. 과거/prelude turn, 과거 도착일, 음수 손익·자본과 임기 이후 예약·프로젝트 종료일은 실제로 발생한다.
+**필수**는 현재 생성기가 쓰고 소비자가 직접 읽는 필드다. **선택**은 실제 소비자에 fallback이 있거나 특정 사건이 발생할 때만 생성되는 필드다. **참조**는 코드 소유 사전에 재연결해야 하는 값이다. 이 표는 T3의 소비 계약 조사이며 당시 validator의 검사 범위와 같다는 뜻은 아니다. 현재 검사 동작은 위 구현·회귀 검사 기준으로 확인한다. 모든 수치는 유한한 number여야 하며 경제 금액·비율에 임의 상한을 추가하지 않는다. 과거/prelude turn, 과거 도착일, 음수 손익·자본과 임기 이후 예약·프로젝트 종료일은 실제로 발생한다.
 
 ## 루트·세션
 
@@ -110,14 +119,16 @@ node --test tests/save-v1-corpus.test.mjs tests/save.test.mjs
 - safety: `{turn,effect:{kind:'safety'}}`; 확률 `0.3+W.fatigue/250`, 현금 −260000/morale −12/capHit×0.9와 사고 횟수/기록.
 - 알 수 없는 kind/customer는 거절한다. 알려지지 않은 closure를 no-op이나 safety로 추정해 복원하지 않는다. 현재 `ccRestoreEffect` 마지막 분기는 safety이므로 반드시 그 앞 경계 검증을 유지한다.
 
-## 손상 입력과 현행 결함
+## T3 역사적 관측: 손상 입력과 당시 결함 (현행 결함 목록 아님)
 
-`malformed-cases.json`은 정상 normal-mid에서 변경할 경로/값 또는 raw JSON을 정의한다. 현재 관측은 evidence `before-malformed.json`에 별도로 기록한다. 미래 validator 테스트는 이 파일의 모든 사례가 이미 거절된다고 가정하면 안 된다.
+`malformed-cases.json`은 정상 normal-mid에서 변경할 경로/값 또는 raw JSON을 정의한다. T3 당시 관측은 evidence `before-malformed.json`에 별도로 기록한다. 이 기록은 T6 이전의 RED 근거다. 현재 검증기는 고정 손상 사례의 거절을 회귀 검사하며, 당시 통과를 정상 동작으로 채택하지 않는다.
 
-현재 잘린 JSON, null/빈 루트, NaN/Infinity 문법, `1e400` 비유한 수, 숫자 대신 문자열, 버전2, prototype 위험 키, 모르는 효과/고객/대형카드가 거절된다. `s.lines=[{}]`도 type 참조 검사로 거절된다. 반면 재고·채권·영업투자·scenario/nasi/buildQueue/history 및 W.project 등의 빈 레코드는 통과한다. 실제 resume 뒤의 합법적 소비 함수 호출에서 비유한 경제 상태 또는 예외가 확인되었다. 이는 **기존 결함**이며 T3에서 고치거나 올바른 동작으로 고정하지 않는다. 일부 빈 기억/이정표는 즉시 경제 예외 없이 통과하더라도 표시 레코드 계약을 만족하지 못한다.
+T3 당시에는 잘린 JSON, null/빈 루트, NaN/Infinity 문법, `1e400` 비유한 수, 숫자 대신 문자열, 버전2, prototype 위험 키, 모르는 효과/고객/대형카드가 거절된다. `s.lines=[{}]`도 type 참조 검사로 거절된다. 반면 재고·채권·영업투자·scenario/nasi/buildQueue/history 및 W.project 등의 빈 레코드는 통과한다. 실제 resume 뒤의 합법적 소비 함수 호출에서 비유한 경제 상태 또는 예외가 확인되었다. 이는 **T3 당시 결함**으로 남긴 조사이며 후속 T6에서 검증기를 강화했다. 아래 관측은 현재 빈 레코드가 허용된다는 설명이 아니다. 일부 빈 기억/이정표는 즉시 경제 예외 없이 통과하더라도 표시 레코드 계약을 만족하지 못한다.
 
-## 후속 저장/가져오기 계약(미구현)
+## T3 역사적 설계안 (T6/T11 구현으로 대체)
 
-T6/T11은 기존 v1 내부를 유지하고 revision/hash를 별도 key로 둔다. 같은 origin의 쓰기를 Web Locks로 직렬화하고 lock 안에서 직전 읽은 primary raw 최신성을 재확인한다. 검증한 이전 primary를 backup에 보존한 뒤 새 primary commit/read-back한다. backup 실패 시 primary를 건드리지 않으며 metadata 실패를 primary 성공으로 혼동하지 않는다. 읽기·새 게임·삭제·import는 같은 coordinator를 사용한다. 협력하지 않는 구 버전 writer는 완전 방지할 수 없으므로 event/재확인으로 감지하고 덮어쓰기를 중지한다. Web Locks가 없으면 안전 자동 쓰기를 끄고 파일 checkpoint 내보내기를 제공한다.
+아래는 T3에서 작성한 후속 설계안이다. 현재 동작·예외는 문서 앞의 구현 계약을 따른다.
+
+당시 계획은 기존 v1 내부를 유지하고 revision/hash를 별도 key로 둔다. 같은 origin의 쓰기를 Web Locks로 직렬화하고 lock 안에서 직전 읽은 primary raw 최신성을 재확인한다. 검증한 이전 primary를 backup에 보존한 뒤 새 primary commit/read-back한다. backup 실패 시 primary를 건드리지 않으며 metadata와 primary 결과를 구분하는 것이었다. 구현에서는 primary 성공 뒤 metadata만 실패하면 게임 기록 저장 성공으로 반환하고 보조 정보 실패를 따로 알린다. 읽기·새 게임·삭제·import는 같은 coordinator를 사용한다. 협력하지 않는 구 버전 writer는 완전 방지할 수 없으므로 event/재확인으로 감지하고 덮어쓰기를 중지한다. Web Locks가 없으면 안전 자동 쓰기를 끄고 파일 checkpoint 내보내기를 제공한다.
 
 파일은 UTF-8 JSON, known v1, 필수 필드·참조 검증을 통과한 월 checkpoint만 받는다. 상한은 10MiB(현재 corpus 최대가 그보다 작음). 미지원 버전·잘린 파일·prototype 위험 키를 거절하고, preview→확정 적용하며 취소는 G/storage를 보존한다. W.mem/fired/impact/milestones/projects/resultLines의 HTML·event-handler 문자열도 신뢰하지 않는다. 파일 preview·적용·장부에서 문자로 표시하거나 적용 전에 거절해야 하며 실행해서는 안 된다.

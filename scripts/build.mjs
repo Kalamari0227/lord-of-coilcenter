@@ -52,18 +52,21 @@ async function fileTree(directory, prefix = '') {
   return files;
 }
 
-async function writeRelease(outputDir, version, sourceRoot) {
+async function writeRelease(outputDir, release, sourceRoot) {
   const revision = spawnSync('git', ['rev-parse', '--verify', 'HEAD'], { cwd: sourceRoot, encoding: 'utf8' });
   const sourceRevision = revision.status === 0 && /^[a-f0-9]{40,64}$/.test(revision.stdout.trim()) ? revision.stdout.trim() : null;
   const files = [...await fileTree(outputDir)].filter(([file]) => !excludedFiles.includes(file))
     .map(([file, bytes]) => ({ path: file, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') }));
-  await writeFile(path.join(outputDir, 'release.json'), JSON.stringify({ schemaVersion: 1, version, sourceRevision,
+  await writeFile(path.join(outputDir, 'release.json'), JSON.stringify({ schemaVersion: 1, ...release, sourceRevision,
     excludedFiles, files }, null, 2) + '\n');
 }
 
 export async function build({ development = false, sourceRoot = root, outputDir = path.join(sourceRoot, 'dist') } = {}) {
   const destination = await safeOutput(sourceRoot, outputDir);
   const read = file => readFile(path.join(sourceRoot, file), 'utf8');
+  const packageBytes = await read('package.json');
+  const { version: productVersion } = JSON.parse(packageBytes);
+  if (typeof productVersion !== 'string' || !/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/.test(productVersion)) throw new Error('Invalid product version in package.json');
   const uiFiles = (await readdir(path.join(sourceRoot, 'src/ui'))).filter(file => file.endsWith('.js')).sort();
   const sources = ['engine.js', 'decks.js', 'world.js', 'issues.js', 'src/platform/audio.js', 'ui.js', 'save.js',
     'src/platform/session-save.js', ...uiFiles.map(file => `src/ui/${file}`)];
@@ -82,7 +85,7 @@ export async function build({ development = false, sourceRoot = root, outputDir 
     [file, await readFile(path.join(sourceRoot, file))])));
   // Template changes must invalidate cached HTML and worker behavior as well as assets.
   const fingerprint = createHash('sha256').update(await readFile(new URL(import.meta.url)))
-    .update(code).update(css).update(manifest);
+    .update(code).update(css).update(manifest).update(packageBytes);
   for (const [file, bytes] of icons) fingerprint.update(file).update(bytes);
   for (const [file, bytes] of artFiles) fingerprint.update(file).update(bytes);
   const audioManifestBytes = await readFile(path.join(sourceRoot, 'audio/manifest.json'));
@@ -103,7 +106,7 @@ export async function build({ development = false, sourceRoot = root, outputDir 
   await mkdir(path.join(outputDir, 'audio'));
   await Promise.all([...audio].map(([file, bytes]) => writeFile(path.join(outputDir, file), bytes)));
   await Promise.all([
-    writeFile(path.join(outputDir, 'game.js'), `Object.defineProperty(window, 'CC_RELEASE', { value: Object.freeze({ version: '${version}' }), enumerable: true });\n` + code),
+    writeFile(path.join(outputDir, 'game.js'), `Object.defineProperty(window, 'CC_RELEASE', { value: Object.freeze({ version: '${version}', productVersion: '${productVersion}' }), enumerable: true });\n` + code),
     writeFile(path.join(outputDir, 'game.css'), css),
     writeFile(path.join(outputDir, 'index.html'), `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
@@ -134,7 +137,7 @@ export async function build({ development = false, sourceRoot = root, outputDir 
 self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim().then(() => self.registration.unregister()));
 });\n`);
-    await writeRelease(outputDir, version, sourceRoot);
+    await writeRelease(outputDir, { version, productVersion }, sourceRoot);
     return { sources, version, output: outputDir };
   }
   const assets = ['./', './index.html', './game.js', './game.css', './manifest.webmanifest',
@@ -188,7 +191,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(caches.open(CACHE).then(async cache =>
     await cache.match(event.request) || fetch(event.request)));
 });\n`);
-  await writeRelease(outputDir, version, sourceRoot);
+  await writeRelease(outputDir, { version, productVersion }, sourceRoot);
   return { sources, version, output: outputDir };
 }
 

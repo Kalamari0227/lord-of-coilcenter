@@ -16,6 +16,7 @@ async function fixture(t) {
   await writeFile(path.join(sourceRoot,'shell.html'),'<style>body{color:red}</style><style>a{color:blue}</style>');
   for(const file of ['icon-192.png','icon-512.png','art/a.png']) await writeFile(path.join(sourceRoot,file),Buffer.from([1,2,3]));
   await writeFile(path.join(sourceRoot,'manifest.webmanifest'),'{}');
+  await writeFile(path.join(sourceRoot,'package.json'),'{"version":"0.2.0"}');
   await writeFile(path.join(sourceRoot,'audio/manifest.json'),JSON.stringify({version:1,tracks:[{id:'title',file:'audio/title.wav'}]}));
   await writeFile(path.join(sourceRoot,'audio/title.wav'),Buffer.from([8,9,10]));
   return {sourceRoot,outputDir:path.join(sourceRoot,'dist')};

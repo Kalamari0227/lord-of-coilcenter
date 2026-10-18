@@ -68,7 +68,7 @@ dialog button { min-height: 44px; }
 .cc-input-error:empty { display: none; }
 [aria-invalid='true'] { border-color: var(--cc-warning); }
 dialog { box-sizing:border-box; width:min(960px, calc(100vw - 24px)); overflow-wrap:anywhere; }
-dialog .cc-dossier-heading { position:sticky; top:0; z-index:2; background:var(--cc-panel); flex-wrap:wrap; }
+dialog .cc-dossier-heading { background:var(--cc-panel); flex-wrap:wrap; }
 dialog .cc-dossier-close { flex-shrink:0; }
 dialog input, dialog select { max-width:100%; box-sizing:border-box; }
 .cc-app button, dialog button { white-space:normal; overflow-wrap:anywhere; }
@@ -83,6 +83,9 @@ dialog .custbar .leak, dialog .custbar .eff, dialog .custbar .rel { white-space:
 dialog.deck .cc-effect-label, dialog.deck .cc-effect-text, dialog.deck .cc-effect-note,
 dialog.deck .cc-decision-effects { font-size:var(--cc-text-small); }
 @media(max-width:760px) {
+  .cc-game :is(button, input, select, textarea, a[href], summary, [tabindex]) {
+    scroll-margin-block-end: calc(var(--cc-turn-height, 56px) + var(--cc-space-6) + env(safe-area-inset-bottom));
+  }
   dialog.deck .cc-effect-note { font-size:var(--cc-text-label); }
 }
 @media(max-width:400px) {
@@ -95,6 +98,7 @@ dialog.deck .cc-decision-effects { font-size:var(--cc-text-small); }
   .cc-game .cc-nav, .cc-command-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media(max-width:300px) {
+  .cc-game .cc-turn #go { position:static; width:100%; }
   .cc-title-content { padding:24px 8px; }
   .cc-title h1 { font-size:clamp(20px, 12vw, 36px); }
   .cc-title-credit { max-width:100%; }
@@ -111,6 +115,9 @@ dialog.deck .cc-decision-effects { font-size:var(--cc-text-small); }
   dialog .ltop i, dialog .lbot .sub { white-space:normal; max-width:100%; }
   dialog .say, dialog .brief { flex-direction:column; }
   dialog .bubble, dialog .btext { min-width:0; max-width:100%; }
+  dialog .warns .warn, dialog .urg .warn { flex-direction:column; align-items:stretch; }
+  dialog .warns .warn i, dialog .urg .warn i { white-space:normal; }
+  dialog .warns .warn span, dialog .urg .warn span { min-width:0; }
   dialog .ctx { grid-template-columns:minmax(0,1fr); }
   dialog .ctx .cv, dialog .ctx .cn { grid-column:auto; white-space:normal; }
 }

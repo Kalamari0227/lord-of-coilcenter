@@ -22,7 +22,7 @@ function ccDecisionEffects(card, option) {
   }
   const timing = ccDecisionTiming(card, option);
   const deferred = card.id === 'w-credit' && option.label === '올려준다'
-    ? '여신을 늘리면 6개월 뒤 대손이 생길 수 있습니다. 물량 증가와 대금 회수는 별개입니다.' : '';
+    ? '외상거래 한도를 늘리면 6개월 뒤 고객에게 돈을 받지 못하는 손실(대손)이 생길 수 있습니다. 주문이 늘어도 돈을 모두 받을 수 있다는 뜻은 아닙니다.' : '';
   const labels = { cost: '비용·지급 조건', effect: '기대 효과', risk: '불확실성·후속 위험' };
   const sections = Object.entries(groups).filter(([key, list]) => list.length || (key === 'risk' && deferred));
   return sections.map(([key, list]) => `<span class="cc-effect-group" data-cc-effect="${key}">
@@ -40,15 +40,15 @@ function ccDecisionFormGuide(card) {
   if (card.form === 'order') return `입력 단위는 소재 톤입니다. 지금 발주한 소재는 기본 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤 입고되며, `
     + `대금은 입고 후 ${CFG.DPO_TURNS}개월 뒤 결제합니다. 입고와 현금 지출은 시점이 다릅니다. `
     + (card.months > 1 ? '분기 발주량은 3분의 1씩 세 달에 나누어 집행하고 입고·결제도 나뉩니다. ' : '')
-    + '아래 재고·야드·결품은 수요와 입고 시점에 따른 추정입니다. 수요 증가·입고 지연 예시도 함께 비교하십시오.';
+    + '아래 재고량, 보관장(야드)의 여유, 소재 부족량은 수요와 입고 시점에 따른 추정입니다. 주문이 늘거나 소재가 늦게 도착하는 경우도 함께 비교해 보십시오.';
   return '';
 }
 
 function ccExplainDecision(dialog, card) {
   const guide = ccDecisionFormGuide(card);
   const title = dialog.querySelector('.deckq');
-  const explanation = guide || '비용·지급 조건과 기대 효과를 나누어 읽으십시오. 효과는 원문 설명이며 이익 보장이 아닙니다. '
-    + '실제 결과는 수요·설비·조건에 따라 달라집니다. 별도 지급 시점이 없는 금액은 여기서 즉시 지출로 단정하지 않습니다.';
+  const explanation = guide || '각 선택 아래에서 들어가는 돈, 기대할 수 있는 변화, 나중에 생길 위험을 확인하십시오. '
+    + '실제 결과는 고객 주문과 공장 상태에 따라 달라집니다. 돈이 언제 빠져나가는지는 지급 시점 안내를 확인하십시오. 시점이 적혀 있지 않으면 즉시 지출되는 금액이라고 단정할 수 없습니다.';
   title.after(ccElement('p', 'cc-decision-guide', ccEscape(explanation)));
   dialog.querySelectorAll('[data-o]').forEach(button => {
     const option = card.opts[Number(button.dataset.o)];

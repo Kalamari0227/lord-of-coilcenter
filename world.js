@@ -678,7 +678,7 @@ const PROJECTS = {
   newcust: {
     name: '신규 고객 개척', who: 'jung', months: 6,
     budget: 180_000,
-    cost: '예산 $180k · 영업이 여섯 달 붙습니다',
+    cost: '예산 $180,000 · 영업팀이 여섯 달 동안 신규 고객을 찾습니다',
     aim: '우리 시장 점유율 9% 증가 (상대)',
     /* 왜 지금인가 — 상태에서 점수를 매긴다. 높을수록 지금 할 만한 일이다. */
     fit: (s, W) => {
@@ -711,7 +711,7 @@ const PROJECTS = {
   quality: {
     name: '품질·납기 개선', who: 'oh', months: 6,
     budget: 120_000,
-    cost: '예산 $120k · 진행 중 캐파 3% 감소',
+    cost: '예산 $120,000 · 진행 중 공장의 가공 가능량 3% 감소',
     aim: '품질 지수 +6',
     fit: (s, W) => (W.quality < 72 ? 2 : 0) + (W.stats.claims > 0 ? 1 : 0)
            + (W.stats.shortages > 0 ? 1 : 0) + (W.equip < 60 ? 1 : 0),
@@ -737,7 +737,7 @@ const PROJECTS = {
   cash: {
     name: '채권 회수·재고 정상화', who: 'han', months: 3,
     budget: 60_000,
-    cost: '예산 $60k · 대금 독촉으로 고객 관계 하락',
+    cost: '예산 $60,000 · 밀린 돈을 독촉해 고객과의 관계가 나빠집니다',
     aim: '순운전자본 −12%',
     fit: (s, W) => (runway(s) < 2.2 ? 2 : 0) + (coverOf(s) > COVER.heavy ? 2 : 0)
            + (s.debt.limit > 0 && s.debt.principal / s.debt.limit > 0.7 ? 1 : 0),

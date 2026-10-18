@@ -317,20 +317,20 @@ function openDecisions() {
           <tr><th>예상</th>${f.rows.map(r => `<th>${dateLabel(r.turn).replace(/^\d+년 /, '')}</th>`).join('')}</tr>
           <tr><td class="oname">입고</td>${f.rows.map(r => `<td>${r.arrive ? fmt(r.arrive) : '–'}</td>`).join('')}</tr>
           <tr><td class="oname">월말 재고</td>${f.rows.map(r => `<td class="${r.short ? 'dn' : ''}">${r.short ? '결품' : fmt(r.stock)}</td>`).join('')}</tr>
-          <tr><td class="oname">야드 점유</td>${f.rows.map(r => `<td class="${yl(r.yard)}">${Math.round(r.yard * 100)}%</td>`).join('')}</tr>
+          <tr><td class="oname">보관장 사용률</td>${f.rows.map(r => `<td class="${yl(r.yard)}">${Math.round(r.yard * 100)}%</td>`).join('')}</tr>
           <tr><td class="oname">재고율(개월)</td>${f.rows.map(r => `<td>${r.coverM.toFixed(1)}</td>`).join('')}</tr>
         </table>
         <div class="fcnote">
-          <span class="${f.over ? 'dn' : 'up'}">월말 야드 최대 ${Math.round(f.peakYard * 100)}%${f.over ? ' · 한도 초과' : ''}</span>
-          <span class="${f.shortMonths ? 'dn' : 'up'}">결품 ${f.shortMonths ? f.shortMonths + '개월' : '없음'}</span>
-          <span>소재 대금 ${money(f.cashTie)} · ${CFG.DPO_TURNS}개월 뒤 결제</span>
+          <span class="${f.over ? 'dn' : 'up'}">월말 보관장 사용률 최대 ${Math.round(f.peakYard * 100)}%${f.over ? ' · 한도 초과' : ''}</span>
+          <span class="${f.shortMonths ? 'dn' : 'up'}">소재 부족 ${f.shortMonths ? f.shortMonths + '개월' : '없음'}</span>
+          <span>소재 대금 ${money(f.cashTie)} · 각 입고 후 ${CFG.DPO_TURNS}개월 뒤 결제</span>
         </div>
         <div class="fcnote alt">
-          <span>수요 +20%면 야드 ${Math.round(up.peakYard * 100)}% · 결품 ${up.shortMonths}개월</span>
-          <span>입고 1개월 지연이면 결품 ${late.shortMonths}개월</span>
+          <span>수요 +20%면 보관장 ${Math.round(up.peakYard * 100)}% · 소재 부족 ${up.shortMonths}개월</span>
+          <span>입고 1개월 지연이면 소재 부족 ${late.shortMonths}개월</span>
           <span class="est">추정치입니다. 확정 결과가 아닙니다 —
             <b>다음 결재의 신규 발주는 넣지 않은 값</b>이라 마지막 달 재고가 낮게 나옵니다.
-            야드 점유율은 <b>월말 기준</b>이고, 입고 직후 한때 이보다 높습니다.</span>
+            보관장 사용률은 <b>월말 기준</b>입니다. 소재가 도착한 직후에는 이보다 높습니다.</span>
         </div>`;
     };
 
@@ -341,21 +341,21 @@ function openDecisions() {
       <div class="ordwrap">
         <table class="ordt">
           <tr><th>고객군</th><th>${card.months > 1 ? '분기 사용<br><i>석 달치 · 소재' : '월 사용<br><i>소재'} 기준</i></th>
-              <th>창고<br>현물</th><th>해상<br>미착</th>
+              <th>창고에<br>있는 양</th><th>배로<br>오는 양</th>
               <th>본사<br>생산 중</th><th>재고율</th><th>재원율</th>
-              <th class="capby">권장<br>막힌 곳</th>
+              <th class="capby">권장량<br>결정 기준</th>
               <th>${card.months > 1 ? '분기 발주 (톤)' : '발주 (톤)'}</th></tr>
           ${rows.map(r => `<tr>
             <!-- data-l은 폰에서 쓴다. 좁은 화면에서는 표가 고객군마다 한 장으로 풀리고,
                  그때 각 칸 왼쪽에 이 이름이 붙는다(shell.html 폰 레이아웃). -->
             <td class="oname">${CUST[r.k]} <i>${CFG.CUSTOMERS[r.k].name}</i></td>
             <td data-l="${card.months > 1 ? '분기 사용' : '월 사용'}">${fmt(Math.round(r.use))}</td>
-            <td data-l="창고 현물">${fmt(Math.round(r.oh))}</td>
-            <td data-l="해상 미착">${fmt(Math.round(r.sea))}</td>
+            <td data-l="창고에 있는 양">${fmt(Math.round(r.oh))}</td>
+            <td data-l="배로 오는 양">${fmt(Math.round(r.sea))}</td>
             <td data-l="본사 생산 중">${fmt(Math.round(r.prod))}</td>
             <td data-l="재고율" class="${r.invM < COVER.warn ? 'dn' : ''}">${r.invM.toFixed(1)}개월</td>
             <td data-l="재원율">${r.resM.toFixed(1)}개월</td>
-            <td data-l="권장이 막힌 곳" class="capby">${r.capBy}</td>
+            <td data-l="권장량 결정 기준" class="capby">${r.capBy}</td>
             <td data-l="${card.months > 1 ? '분기 발주 (톤)' : '발주 (톤)'}"><input type="number" min="0" max="${r.max}" step="50" data-ok="${r.k}" value="${r.rec}"></td>
             </tr>`).join('')}
         </table>
@@ -369,11 +369,13 @@ function openDecisions() {
           </div>
         </div>
         <div id="ofc" class="ofc"></div>
-        <p class="hint">고객군별 재고는 판매 비중으로 배분한 추정치입니다. 같은 규격을 여러 고객이 쓰니
-          칼같이 갈리지는 않습니다. 지금 걸면 <b>${lead}개월 뒤</b> 야드에 내립니다.<br>
-          권장량은 <b>소요량 + (목표 재원 − 현재 재원)</b>이고, 본사 압연 한도(${card.months > 1 ? '분기' : '한 달'}
-          소요량의 1.6배)와 <b>야드 여유</b>에 걸리면 거기서 잘립니다. 표의 「막힌 곳」이 무엇이 잘랐는지입니다.
-          ${card.months > 1 ? '<br>적어주신 톤수는 <b>3분의 1씩 세 달에 나눠</b> 집행합니다. 도착도 그만큼 나뉩니다.' : ''}</p>
+        <p class="hint">고객군별 재고는 판매 비중으로 나눈 추정치입니다. 같은 규격의 소재를 여러 고객이 함께 씁니다.
+          지금 주문하면 <b>${lead}개월 뒤</b> 도착합니다.<br>
+          <b>재고율</b>은 창고와 운송 중인 소재로 몇 개월을 쓸 수 있는지,
+          <b>재원율</b>은 본사에서 생산 중인 소재까지 합쳐 몇 개월을 쓸 수 있는지입니다.<br>
+          권장량은 이번에 사용할 양을 기준으로, 소재가 부족하면 더하고 넘치면 줄여 계산합니다.
+          본사가 공급할 수 있는 양과 보관장 여유도 반영합니다. 「권장량 결정 기준」에서 그 이유를 볼 수 있습니다.
+          ${card.months > 1 ? '<br>적어주신 톤수는 <b>3분의 1씩 세 달에 나눠</b> 주문합니다. 도착도 그만큼 나뉩니다.' : ''}</p>
         <button class="primary" id="osubmit">${card.months > 1 ? '이대로 분기 발주' : '이대로 발주한다'}</button>
       </div>
     </div>`;
@@ -442,10 +444,10 @@ function openDecisions() {
             <button class="mini" data-sset="share">판매량 비례</button>
           </div>
         </div>
-        <p class="hint">0을 준 고객군은 관리가 끊깁니다 — 매달 조금씩 물량이 빠집니다.
-          자원을 받은 고객군은 조금씩 늘어나되, 원래 잘 크는 곳이 더 빨리 큽니다.<br>
-          바꾼 배분은 <b>${CFG.SALES_EFFORT_LAG}개월 뒤</b>부터 숫자에 나타납니다. 다음 배분은 반년 뒤입니다.</p>
-        <button class="primary" id="ssubmit">이 배분으로 반기를 간다</button>
+        <p class="hint">0점을 준 고객군은 영업 관리를 받지 못해 매달 주문이 조금씩 줄어듭니다.
+          인력과 예산을 배정한 고객군은 주문이 조금씩 늘고, 성장 전망이 좋은 고객군일수록 더 빨리 늘어납니다.<br>
+          바꾼 배분은 <b>${CFG.SALES_EFFORT_LAG}개월 뒤</b>부터 효과가 나타납니다. 다음 배분은 반년 뒤입니다.</p>
+        <button class="primary" id="ssubmit">이 배분으로 반년간 운영한다</button>
       </div>
     </div>`;
 
@@ -708,12 +710,12 @@ function salesPlanCard(s, W) {
   const first = !s.history || !s.history.length;
   return {
     id: 'sales-plan', who: 'jung', topic: 'cust', form: 'sales', rows, role: '영업 · 반기 계획',
-    title: '이번 반기 영업 자원을 어떻게 나눌까요',
-    text: `사장님, 반기 영업 계획입니다. 영업 인력에 출장비, 기술지원까지 다 합쳐서 `
-        + `100이라고 칩시다. 이걸 고객군에 나눠 주시면 그대로 뜁니다. `
+    title: '앞으로 반년간 영업 인력과 예산을 어떻게 나눌까요',
+    text: `사장님, 앞으로 반년 동안의 영업 계획입니다. 영업 인력과 출장비, 기술지원에 쓸 힘을 모두 합쳐 `
+        + `100점으로 보고 고객군마다 나눠 주십시오. 많이 준 고객군에 더 집중하겠습니다. `
         + `${first ? '전임 사장님이 쓰던 배분을 그대로 적어뒀습니다. ' : '지금 배분을 적어뒀습니다. '}`
-        + `분명히 말씀드립니다 — 0을 주신 데는 관리가 안 됩니다. 당장 끊기지는 않는데 매달 조금씩 빠집니다. `
-        + `그리고 오늘 바꾸셔도 숫자로 보이는 건 ${when}부텁니다. 영업은 그날 가서 그날 되는 게 아닙니다.`,
+        + `0점을 준 고객군은 관리할 여력이 없어 매달 주문이 조금씩 줄어듭니다. `
+        + `오늘 배분을 바꿔도 효과가 나타나는 건 ${when}부터입니다. 고객을 찾아가 주문으로 이어지는 데 시간이 걸립니다.`,
     submit: (vals, st, g) => {
       const tot = Object.values(vals).reduce((a, b) => a + b, 0) || 1;
       const mix = {};
@@ -914,26 +916,26 @@ function orderCard(s, W, L) {
   const dNeed = prevNeed > 0 ? nowNeed / prevNeed - 1 : 0;
   const needNote = Math.abs(dNeed) < 0.12 ? ''
     : dNeed < 0
-      ? `먼저 말씀드릴 게 있습니다. 내시가 ${mo > 1 ? '지난 분기' : '지난달'}보다 ${Math.round(-dNeed * 100)}% 줄었습니다. `
+      ? `먼저 말씀드릴 게 있습니다. 고객의 주문 예정량이 ${mo > 1 ? '지난 분기' : '지난달'}보다 ${Math.round(-dNeed * 100)}% 줄었습니다. `
         + `${s.market.phase === 'BUST' ? '고객사들이 감산에 들어갔습니다. ' : ''}`
-        + `그래서 이번 권장량이 확 내려갑니다. 계산이 틀린 게 아니고, 이 상태로 예전만큼 걸면 창고가 터집니다. `
-      : `내시가 ${mo > 1 ? '지난 분기' : '지난달'}보다 ${Math.round(dNeed * 100)}% 늘었습니다. 권장량도 그만큼 올라갑니다. `;
+        + `그래서 소재를 덜 주문하도록 권장량을 낮췄습니다. 예전만큼 주문하면 재고가 쌓입니다. `
+      : `고객의 주문 예정량이 ${mo > 1 ? '지난 분기' : '지난달'}보다 ${Math.round(dNeed * 100)}% 늘었습니다. 권장량도 그만큼 올라갑니다. `;
   const rumor = W.priceRumor === 1
-      ? '아, 그리고 — 본사 영업팀 제 동기 얘긴데 다음 분기에 소재값 올린답니다. 확정은 아닙니다만, 그러면 지금 많이 걸어두는 게 남는 겁니다. '
+      ? '아, 그리고 본사 영업팀 제 동기가 다음 분기에 소재값이 오를 수 있다고 합니다. 확정은 아닙니다. 소문이 맞으면 지금 미리 사두는 편이 싸겠지요. '
     : W.priceRumor === -1
-      ? '아, 그리고 — 본사 재고가 꽤 쌓였답니다. 다음 분기에 값이 빠질 수도 있습니다. 반은 소문입니다만, 맞으면 지금 적게 거는 게 낫습니다. '
+      ? '아, 그리고 본사에 재고가 꽤 쌓였답니다. 다음 분기에 소재값이 내릴 수도 있습니다. 아직은 소문이지만, 맞으면 지금 적게 주문하는 편이 낫습니다. '
       : '';
   return {
     id: 'op-order', who: 'jung', topic: 'order', form: 'order', rows, months: mo, role: '영업 · 소재 발주',
     title: mo > 1 ? '이번 분기 소재 발주를 정해주십시오' : '이번 달 소재 발주를 정해주십시오',
-    text: `사장님, ${mo > 1 ? '이번 분기' : '이번 달'} 발주입니다. `
-        + `지금 전체로 보면 재고율 ${sn.invM.toFixed(1)}개월, 재원율 ${sn.resM.toFixed(1)}개월이고요. `
-        + `${mo > 1 ? `분기 결재니까 석 달치를 한 번에 겁니다. 적어주신 톤수를 세 달에 나눠서 집행합니다. ` : ''}`
+    text: `사장님, ${mo > 1 ? '이번 분기' : '이번 달'}에 본사에서 살 소재량을 정할 차례입니다. `
+        + `창고와 운송 중인 소재를 합치면 ${sn.invM.toFixed(1)}개월치, 본사에서 생산 중인 것까지 합치면 ${sn.resM.toFixed(1)}개월치입니다. `
+        + `${mo > 1 ? `분기 결재라 석 달치 총량을 적습니다. 적어주신 톤수를 세 달에 나눠 주문합니다. ` : ''}`
         + `${needNote}`
         + `${rumor}`
-        + `고객군별로 쓰는 속도가 다릅니다. 한 줄씩 보고 정하시죠. `
-        + `제가 계산한 권장량을 넣어뒀는데, 이건 내시가 그대로 간다는 전제입니다. `
-        + `걸면 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤에 들어옵니다. 그때 가서 바꾸자는 건 안 됩니다.`,
+        + `고객군마다 쓰는 소재량이 다르니 한 줄씩 확인해 주십시오. `
+        + `고객의 주문 예정량이 유지된다고 보고 권장량을 넣어뒀습니다. `
+        + `지금 주문한 소재는 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤 도착합니다. 도착할 때 가서 주문량을 바꿀 수는 없습니다.`,
     submit: (vals, s, G) => {
       // 본사가 한 달에 받아주는 한도. 넘겨 적어도 여기서 잘린다.
       for (const r of rows) vals[r.k] = Math.min(vals[r.k] || 0, r.max);
@@ -1775,19 +1777,19 @@ function hqCard(L, s) {
   });
   return {
     id: 'op-hq', who: 'jung', topic: 'op', role: '영업 · 본사 대응',
-    title: '본사 지시 물량을 얼마나 받을까요',
-    text: `사장님, 본사 공장이 가동률을 못 채웠답니다. 유통향 일반재를 시세보다 `
-        + `${(CFG.HQ_SPOT.discount * 100).toFixed(0)}% 싸게 넘기겠다는데 — 싼 건 진짜 쌉니다. `
-        + `다만 솔직히 말씀드리면, 이건 받는 사람이 정해진 물건이 아닙니다. 우리가 알아서 팔아야 해요. `
-        + `게다가 유통향은 본사 정책상 전체 판매의 15%까지밖에 못 팝니다. 그 위로는 창고에서 늙습니다.`,
+    title: '본사가 권하는 할인 소재를 얼마나 살까요',
+    text: `사장님, 본사 공장이 계획한 만큼 가동되지 않았답니다. 그래서 유통업체에 팔 일반 소재를 시세보다 `
+        + `${(CFG.HQ_SPOT.discount * 100).toFixed(0)}% 싸게 사달라고 합니다. `
+        + `싸기는 하지만, 아직 살 고객이 정해지지 않았습니다. 우리가 직접 찾아서 팔아야 합니다. `
+        + `게다가 본사 정책 때문에 유통업체에 파는 양은 전체 판매의 15%를 넘길 수 없습니다. 많이 받아도 다 못 팔면 재고로 남습니다.`,
     opts: [
       mk(q, '배정량 전부 받는다', `${fmt(q)}톤`,
-        ['+본사 신뢰 ↑↑', '−현금이 크게 묶임', '?15% 넘는 건 안 팔린다']),
+        ['+본사 신뢰 ↑↑', '−소재 구입에 많은 돈이 묶임', '?유통 판매 비중 15%를 넘는 양은 재고로 남음']),
       mk(Math.round(q * 0.5), '절반만 받는다', `${fmt(Math.round(q * 0.5))}톤`,
-        ['+본사 체면 세움', '=팔 수 있는 만큼']),
-      mk(step, '생색만 낸다', `${fmt(step)}톤`,
-        ['+위험 최소', '−본사가 아쉬워한다']),
-      mk(0, '받지 않는다', '우리 살림부터',
+        ['+본사 요청에 일부 협조', '=판매 부담을 줄임']),
+      mk(step, '일부만 받는다', `${fmt(step)}톤`,
+        ['+재고 부담을 작게 유지', '−본사는 더 받길 원함']),
+      mk(0, '받지 않는다', '우리 회사의 자금부터 지킨다',
         ['+현금 지킴', `−본사 신뢰 ${CFG.HQ_SPOT.refuseTrustCost}`]),
     ],
   };
@@ -1800,8 +1802,8 @@ function expandCard(type, L, s) {
   const total = capex + (newBuild ? CFG.INFRA_TOTAL : 0);
   const feed = CFG.LINE[type].cap * 3 * s.market.pm;
   const why = type === 'BLANK'
-    ? '사장님예, 블랭킹은 우리한테 아예 없는 물건 아입니꺼. 한 대 놓으면 고객이 새로 붙습니더.'
-    : `사장님예, 본사가 밀어주고 싶어 하는 물량이 우리 한계를 월 ${fmt(Math.round(type === 'SLIT' ? L.gapSlit : L.gapLevel))}톤 넘깁니더.`;
+    ? '사장님, 우리는 아직 철판을 필요한 모양으로 잘라내는 블랭킹 설비가 없습니다. 한 대 들이면 새로운 고객을 받을 수 있습니다.'
+    : `사장님, 본사가 우리에게 맡기려는 물량이 지금 설비로 처리할 수 있는 양보다 월 ${fmt(Math.round(type === 'SLIT' ? L.gapSlit : L.gapLevel))}톤 많습니다.`;
   /* 증설 판단에 필요한 것 — 총액, 그 설비가 벌어들일 월 이익, 회수 기간, 남은 임기,
      그리고 소재로 묶이는 돈. 기계값보다 소재값이 크다는 게 이 카드의 교훈이라 둘을 나란히 둔다. */
   const gap = type === 'SLIT' ? L.gapSlit : type === 'LEVEL' ? L.gapLevel : CFG.LINE[type].cap * 0.6;
@@ -1815,27 +1817,27 @@ function expandCard(type, L, s) {
     { kind: 'fact', label: '초기 비용', value: money(total),
       note: newBuild ? `설비 ${money(capex)} + 공장동 ${money(CFG.INFRA_TOTAL)}` : null },
     { kind: 'est', label: '늘어나는 물량', value: `월 ${fmt(Math.round(addTon))}t`,
-      note: '본사가 밀어주고 싶어 하는 양에서 지금 못 받는 만큼' },
-    { kind: 'est', label: '월 이익 기여', value: monthly > 0 ? money(monthly) : '고정비도 못 건짐', warn: monthly <= 0 },
-    { kind: 'est', label: '회수 기간', value: payback ? `${payback}개월` : '회수 불가', warn: !payback || payback > left },
+      note: '본사가 맡기려는 물량 중 지금 설비로 처리하지 못하는 양' },
+    { kind: 'est', label: '늘어날 월 이익', value: monthly > 0 ? money(monthly) : '고정비도 못 건짐', warn: monthly <= 0 },
+    { kind: 'est', label: '투자금을 버는 데 걸릴 기간', value: payback ? `${payback}개월` : '회수 불가', warn: !payback || payback > left },
     { kind: 'fact', label: `가동까지 ${CFG.INSTALL_TURNS}개월 · 남은 임기`, value: `가동 후 ${left}개월`,
-      note: payback && payback > left ? '임기 안에는 본전을 못 뽑습니다' : null },
+      note: payback && payback > left ? '임기가 끝날 때까지 투자금을 다 벌지 못합니다' : null },
     { kind: 'fact', label: '소재로 묶이는 돈', value: money(feed),
-      note: '석 달치 기준. 기계값보다 이쪽이 큽니다', warn: feed > total },
+      note: '석 달치 소재를 사둘 돈입니다. 기계값과 함께 봐야 합니다', warn: feed > total },
     { kind: 'fact', label: '지금 자금 여력', value: `${run.toFixed(1)}개월치`, warn: run < 2.5 },
-    (s.buildQueue || []).length ? { kind: 'fact', label: '진행 중인 증설', value: '있음 — 둘은 못 짓습니다', warn: true } : null,
+    (s.buildQueue || []).length ? { kind: 'fact', label: '진행 중인 증설', value: '있음 — 동시에 두 건은 못 짓습니다', warn: true } : null,
   ];
   return {
     id: 'op-expand', who: 'gu', topic: 'op', ctx,
     title: `${CFG.LINE[type].label}를 한 대 더 놓을까요`,
-    text: `${why} ${newBuild ? '근데 자리가 없심더. 공장동을 한 동 더 지어야 됩니더. ' : '자리는 있심더. '}`
-        + `근데 하나만 말씀드리겠심더. 기계값보다 그 기계 먹일 소재값이 훨씬 큽니더. `
-        + `석 달치만 쳐도 ${money(feed)}입니더. 기계는 한 번 사면 끝인데 소재는 매달 들어갑니더.`,
+    text: `${why} ${newBuild ? '다만 지금 공장에는 자리가 없어 건물도 한 동 더 지어야 합니다. ' : '공장에 설치할 자리는 있습니다. '}`
+        + `기계값만 준비하면 되는 게 아닙니다. 새 설비를 돌릴 소재도 계속 사야 합니다. `
+        + `석 달치 소재만 ${money(feed)}입니다. 기계는 한 번 사지만 소재는 매달 사야 합니다.`,
     opts: [
       { label: '짓겠습니다', hint: `${CFG.INSTALL_TURNS}개월 뒤 가동`,
         // 설비 대금은 착공하는 이번 달 결산에서 나간다. 여기서 바로 통장이 줄지 않는다.
         fx: [`−설비 ${money(total)} (이번 달 결산에서 차감)`, `−소재 ${money(feed)} 추가로 묶임`,
-             `+${CFG.INSTALL_TURNS}개월 뒤 캐파 ↑`],
+             `+${CFG.INSTALL_TURNS}개월 뒤 가공할 수 있는 양 ↑`],
         apply: (st, g) => { g.ui.expandPick = type;
           return `${CFG.LINE[type].label} 발주 넣었심더. ${CFG.INSTALL_TURNS}개월 뒤부터 돕니더. `
                + `그때까지는 돈만 나갑니더.`; } },

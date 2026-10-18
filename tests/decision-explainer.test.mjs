@@ -36,7 +36,7 @@ function fixture() {
 test('existing maintenance selection preserves hint, focus, cancel blocking and exact cash effect', () => {
   const f = fixture(), before = f.run('G.s.cash');
   f.run('openDecisions()');
-  assert.match(f.dialog.markup, /여섯 달은 이 얘기 안 나온다/);
+  assert.ok(f.dialog.markup.includes(f.run('G.queue[0].card.opts[0].hint')));
   assert.equal(f.nodes.get('h2').focused, true);
   let prevented = false; f.events.get('cancel')({ preventDefault() { prevented = true; } });
   assert.equal(prevented, true); assert.equal(f.run('G.s.cash'), before);
@@ -125,7 +125,7 @@ test('actual hiring and credit selections preserve recurring cost and deferred e
 test('original sales form receives guidance while retaining its submit handler and hint', () => {
   const f = fixture(); f.run('G.queue[0].card=salesPlanCard(G.s,G.W); openDecisions()');
   assert.match(f.nodes.get('.deckq').added.innerHTML, /영업 자원 100점/);
-  assert.match(f.dialog.markup, /0을 준 고객군은 관리가 끊깁니다/);
+  assert.match(f.dialog.markup, /0점을 준 고객군은 영업 관리를 받지 못해 매달 주문이 조금씩 줄어듭니다/);
   assert.equal(typeof f.nodes.get('#ssubmit').onclick, 'function');
   f.nodes.get('#ssubmit').onclick();
   assert.equal(f.run('G.done.length'), 1);

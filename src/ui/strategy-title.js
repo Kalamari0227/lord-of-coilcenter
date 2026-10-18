@@ -8,6 +8,12 @@ function ccRenderSetup() {
     const sound = ccElement('div', 'cc-audio-controls'); ccAudioMenu(sound); app.append(sound);
     app.querySelector('h1').textContent = '새로운 부임';
     ccWrapTables(app);
+    for (const [id, mode] of [['go-normal', 'normal'], ['go-quick', 'quick']]) {
+      app.querySelector('#' + id).onclick = () => ccStartSavedGame(mode);
+    }
+    const drop = app.querySelector('#btn-drop');
+    if (drop) { drop.textContent = '저장 기록 관리 · 삭제'; drop.onclick = () => ccOpenSaveManager(drop); }
+    ccAttachSaveUI();
     return;
   }
   const saved = ccSavedPreview();
@@ -26,12 +32,18 @@ function ccRenderSetup() {
   resume.id = 'btn-resume'; resume.disabled = !saved;
   menu.append(resume, ccCommand('게임 설명', button => ccOpenDossier('instructions', button)));
   ccAudioMenu(menu);
-  const status = ccCheckpointStatus();
-  if (!status.supported || ['conflict','corrupt','unreadable'].includes(status.state)) {
-    const notice = ccElement('small', 'cc-save-status');
-    notice.setAttribute('role', 'status');
-    notice.textContent = status.detail || '이 환경에서는 안전 자동 저장을 사용할 수 없습니다. 확인된 기록은 파일로 내보낼 수 있습니다.';
-    menu.append(notice);
-  }
-  if (saved) menu.append(ccElement('small', '', `${ccEscape(saved.s.companyName)} · ${ccEscape(dateLabel(saved.s.turn))}`));
+  const summary = ccElement('small'); summary.dataset.ccTitleSaved = ''; menu.append(summary);
+  ccAttachSaveUI();
+}
+
+async function ccStartSavedGame(mode) {
+  if (ccCheckpointStatus().busy) return;
+  const name = app.querySelector('#nm').value.trim() || '노바리아 코일센터';
+  const saved = await loadedSave(), status = ccCheckpointStatus();
+  if (status.state === 'unreadable') { ccOpenSaveManager(); return; }
+  if (status.state === 'corrupt' && status.supported) {
+    if (!confirm('손상된 저장 기록이 있습니다. 저장 관리에서 이전 정상본이나 파일로 복구할 수 있습니다. 복구 대신 손상된 기록을 영구 삭제하고 새로 시작할까요?')) return;
+    if (!await clearSave({ discardCorrupt: true })) return;
+  } else if (saved && status.supported && !confirm('새 게임으로 현재 저장 기록을 바꿉니다. 기존 정상 기록은 이전 정상본으로 보관되며, 더 오래된 이전 정상본은 바뀝니다. 먼저 파일 백업을 권합니다. 새로 시작할까요?')) return;
+  await ccAudioGesture(() => newGame({ ...SETUP, mode, name }));
 }

@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-// Each '*' is exactly one array index. Routing IDs, tags and all numeric values remain pinned.
+// Each '*' is exactly one array index. Routing IDs (including crashes), tags and all numeric values remain pinned.
 export const presentationPaths = [
  'state.grade.title','state.grade.desc',
  ...['monthly.*','state'].flatMap(base=>[
   ...['name','brief','label'].map(field=>`${base}.s.scenario.*.${field}`),
-  ...['history','prelude'].flatMap(list=>['log.*','flags.*','crashes.*','lineReady','phaseChange'].map(field=>`${base}.s.${list}.*.${field}`)),
+  ...['history','prelude'].flatMap(list=>['log.*','flags.*','lineReady','phaseChange'].map(field=>`${base}.s.${list}.*.${field}`)),
   ...['label','risk'].map(field=>`${base}.W.mem.*.${field}`),
   ...['miles','newMiles'].flatMap(list=>['title','msg','next'].map(field=>`${base}.W.${list}.*.${field}`)),
   ...['fired','lastFired'].flatMap(list=>['text','why','chain.label','chain.ago'].map(field=>`${base}.W.${list}.*.${field}`)),

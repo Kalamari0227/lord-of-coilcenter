@@ -45,6 +45,17 @@ test('monthly presentation changes remain allowed while a cash change fails the 
  assert.equal(digest(prose),digest(before));assert.notEqual(digest(cash),digest(before));
 });
 
+for(const scope of ['monthly','state'])for(const list of ['history','prelude'])test(`${scope} ${list} customer crash ID changes fail the oracle`,()=>{
+ // Given a customer crash recorded in a settlement or predecessor report.
+ const snapshot={s:{[list]:[{crashes:['JP']}]}};
+ const before=scope==='monthly'?{monthly:[snapshot]}:{state:snapshot};
+ // When only the crashed customer's routing ID changes.
+ const after=structuredClone(before);
+ (scope==='monthly'?after.monthly[0]:after.state).s[list][0].crashes[0]='CN';
+ // Then the changed customer cannot match the original economic projection.
+ assert.notEqual(digest(after),digest(before));
+});
+
 test('an extra game RNG call still fails the classified oracle',async()=>{
  const actual=await commercialCampaign('quick',{mutation:'const originalResolve=resolveTurn;resolveTurn=(...args)=>{makeRng(7)();return originalResolve(...args);};'});
  assert.notEqual(actual.rngClassification.game,classified.quick.classification.game);

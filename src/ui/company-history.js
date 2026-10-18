@@ -95,6 +95,10 @@ renderEnd = function (...args) {
   const heading = app.querySelector('h1');
   heading.textContent = `재임 ${history.months}개월의 기록`;
   heading.nextElementSibling.textContent = history.reasonText;
+  if (history.months === 0) {
+    app.querySelector('.big').textContent = '성향을 돌아볼 기록이 부족합니다';
+    app.querySelector('.profile').textContent = '아직 완료한 월 결산이 없습니다. 선택 성향과 재임 실적을 평가할 기록이 부족합니다. 현재 상태와 남아 있는 기록을 아래에서 확인하십시오.';
+  }
   const section = ccElement('div', 'cc-history-insert', ccCompanyHistoryMarkup(history));
   app.querySelector('.grid').before(section);
   ccWrapTables(app);

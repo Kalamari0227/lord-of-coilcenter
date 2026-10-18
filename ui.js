@@ -2447,7 +2447,7 @@ function renderEnd() {
           <tr><td>본사 내시 수행률</td><td>${Math.round(g.fulfil * 100)}%</td></tr>
           ${hqRows}
           <tr><td>평균 가동률</td><td>${Math.round(m.util * 100)}%</td></tr>
-          <tr><td>평균 양품률</td><td>${m.quality.toFixed(1)}%</td></tr>
+          <tr><td>${P.st.months ? '재임 평균 양품률 환산값' : '현재 양품률 환산값'}</td><td>${m.quality.toFixed(1)}%</td></tr>
           <tr><td>재고 회전 (미착 포함)</td><td>연 ${m.turnover.toFixed(1)}회</td></tr>
           <tr><td>마지막 현금</td><td>${k(m.cash)}</td></tr>
           <tr><td>본사 신뢰도</td><td>${Math.round(m.trust)}</td></tr>

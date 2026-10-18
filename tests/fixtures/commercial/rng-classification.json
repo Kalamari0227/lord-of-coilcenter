@@ -1,0 +1,99 @@
+{
+  "sourceHashes": {
+    "engine.js": "98da428b65380959dad9585f0d30d93d201f72f7faebc41cbbe6796574d9581f",
+    "decks.js": "08307334f177ccb87fec49e9be91533a9f9e717c1499af6cb12973c2f81c56a1",
+    "world.js": "b69d10b52e1761d53afb42ff977c797dc60f6a8b3aca578d54968ce28b63e4af",
+    "issues.js": "808fde4af9ffb80b9a57968315276693d9180f2bf53a826735776b38c1699ddc",
+    "ui.js": "faa12fa5b2447a33e47f5c3df6942caa2443afbfbcb01e95d089d7ee02559570",
+    "save.js": "43e360c78a62881da225390486f6d02cf568b217cfb13e0259732de994c9b26d",
+    "src/platform/session-save.js": "6f97b3bdc58ee949caebf14b5407d9cc86d31949ff3ef268ccce994454fb2475"
+  },
+  "normal": {
+    "rng": {
+      "event": 1006,
+      "engine": 5218
+    },
+    "classification": {
+      "validation": 3663,
+      "game": 1555
+    },
+    "exposureValidation": [
+      111,
+      185,
+      259,
+      333,
+      407,
+      481,
+      555,
+      629,
+      703,
+      777,
+      851,
+      925,
+      1073,
+      1147,
+      1221,
+      1295,
+      1369,
+      1443,
+      1517,
+      1591,
+      1665,
+      1739,
+      1813,
+      1887,
+      1961,
+      2035,
+      2109,
+      2183,
+      2257,
+      2331,
+      2405,
+      2479,
+      2553,
+      2627,
+      2701,
+      2775,
+      2849,
+      2923,
+      2997,
+      3071,
+      3145,
+      3219,
+      3293,
+      3367,
+      3441,
+      3515,
+      3589,
+      3663
+    ]
+  },
+  "quick": {
+    "rng": {
+      "event": 612,
+      "engine": 2771
+    },
+    "classification": {
+      "validation": 1295,
+      "game": 1476
+    },
+    "exposureValidation": [
+      111,
+      185,
+      259,
+      333,
+      481,
+      555,
+      629,
+      703,
+      777,
+      851,
+      925,
+      999,
+      1073,
+      1147,
+      1221,
+      1295
+    ]
+  }
+}

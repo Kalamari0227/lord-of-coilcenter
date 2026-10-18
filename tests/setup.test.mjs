@@ -45,7 +45,7 @@ function fixture({ saved = false, confirmStart = true, audio = true } = {}) {
   };
 }
 
-test('company name draft survives difficulty changes and another setup visit', () => {
+test('company name draft survives difficulty changes and another setup visit', async () => {
   const f = fixture();
   f.typeName('한빛 코일센터');
   f.difficulties[1].onclick();
@@ -53,12 +53,12 @@ test('company name draft survives difficulty changes and another setup visit', (
   assert.equal(f.nodes.get('#nm').value, '한빛 코일센터');
   f.run('renderSetup()');
   assert.equal(f.nodes.get('#nm').value, '한빛 코일센터');
-  f.nodes.get('#go-normal').onclick();
+  await f.nodes.get('#go-normal').onclick();
   assert.equal(f.starts[0].diff, 'hard');
   assert.equal(f.starts[0].name, '한빛 코일센터');
 });
 
-test('draft is escaped as an input value and starts with the original literal name', () => {
+test('draft is escaped as an input value and starts with the original literal name', async () => {
   const f = fixture();
   const name = '한빛 "회사" <script>alert(1)</script> & \'센터\'';
   f.typeName(name);
@@ -66,25 +66,25 @@ test('draft is escaped as an input value and starts with the original literal na
   assert.match(f.markup, /value="한빛 &quot;회사&quot; &lt;script&gt;alert\(1\)&lt;\/script&gt; &amp; &#39;센터&#39;"/);
   assert.doesNotMatch(f.markup, /<script>/);
   assert.equal(f.nodes.get('#nm').value, name);
-  f.nodes.get('#go-normal').onclick();
+  await f.nodes.get('#go-normal').onclick();
   assert.equal(f.starts[0].name, name);
 });
 
 for (const mode of ['normal', 'quick']) {
-  test(`${mode} start uses entered name and preserves confirmation, save clear and audio order`, () => {
+  test(`${mode} start uses entered name and preserves confirmation and audio order without deleting the previous checkpoint`, async () => {
     const f = fixture({ saved: true });
     f.typeName('  한빛 코일센터  ');
-    f.nodes.get(`#go-${mode}`).onclick();
+    await f.nodes.get(`#go-${mode}`).onclick();
     assert.equal(f.starts.length, 1);
     assert.equal(f.starts[0].name, '한빛 코일센터');
     assert.equal(f.starts[0].mode, mode);
-    assert.deepEqual(f.order, ['confirm', 'clear', 'audio', 'start']);
+    assert.deepEqual(f.order, ['confirm', 'audio', 'start']);
   });
 
-  test(`${mode} cancellation keeps existing save and does not start or unlock audio`, () => {
+  test(`${mode} cancellation keeps existing save and does not start or unlock audio`, async () => {
     const f = fixture({ saved: true, confirmStart: false });
     f.typeName('새 회사');
-    f.nodes.get(`#go-${mode}`).onclick();
+    await f.nodes.get(`#go-${mode}`).onclick();
     assert.deepEqual(f.order, ['confirm']);
     assert.equal(f.starts.length, 0);
     assert.equal(f.run('loadedSave().s.companyName'), '기존 회사');
@@ -92,10 +92,10 @@ for (const mode of ['normal', 'quick']) {
   });
 }
 
-test('blank name retains the existing default and start works without an audio adapter', () => {
+test('blank name retains the existing default and start works without an audio adapter', async () => {
   const f = fixture({ audio: false });
   f.typeName('   ');
-  f.nodes.get('#go-normal').onclick();
+  await f.nodes.get('#go-normal').onclick();
   assert.equal(f.starts[0].name, '노바리아 코일센터');
-  assert.deepEqual(f.order, ['clear', 'start']);
+  assert.deepEqual(f.order, ['start']);
 });

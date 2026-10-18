@@ -22,13 +22,16 @@ function ccAudioScene() {
     : ccView.page === 'office' ? 'office' : G.s.market.phase === 'BUST' ? 'downturn' : 'map';
   void CCAudio.setScene(scene);
 }
-function ccAudioGesture(action) {
+async function ccAudioGesture(action) {
   const started = Date.now();
   const ready = typeof CCAudio === 'undefined' ? Promise.resolve(false) : CCAudio.unlock();
-  const success = action(), game = G;
+  const outcome = action();
+  const synchronousGame = outcome?.then ? null : G;
+  const success = await outcome, game = synchronousGame || G;
   void ready.then(() => {
     if (success && G === game && Date.now() - started < 500) ccAudioCue('confirm', ccAudioEventId('start'));
   });
+  return success;
 }
 function ccAudioReport(report, dialog) {
   if (typeof CCAudio === 'undefined') return;

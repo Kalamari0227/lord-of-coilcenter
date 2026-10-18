@@ -117,8 +117,10 @@ function ccCommand(label, action, className = '') {
   return button;
 }
 
-function ccSaveToTitle() {
-  if (!saveGame()) return;
+async function ccSaveToTitle() {
+  if (ccCheckpointStatus().busy) return;
+  const game = G;
+  if (!await saveGame() || G !== game || ccApprovalOpen) return;
   G = null; ccView.preparing = false; render(); ccAudioCue('save');
 }
 
@@ -165,7 +167,7 @@ function ccRenderPlay() {
   const layout = ccElement('div', 'cc-layout'); layout.append(ccStaffRail(), main, commands);
   const footer = ccElement('footer', 'cc-window cc-turn', `<div><b>${ccEscape(periodNow())} · 결재 대기</b>
     <p>직원의 보고를 듣고, 이번 기간의 안건과 발주를 결정하십시오.</p></div>`);
-  const go = ccCommand('금월 결재  ›', () => { dealTurn(); openDecisions(); }, 'primary'); go.id = 'go';
+  const go = ccCommand('금월 결재  ›', async () => { if (await dealTurn()) await openDecisions(); }, 'primary'); go.id = 'go';
   if (G.mpt === 3) go.textContent = '금분기 결재  ›';
   footer.append(go);
   app.replaceChildren(header, nav, layout, footer);

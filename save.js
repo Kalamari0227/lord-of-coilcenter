@@ -318,9 +318,9 @@ if (!window.CC_DEVELOPMENT && 'serviceWorker' in navigator && location.protocol.
   });
 }
 
-/* 실수로 탭을 닫는 경우를 대비해 나갈 때 한 번 더 저장해둔다.
-   결재 도중이면 이번 달 결재는 버려지고 그달 처음으로 돌아간다. */
-window.addEventListener('pagehide', () => { if (G && G.s && !G.s.over) saveGame(true); });
+/* pagehide의 비동기 작업 완료는 보장되지 않는다. 평소 checkpoint를 보존하고,
+   여기서는 추가 저장만 시도한다. 부분 결재는 저장하지 않는다. */
+window.addEventListener('pagehide', () => { if (G && G.s && !G.s.over) void saveGame(true); });
 
 /* 첫 그리기. ui.js가 아니라 여기서 부른다 —
    첫 화면에 설치 안내와 이어하기 버튼이 같이 떠야 하니까. */

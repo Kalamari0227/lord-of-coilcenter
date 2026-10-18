@@ -249,9 +249,9 @@ function crewBlock(who, role) {
     <div class="crew-plate"><b>${who.name}</b><i>${role || who.role}</i></div></div>`;
 }
 
-function openDecisions() {
+async function openDecisions() {
   // 오늘 결재가 끝났으면 바로 한 달을 보낸다. 공장에 다시 들를 일이 없다.
-  if (!G.queue || G.qi >= G.queue.length) { advance(); return; }
+  if (!G.queue || G.qi >= G.queue.length) { await advance(); return; }
 
   const { deck, card } = G.queue[G.qi];
   const who = CAST[card.who] || CAST.han;
@@ -532,9 +532,10 @@ function openDecisions() {
       dlg.removeAttribute('aria-labelledby');
       dlg.setAttribute('aria-label', card.title);
     }
-    dlg.querySelector('#nx').onclick = () => {
+    dlg.querySelector('#nx').onclick = async () => {
+      if (!dlg.open) return;
       if (last && typeof ccAudioCue === 'function') ccAudioCue('month-turn', ccAudioEventId('advance'));
-      dlg.close(); dlg.remove(); G.qi++; openDecisions();
+      dlg.close(); dlg.remove(); G.qi++; await openDecisions();
     };
     dlg.querySelector('#nx').scrollIntoView({ block: 'nearest' });
     dlg.querySelector('#nx').focus({ preventScroll: true });
@@ -1191,7 +1192,7 @@ function renderSetup() {
       <span class="d">${d.desc}</span></button>`;
 
   // 이어하기 — 저장이 있으면 제일 위에 올린다. 새 판을 고르기 전에 보여야 한다.
-  const sv = loadedSave();
+  const sv = typeof ccSavedPreview === 'function' ? ccSavedPreview() : loadedSave();
   const resumeCard = sv ? `<div class="card resume">
       <h2>이어서 하기</h2>
       <p class="hint"><b>${escapeText(sv.s.companyName)}</b> · ${DIFF[sv.diffKey] ? DIFF[sv.diffKey].name : ''}
@@ -1269,20 +1270,19 @@ function renderSetup() {
   app.querySelectorAll('[data-diff]').forEach(b => b.onclick = () => {
     SETUP.diff = b.dataset.diff; renderSetup();
   });
-  const start = mode => {
+  const start = async mode => {
     // 새 판을 시작하면 이전 저장은 덮인다. 실수로 날리지 않게 한 번 묻는다.
-    if (loadedSave() && !confirm('저장해둔 판이 있습니다. 새로 시작하면 그 판은 지워집니다. 계속할까요?')) return;
-    clearSave();
-    const begin = () => { newGame({ ...SETUP, mode, name: $('#nm').value.trim() || '노바리아 코일센터' }); return !!G; };
-    if (typeof ccAudioGesture === 'function') ccAudioGesture(begin); else begin();
+    if (await loadedSave() && !confirm('저장해둔 판이 있습니다. 새로 시작하면 그 판은 지워집니다. 계속할까요?')) return;
+    const begin = () => newGame({ ...SETUP, mode, name: $('#nm').value.trim() || '노바리아 코일센터' });
+    if (typeof ccAudioGesture === 'function') await ccAudioGesture(begin); else await begin();
   };
   $('#go-normal').onclick = () => start('normal');
   $('#go-quick').onclick = () => start('quick');
-  const rb = $('#btn-resume'); if (rb) rb.onclick = () => {
-    if (typeof ccAudioGesture === 'function') ccAudioGesture(resumeGame); else resumeGame();
+  const rb = $('#btn-resume'); if (rb) rb.onclick = async () => {
+    if (typeof ccAudioGesture === 'function') await ccAudioGesture(resumeGame); else await resumeGame();
   };
-  const db = $('#btn-drop'); if (db) db.onclick = () => {
-    if (confirm('저장해둔 판을 지웁니다. 되돌릴 수 없습니다.')) { clearSave(); renderSetup(); }
+  const db = $('#btn-drop'); if (db) db.onclick = async () => {
+    if (confirm('저장해둔 판을 지웁니다. 되돌릴 수 없습니다.')) { if (await clearSave()) await renderSetup(); }
   };
   wireInstall();
   wireHall();
@@ -1435,10 +1435,10 @@ function milesBlock(list) {
     const w = CAST[m.who] || CAST.han;
     const pic = w.img ? `<img src="${A(w.img + '.png')}" alt="">` : `<div class="em">${w.face}</div>`;
     return `<div class="mile">
-      <div class="mt">이정표 달성 · ${m.title}</div>
+      <div class="mt">이정표 달성 · ${escapeText(m.title)}</div>
       <div class="mwho">${pic}<span>${w.name}</span></div>
-      <p class="says">${m.msg}</p>
-      <div class="mnext">다음 목표 — ${m.next}</div>
+      <p class="says">${escapeText(m.msg)}</p>
+      <div class="mnext">다음 목표 — ${escapeText(m.next)}</div>
     </div>`;
   }).join('');
 }
@@ -1515,10 +1515,10 @@ function topResults(s, W) {
   return `<div class="card tops">
     <h2>지난 결정이 지금 무엇이 됐나</h2>
     ${items.slice(0, 3).map(it => it.kind === 'bill'
-      ? `<div class="top bill"><b>${it.text}</b>${it.why ? `<span>원인 · ${it.why}</span>` : ''}</div>`
-      : `<div class="top"><b>${it.text}</b><div class="fx">${it.rows.map(([k, t]) => {
+      ? `<div class="top bill"><b>${escapeText(it.text)}</b>${it.why ? `<span>원인 · ${escapeText(it.why)}</span>` : ''}</div>`
+      : `<div class="top"><b>${escapeText(it.text)}</b><div class="fx">${it.rows.map(([k, t]) => {
           const cls = k === '+' ? 'up' : k === '−' ? 'dn' : k === '?' ? 'rsk' : 'neu';
-          return `<span class="${cls}">${FX_MARK[k] ? `<b class="fxm">${FX_MARK[k]}</b> ` : ''}${t}</span>`;
+          return `<span class="${cls}">${FX_MARK[k] ? `<b class="fxm">${FX_MARK[k]}</b> ` : ''}${escapeText(t)}</span>`;
         }).join('')}</div></div>`).join('')}
     <p class="hint">판매량·이익 변화는 그 결정이 움직인 몫을 따로 떼어 <b>추정</b>한 값입니다. 실제 지출은 결산표에 있습니다.</p>
   </div>`;
@@ -1528,10 +1528,10 @@ function impactPanel(W) {
   if (!W.lastImpacts.length) return '';
   return `<div class="card">
     <h2>지난 결재의 영향</h2>
-    <div class="imps">${W.lastImpacts.map(im => `<div class="imp"><b>${im.label}</b>
+    <div class="imps">${W.lastImpacts.map(im => `<div class="imp"><b>${escapeText(im.label)}</b>
       <div class="fx">${im.rows.map(([k, t]) => {
         const cls = k === '+' ? 'up' : k === '−' ? 'dn' : k === '?' ? 'rsk' : 'neu';
-        return `<span class="${cls}">${k === '?' ? '⚠ ' : ''}${t}</span>`; }).join('')}</div></div>`).join('')}</div>
+        return `<span class="${cls}">${k === '?' ? '⚠ ' : ''}${escapeText(t)}</span>`; }).join('')}</div></div>`).join('')}</div>
     <p class="hint">판매량·이익 변화는 그 결정이 움직인 몫을 따로 떼어 추정한 값입니다.</p>
   </div>`;
 }
@@ -1548,10 +1548,10 @@ function firedPanel(W) {
       const c = f.chain;
       return `<div class="fire">
         ${c ? `<div class="chain">
-          <span class="c-then"><i>${c.date}</i>${c.label}</span>
+          <span class="c-then"><i>${escapeText(c.date)}</i>${escapeText(c.label)}</span>
           <span class="c-arrow">${c.gap > 0 ? `${c.gap}개월 뒤` : '곧바로'} →</span>
           <span class="c-now">지금</span></div>` : ''}
-        <b>${f.text}</b>${!c && f.why ? `<span>원인 · ${f.why}</span>` : ''}</div>`;
+        <b>${escapeText(f.text)}</b>${!c && f.why ? `<span>원인 · ${escapeText(f.why)}</span>` : ''}</div>`;
     }).join('')}
   </div>`;
 }
@@ -1573,7 +1573,7 @@ function pendingPanel(W, s) {
     <h2>아직 안 온 청구서</h2>
     ${rows.map(m => `<div class="warn">
       <i>${dateLabel(m.turn)} · ${ago(s.turn - m.turn)}</i>
-      <span><b>${m.label}</b> — ${m.risk}</span></div>`).join('')}
+      <span><b>${escapeText(m.label)}</b> — ${escapeText(m.risk)}</span></div>`).join('')}
     <p class="hint">결재할 때 ⚠로 붙어 있던 것들입니다. 아직 청구서가 안 왔을 뿐입니다.</p>
   </div>`;
 }
@@ -1668,7 +1668,7 @@ function renderPlay() {
 
     <details class="fold"><summary>지금까지의 이정표${(G.W.miles || []).length ? ` (${G.W.miles.length})` : ''} · 앞으로 지을 수 있는 것</summary>
       ${(G.W.miles || []).length ? `<div class="card"><h2>지금까지의 이정표</h2>
-        ${G.W.miles.slice().reverse().map(m => `<div class="mrow"><i>${m.date}</i><b>${m.title}</b></div>`).join('')}
+        ${G.W.miles.slice().reverse().map(m => `<div class="mrow"><i>${escapeText(m.date)}</i><b>${escapeText(m.title)}</b></div>`).join('')}
       </div>` : ''}
       ${growthPanel(s, G.W)}
     </details>
@@ -1725,12 +1725,14 @@ function renderPlay() {
 
     ${decisionsMade()}`;
 
-  $('#go').onclick = () => { dealTurn(); openDecisions(); };
+  $('#go').onclick = async () => { if (await dealTurn()) await openDecisions(); };
   $('#btn-motion').onclick = () => { setMotion(!motionOff()); render(); };
   /* 저장은 이 화면(결재 전)에서만 받는다. 결재 팝업 한가운데를 되살리려면
      카드 함수까지 저장해야 하는데, 그건 저장 파일이 아니라 프로그램을 저장하는 일이다. */
-  $('#btn-save').onclick = () => {
-    if (saveGame()) setTimeout(() => { G = null; render(); }, 700);
+  $('#btn-save').onclick = async () => {
+    if (typeof ccCheckpointStatus === 'function' && ccCheckpointStatus().busy) return;
+    const game = G;
+    if (await saveGame() && G === game && !ccApprovalOpen) { G = null; render(); }
   };
 }
 
@@ -2308,7 +2310,7 @@ function showReport(R) {
   const risk = nextRisk(G.s, G.W);
 
   dlg.innerHTML = `<div class="dlg">
-    <h2>${R.months === 3 ? periodLabel(R.firstTurn, 3) : R.months > 1 ? `${dateLabel(R.firstTurn)}–${R.date}` : R.date} 결산${R.months > 1 ? ` <span class="muted" style="font-size:13px">${R.months}개월 합계</span>` : ''}</h2>
+    <h2>${R.months === 3 ? periodLabel(R.firstTurn, 3) : R.months > 1 ? `${dateLabel(R.firstTurn)}–${escapeText(R.date)}` : R.date} 결산${R.months > 1 ? ` <span class="muted" style="font-size:13px">${R.months}개월 합계</span>` : ''}</h2>
 
     <div class="rhead">
       <div class="rbox">
@@ -2348,7 +2350,7 @@ function showReport(R) {
     <div class="rrisk"><b>다음 ${R.months > 1 ? '분기' : '달'} 위험</b> — ${risk}</div>
 
     ${G.W && G.W.fired.length ? `<h3 class="h3">돌아온 청구서</h3>${G.W.fired.map(f =>
-      `<div class="note bad"><b>${f.text}</b>${f.why ? `<br><span class="muted">원인 · ${f.why}</span>` : ''}</div>`).join('')}` : ''}
+      `<div class="note bad"><b>${escapeText(f.text)}</b>${f.why ? `<br><span class="muted">원인 · ${escapeText(f.why)}</span>` : ''}</div>`).join('')}` : ''}
 
     <details class="fold"><summary>손익 상세</summary>
     <table>
@@ -2370,17 +2372,17 @@ function showReport(R) {
       <tr class="tot"><td>모법이익 <span class="muted" style="font-weight:600">모사 이익 + 코일센터 이익</span></td>
         <td class="${R.consolidated < 0 ? 'v neg' : 'v pos'}">${money(R.consolidated)}</td></tr></table>
     </details>
-    ${R.lineReady ? `<div class="note good">${R.lineReady}</div>` : ''}
+    ${R.lineReady ? `<div class="note good">${escapeText(R.lineReady)}</div>` : ''}
     ${lines.length ? `<details class="fold"><summary>이 기간에 일어난 일 (${lines.length}건)</summary>
       ${lines.map(x => {
         const bad = /결품|넘겼|막혀|모자|대손|떠나|부도|클레임|넘어갔|나갔/.test(x.text) ? 'bad' : '';
-        if (x.n === 1) return `<div class="note ${bad}">${x.text}</div>`;
+        if (x.n === 1) return `<div class="note ${bad}">${escapeText(x.text)}</div>`;
         // 묶음은 합계·횟수를 적고, 펼치면 달마다 실제 값이 나온다
         const head = x.varies
-          ? `${x.text.replace(/[\d,]+/, fmt(x.sum))} <span class="muted">· ${x.n}개월 합계</span>`
-          : `${x.text} <span class="muted">· ${x.n}개월 연속</span>`;
+          ? `${escapeText(x.text.replace(/[\d,]+/, fmt(x.sum)))} <span class="muted">· ${x.n}개월 합계</span>`
+          : `${escapeText(x.text)} <span class="muted">· ${x.n}개월 연속</span>`;
         return `<div class="note ${bad}"><details class="grp"><summary>${head}</summary>
-          ${x.all.map((t, i) => `<div class="gl"><i>${i + 1}번째 달</i>${t}</div>`).join('')}
+          ${x.all.map((t, i) => `<div class="gl"><i>${i + 1}번째 달</i>${escapeText(t)}</div>`).join('')}
           </details></div>`;
       }).join('')}
       </details>` : ''}
@@ -2399,8 +2401,8 @@ function renderEnd() {
   if (typeof ccAudioEnding === 'function') ccAudioEnding();
   const g = grade(G.s, (G.diff || DIFF.normal).target), s = G.s, W = G.W;
   const P = companyProfile(s, W), m = P.m;
-  /* 판이 끝났으니 저장을 지우고 기록을 남긴다. 한 판을 두 번 적지 않게 표시를 달아둔다. */
-  if (!G.recorded) { G.recorded = true; clearSave(); recordRun(s, W, G.diff || DIFF.normal, g, P); }
+  /* 종료 checkpoint를 유지하고 기록을 남긴다. 한 판을 두 번 적지 않게 표시를 달아둔다. */
+  if (!G.recorded) { G.recorded = true; recordRun(s, W, G.diff || DIFF.normal, g, P); }
   const k = v => (v < 0 ? '−$' : '$') + fmt(Math.abs(v) / 1000) + 'k';
   const styleBars = Object.keys(STYLE_NAME).map(key => {
     const tot = Object.values(W.style).reduce((a, b) => a + b, 0) || 1;

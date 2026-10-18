@@ -1,7 +1,7 @@
 const ccHandoverNewGame = newGame;
-newGame = function (...args) {
-  const result = ccHandoverNewGame(...args);
-  ccOpenDossier('handover', app.querySelector('#cc-help'));
+newGame = async function (...args) {
+  const result = await ccHandoverNewGame(...args);
+  if (result) ccOpenDossier('handover', app.querySelector('#cc-help'));
   return result;
 };
 

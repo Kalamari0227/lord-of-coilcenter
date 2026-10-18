@@ -7,7 +7,7 @@ export const sourceFiles = ['engine.js', 'decks.js', 'world.js', 'issues.js', 'u
 export function saveSession(raw, eventSeed = 20261018) {
   const storage = new Map(raw === undefined ? [] : [[saveKey, raw]]);
   const context = vm.createContext({
-    console, structuredClone, navigator: {}, location: { protocol: 'file:' },
+    console, TextEncoder, crypto, structuredClone, navigator: {locks:{request:async (_name,_options,action)=>action()}}, location: { protocol: 'file:' },
     document: { querySelector: () => ({}) }, window: { addEventListener() {} },
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },

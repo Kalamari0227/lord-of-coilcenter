@@ -29,7 +29,7 @@ function fixture({ onboarding = true } = {}) {
     querySelector: selector => selector === '#app' ? app : dialogs.find(d => d.open),
     createElement: tag => new Element(tag), body: { append: node => dialogs.push(node) },
   };
-  const context = vm.createContext({ console, structuredClone, document, navigator: {}, location: { protocol: 'file:' },
+  const context = vm.createContext({ console, TextEncoder, crypto, structuredClone, document, navigator: {locks:{request:async (_name,_options,action)=>action()}}, location: { protocol: 'file:' },
     window: { addEventListener() {} },
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
     ccAudioCue() {}, ccRenderSetup() {}, record: value => calls.push(value),
@@ -44,16 +44,16 @@ function fixture({ onboarding = true } = {}) {
   return { run, start, dialogs, app, storage, calls, Element };
 }
 
-test('baseline: reading existing dossier and cached staff reports preserves state and RNG', () => {
-  const f = fixture({ onboarding: false }); f.start();
+test('baseline: reading existing dossier and cached staff reports preserves state and RNG', async () => {
+  const f = fixture({ onboarding: false }); await f.start();
   f.run('ccBriefings.set(G.s, [{who:"jung",kind:"확인",text:"확정 보고"}]);');
   const before = f.run('JSON.stringify(G)');
   f.run('Math.random = () => { throw Error("RNG consumed by reading"); }; ccDossierContent("instructions"); ccBriefingDossier(G.s,G.W); ccShowReport();');
   assert.equal(f.run('JSON.stringify(G)'), before);
 });
 
-test('new game handover opens after checkpoint, dismisses freely and resume never auto-opens', () => {
-  const f = fixture(); f.start();
+test('new game handover opens after checkpoint, dismisses freely and resume never auto-opens', async () => {
+  const f = fixture(); await f.start();
   assert.equal(f.dialogs.length, 1);
   assert.equal(f.dialogs[0].open, true);
   assert.ok(f.storage.get('coilcenter:foundation:v1'));
@@ -61,14 +61,14 @@ test('new game handover opens after checkpoint, dismisses freely and resume neve
   f.dialogs[0].querySelector('.cc-dossier-close').onclick();
   assert.equal(f.dialogs[0].open, false);
   assert.equal(f.run('JSON.stringify(G)'), state);
-  assert.equal(f.run('resumeGame()'), true);
+  assert.equal(await f.run('resumeGame()'), true);
   assert.equal(f.dialogs.length, 1);
   f.run('ccOpenDossier("handover")');
   assert.equal(f.dialogs.length, 2);
 });
 
-for (const month of [1, 2, 3]) test(`month ${month}: objective actions route to staff and ledger without changing state`, () => {
-  const f = fixture(); f.start(); f.dialogs[0].close();
+for (const month of [1, 2, 3]) test(`month ${month}: objective actions route to staff and ledger without changing state`, async () => {
+  const f = fixture(); await f.start(); f.dialogs[0].close();
   f.run(`G.s.turn = ${month}; ccBriefings.set(G.s, []); Math.random = () => { throw Error('RNG consumed'); };`);
   const before = f.run('JSON.stringify(G)');
   const objectives = f.run('ccQuarterObjectives()');
@@ -85,17 +85,17 @@ for (const month of [1, 2, 3]) test(`month ${month}: objective actions route to 
   assert.equal(f.run('JSON.stringify(G)'), before);
 });
 
-test('quick mode bundles all months, naturally reduces at month 4 and disappears after month 4', () => {
-  const f = fixture(); f.start('quick');
+test('quick mode bundles all months, naturally reduces at month 4 and disappears after month 4', async () => {
+  const f = fixture(); await f.start('quick');
   assert.deepEqual(Array.from(f.run('ccQuarterObjectives()'), item => item.month), [1, 2, 3]);
-  f.dialogs[0].close(); f.run('dealTurn(); G.ui.orderTon = 0; advance()');
+  f.dialogs[0].close(); await f.run('dealTurn()'); await f.run('G.ui.orderTon = 0; advance()');
   assert.equal(f.run('G.s.turn'), 4);
   assert.equal(f.run('ccQuarterObjectives().length'), 0);
   assert.equal(f.run('ccQuarterGuidance().dataset.guidanceStage'), 'independent');
   f.run('G.s.turn = 5'); assert.equal(f.run('ccQuarterGuidance()'), null);
 });
 
-test('title instructions remain available without a running game', () => {
+test('title instructions remain available without a running game', async () => {
   const f = fixture();
   f.run('ccOpenDossier("instructions")');
   assert.equal(f.dialogs[0].open, true);
@@ -104,11 +104,11 @@ test('title instructions remain available without a running game', () => {
   assert.equal(f.dialogs.length, 1);
 });
 
-for (const mode of ['normal', 'quick']) test(`${mode}: automatic and repeated handover preserve full new-game checkpoint and RNG count`, () => {
+for (const mode of ['normal', 'quick']) test(`${mode}: automatic and repeated handover preserve full new-game checkpoint and RNG count`, async () => {
   const baseline = fixture({ onboarding: false }), guided = fixture();
   for (const f of [baseline, guided]) {
     f.run('let randomCalls = 0; let seed = 137; Math.random = () => { randomCalls++; seed = (Math.imul(seed,1664525) + 1013904223) >>> 0; return seed / 4294967296; };');
-    f.start(mode);
+    await f.start(mode);
   }
   guided.dialogs[0].close();
   guided.run('ccOpenDossier("instructions")');
@@ -123,8 +123,8 @@ for (const mode of ['normal', 'quick']) test(`${mode}: automatic and repeated ha
   assert.deepEqual(checkpoint(guided), checkpoint(baseline));
 });
 
-test('handover respects existing modal and restores its connected opener on dismissal', () => {
-  const f = fixture(); f.start();
+test('handover respects existing modal and restores its connected opener on dismissal', async () => {
+  const f = fixture(); await f.start();
   const initial = f.dialogs[0];
   f.run('ccOpenDossier("instructions")');
   assert.equal(f.dialogs.length, 1);

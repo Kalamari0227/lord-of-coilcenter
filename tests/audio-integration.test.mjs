@@ -47,7 +47,7 @@ async function campaign(mode, audioMode, mutation = '') {
     async decodeAudioData(bytes) { if (audioMode === 'decode-failure') throw new Error('decode'); return { duration: 2, id: bytes.id }; },
     createBufferSource() { const source = { connect() {}, disconnect() {}, start() { played.push(this.buffer.id); }, stop() { this.onended?.(); } }; sources.push(source); return source; },
   };
-  const context = vm.createContext({ console, structuredClone, document, navigator: {}, location: { protocol: 'file:' },
+  const context = vm.createContext({ console, TextEncoder, crypto, structuredClone, document, navigator: {locks:{request:async (_name,_options,action)=>action()}}, location: { protocol: 'file:' },
     window: { addEventListener() {}, removeEventListener() {} },
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => { storage.set(key, value); if (key === 'coilcenter:foundation:v1') saved.push(JSON.parse(value)); }, removeItem: key => storage.delete(key) },
     Date: class extends Date { constructor(...args) { super(...(args.length ? args : [1791936000000])); } static now() { return 1791936000000; } },
@@ -70,12 +70,12 @@ async function campaign(mode, audioMode, mutation = '') {
   run('const realCue = CCAudio.cue; CCAudio.cue = (id, event) => { recordCue(id); return realCue(id, event); };');
   if (mutation) run(mutation);
   run(`CCAudio.configure({muted: ${audioMode === 'muted'}})`);
-  await run(`ccAudioGesture(() => { newGame({mode: '${mode}', diff: 'normal', country: 'NV', name: 'Audio invariant'}); return true; })`);
+  await run(`ccAudioGesture(() => newGame({mode: '${mode}', diff: 'normal', country: 'NV', name: 'Audio invariant'}))`);
   await flush();
   run('safetyCard(G.s, G.W).opts[2].apply(G.s, G)');
   const snapshots = [];
   for (let period = 0; period < 2; period++) {
-    run('dealTurn(); openDecisions()'); await flush();
+    await run('dealTurn()'); await run('openDecisions()'); await flush();
     let decisions = 0;
     while (run('G.qi < G.queue.length')) {
       assert.ok(decisions++ < 15, 'decision queue terminates');
@@ -85,13 +85,14 @@ async function campaign(mode, audioMode, mutation = '') {
         dialog.querySelector('#osubmit').onclick();
       } else if (form === 'sales') dialog.querySelector('#ssubmit').onclick();
       else dialog.querySelectorAll('[data-o]')[0].onclick();
-      await flush(); audioClock += 100; dialog.querySelector('#nx').onclick(); await flush();
+      await flush(); audioClock += 100; await dialog.querySelector('#nx').onclick(); await flush();
     }
     reports.push(JSON.parse(run('JSON.stringify(G.s.history.slice(-G.mpt))')));
     for (const source of [...sources]) source.onended?.(); await flush();
     const reportDialog = dialogs.findLast(d => d.open); assert.ok(reportDialog, 'real showReport opens a settlement dialog');
     reportDialog.querySelector('#close').onclick(); await flush();
-    snapshots.push(JSON.parse(run('JSON.stringify({s:G.s,W:G.W,pending:G.pending,save:loadedSave()})')));
+    const save = await run('loadedSave()');
+    snapshots.push({...JSON.parse(run('JSON.stringify({s:G.s,W:G.W,pending:G.pending})')),save:JSON.parse(JSON.stringify(save))});
   }
   assert.equal(cues.includes('save'), false, 'automatic checkpoints never emit manual save cue');
   assert.ok(cues.includes('stamp') && cues.includes('order') && cues.includes('month-turn'), 'real decision callbacks exercise semantic hooks');

@@ -31,7 +31,7 @@ const DECK = {
     { id: 'g-fire', who: 'oh', topic: 'big', title: '🚨 주요 고객 생산라인 화재',
       text: 'A자동차의 페인트칠 공정에서 불이 났습니다. 복구까지 두 달이랍니다. 그동안 그 고객에게 납품할 물량도 줄어듭니다. 다른 고객을 찾을지, 복구를 도울지 정해야 합니다.',
       opts: [
-        { displayId: "g-fire.find-customers", label: '다른 고객을 급히 찾는다', hint: '줄어든 납품량을 새 주문으로 메운다', fx: ['−통장 $130,000', '+석 달 뒤 판매 물량 ↑'],
+        { displayId: "g-fire.find-customers", label: '다른 고객을 급히 찾는다', hint: '새 고객을 찾는 영업에 투자합니다. 실제 납품은 이후 결산에서 확인합니다', fx: ['−통장 $130,000', '+3개월 뒤 시장 점유율에 영업 투자 반영 · 실제 납품은 별도'],
           apply: s => { s.cash -= 130_000;
             s.effortQueue.push({ amount: 130_000, turnsLeft: CFG.SALES_EFFORT_LAG });
             return '영업을 전면에 돌렸습니다.'; } },

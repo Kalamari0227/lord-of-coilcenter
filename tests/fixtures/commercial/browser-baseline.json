@@ -1,0 +1,600 @@
+{
+  "monthly": {
+    "sha256": "d160c2e54010b3b53610e99895ca5b33019100d5995cfe2a4a919ec0d866636c",
+    "eventSeed": 20261018,
+    "finalRng": {
+      "event": 1167,
+      "engine": 5266
+    },
+    "finalEventStateDerived": 516099319,
+    "monthlyRng": [
+      {
+        "event": 31,
+        "engine": 548,
+        "engineState": 325002204,
+        "eventStateDerived": 3352417927
+      },
+      {
+        "event": 46,
+        "engine": 644,
+        "engineState": 71962344,
+        "eventStateDerived": 1608504344
+      },
+      {
+        "event": 64,
+        "engine": 742,
+        "engineState": 432144778,
+        "eventStateDerived": 2024664026
+      },
+      {
+        "event": 86,
+        "engine": 839,
+        "engineState": 606328491,
+        "eventStateDerived": 28627808
+      },
+      {
+        "event": 109,
+        "engine": 935,
+        "engineState": 921355154,
+        "eventStateDerived": 958684317
+      },
+      {
+        "event": 129,
+        "engine": 1032,
+        "engineState": 439771706,
+        "eventStateDerived": 379220913
+      },
+      {
+        "event": 154,
+        "engine": 1128,
+        "engineState": 314516720,
+        "eventStateDerived": 61000148
+      },
+      {
+        "event": 177,
+        "engine": 1224,
+        "engineState": 222405258,
+        "eventStateDerived": 3474115937
+      },
+      {
+        "event": 202,
+        "engine": 1320,
+        "engineState": 69489374,
+        "eventStateDerived": 240906692
+      },
+      {
+        "event": 230,
+        "engine": 1416,
+        "engineState": 67482353,
+        "eventStateDerived": 612766256
+      },
+      {
+        "event": 259,
+        "engine": 1512,
+        "engineState": 472055287,
+        "eventStateDerived": 2129112459
+      },
+      {
+        "event": 287,
+        "engine": 1609,
+        "engineState": 820890265,
+        "eventStateDerived": 210032519
+      },
+      {
+        "event": 312,
+        "engine": 1817,
+        "engineState": 704606115,
+        "eventStateDerived": 481737458
+      },
+      {
+        "event": 341,
+        "engine": 1914,
+        "engineState": 800406485,
+        "eventStateDerived": 933376453
+      },
+      {
+        "event": 367,
+        "engine": 2010,
+        "engineState": 91670673,
+        "eventStateDerived": 1712978391
+      },
+      {
+        "event": 396,
+        "engine": 2108,
+        "engineState": 385182791,
+        "eventStateDerived": 1523380566
+      },
+      {
+        "event": 425,
+        "engine": 2205,
+        "engineState": 811593599,
+        "eventStateDerived": 27517849
+      },
+      {
+        "event": 454,
+        "engine": 2301,
+        "engineState": 57055635,
+        "eventStateDerived": 3809669776
+      },
+      {
+        "event": 481,
+        "engine": 2398,
+        "engineState": 904781136,
+        "eventStateDerived": 1848005649
+      },
+      {
+        "event": 510,
+        "engine": 2494,
+        "engineState": 613112813,
+        "eventStateDerived": 2514945832
+      },
+      {
+        "event": 536,
+        "engine": 2590,
+        "engineState": 623628338,
+        "eventStateDerived": 2800751186
+      },
+      {
+        "event": 561,
+        "engine": 2689,
+        "engineState": 675899125,
+        "eventStateDerived": 3351522017
+      },
+      {
+        "event": 586,
+        "engine": 2789,
+        "engineState": 116106833,
+        "eventStateDerived": 945848644
+      },
+      {
+        "event": 610,
+        "engine": 2889,
+        "engineState": 219950177,
+        "eventStateDerived": 498387132
+      },
+      {
+        "event": 633,
+        "engine": 2986,
+        "engineState": 555408577,
+        "eventStateDerived": 2389002473
+      },
+      {
+        "event": 661,
+        "engine": 3083,
+        "engineState": 776903307,
+        "eventStateDerived": 2887543045
+      },
+      {
+        "event": 687,
+        "engine": 3180,
+        "engineState": 659472567,
+        "eventStateDerived": 1212148503
+      },
+      {
+        "event": 709,
+        "engine": 3276,
+        "engineState": 8409067,
+        "eventStateDerived": 4266422709
+      },
+      {
+        "event": 737,
+        "engine": 3373,
+        "engineState": 160546999,
+        "eventStateDerived": 2027748625
+      },
+      {
+        "event": 758,
+        "engine": 3469,
+        "engineState": 85203019,
+        "eventStateDerived": 189226112
+      },
+      {
+        "event": 780,
+        "engine": 3565,
+        "engineState": 7731453,
+        "eventStateDerived": 539765974
+      },
+      {
+        "event": 806,
+        "engine": 3660,
+        "engineState": 433335903,
+        "eventStateDerived": 3775845744
+      },
+      {
+        "event": 827,
+        "engine": 3756,
+        "engineState": 542988505,
+        "eventStateDerived": 2484935619
+      },
+      {
+        "event": 845,
+        "engine": 3853,
+        "engineState": 814482580,
+        "eventStateDerived": 3884070013
+      },
+      {
+        "event": 864,
+        "engine": 3952,
+        "engineState": 845590315,
+        "eventStateDerived": 2599562362
+      },
+      {
+        "event": 886,
+        "engine": 4052,
+        "engineState": 238463326,
+        "eventStateDerived": 4136578816
+      },
+      {
+        "event": 907,
+        "engine": 4149,
+        "engineState": 167002300,
+        "eventStateDerived": 2175383827
+      },
+      {
+        "event": 938,
+        "engine": 4249,
+        "engineState": 301700139,
+        "eventStateDerived": 160031268
+      },
+      {
+        "event": 962,
+        "engine": 4348,
+        "engineState": 441560781,
+        "eventStateDerived": 788331932
+      },
+      {
+        "event": 985,
+        "engine": 4449,
+        "engineState": 564787435,
+        "eventStateDerived": 1725537609
+      },
+      {
+        "event": 1012,
+        "engine": 4551,
+        "engineState": 488726971,
+        "eventStateDerived": 2982045854
+      },
+      {
+        "event": 1032,
+        "engine": 4655,
+        "engineState": 643312010,
+        "eventStateDerived": 2786480002
+      },
+      {
+        "event": 1052,
+        "engine": 4753,
+        "engineState": 157117507,
+        "eventStateDerived": 267463590
+      },
+      {
+        "event": 1077,
+        "engine": 4850,
+        "engineState": 530368109,
+        "eventStateDerived": 4171470245
+      },
+      {
+        "event": 1099,
+        "engine": 4946,
+        "engineState": 456775785,
+        "eventStateDerived": 3995663827
+      },
+      {
+        "event": 1122,
+        "engine": 5041,
+        "engineState": 52069340,
+        "eventStateDerived": 2736124604
+      },
+      {
+        "event": 1147,
+        "engine": 5135,
+        "engineState": 655852673,
+        "eventStateDerived": 1405675779
+      },
+      {
+        "event": 1167,
+        "engine": 5229,
+        "engineState": 171360882,
+        "eventStateDerived": 516099319
+      }
+    ]
+  },
+  "quarterly": {
+    "sha256": "82cb372f55732ce672b010961bff0a2214c83474d7d2a6b0f0d2870a2a3244c7",
+    "eventSeed": 20261018,
+    "finalRng": {
+      "event": 681,
+      "engine": 2771
+    },
+    "finalEventStateDerived": 3849759897,
+    "monthlyRng": [
+      {
+        "event": 32,
+        "engine": 474,
+        "engineState": 325002204,
+        "eventStateDerived": 4039090746
+      },
+      {
+        "event": 41,
+        "engine": 496,
+        "engineState": 71962344,
+        "eventStateDerived": 1016280601
+      },
+      {
+        "event": 47,
+        "engine": 520,
+        "engineState": 432144778,
+        "eventStateDerived": 4289087639
+      },
+      {
+        "event": 68,
+        "engine": 617,
+        "engineState": 606328491,
+        "eventStateDerived": 425172910
+      },
+      {
+        "event": 79,
+        "engine": 639,
+        "engineState": 921355154,
+        "eventStateDerived": 194934967
+      },
+      {
+        "event": 85,
+        "engine": 662,
+        "engineState": 439771706,
+        "eventStateDerived": 3534076101
+      },
+      {
+        "event": 109,
+        "engine": 758,
+        "engineState": 314516720,
+        "eventStateDerived": 958684317
+      },
+      {
+        "event": 119,
+        "engine": 780,
+        "engineState": 222405258,
+        "eventStateDerived": 1645294431
+      },
+      {
+        "event": 125,
+        "engine": 802,
+        "engineState": 69489374,
+        "eventStateDerived": 1019128877
+      },
+      {
+        "event": 150,
+        "engine": 898,
+        "engineState": 67482353,
+        "eventStateDerived": 3173448864
+      },
+      {
+        "event": 162,
+        "engine": 920,
+        "engineState": 472055287,
+        "eventStateDerived": 3863569404
+      },
+      {
+        "event": 168,
+        "engine": 943,
+        "engineState": 820890265,
+        "eventStateDerived": 3157794722
+      },
+      {
+        "event": 197,
+        "engine": 1151,
+        "engineState": 704606115,
+        "eventStateDerived": 99614645
+      },
+      {
+        "event": 207,
+        "engine": 1174,
+        "engineState": 800406485,
+        "eventStateDerived": 3747469623
+      },
+      {
+        "event": 213,
+        "engine": 1196,
+        "engineState": 91670673,
+        "eventStateDerived": 3501159749
+      },
+      {
+        "event": 241,
+        "engine": 1294,
+        "engineState": 385182791,
+        "eventStateDerived": 2510514081
+      },
+      {
+        "event": 251,
+        "engine": 1317,
+        "engineState": 811593599,
+        "eventStateDerived": 2449448323
+      },
+      {
+        "event": 257,
+        "engine": 1339,
+        "engineState": 57055635,
+        "eventStateDerived": 410290225
+      },
+      {
+        "event": 284,
+        "engine": 1436,
+        "engineState": 904781136,
+        "eventStateDerived": 3388077222
+      },
+      {
+        "event": 294,
+        "engine": 1458,
+        "engineState": 613112813,
+        "eventStateDerived": 66194288
+      },
+      {
+        "event": 300,
+        "engine": 1480,
+        "engineState": 623628338,
+        "eventStateDerived": 422865526
+      },
+      {
+        "event": 328,
+        "engine": 1576,
+        "engineState": 675899125,
+        "eventStateDerived": 144438210
+      },
+      {
+        "event": 340,
+        "engine": 1598,
+        "engineState": 116106833,
+        "eventStateDerived": 3106018430
+      },
+      {
+        "event": 346,
+        "engine": 1620,
+        "engineState": 219950177,
+        "eventStateDerived": 444637588
+      },
+      {
+        "event": 371,
+        "engine": 1716,
+        "engineState": 555408577,
+        "eventStateDerived": 2512377595
+      },
+      {
+        "event": 383,
+        "engine": 1738,
+        "engineState": 776903307,
+        "eventStateDerived": 3492052967
+      },
+      {
+        "event": 389,
+        "engine": 1761,
+        "engineState": 659472567,
+        "eventStateDerived": 2100677237
+      },
+      {
+        "event": 415,
+        "engine": 1857,
+        "engineState": 8409067,
+        "eventStateDerived": 1934088199
+      },
+      {
+        "event": 426,
+        "engine": 1880,
+        "engineState": 160546999,
+        "eventStateDerived": 3630266404
+      },
+      {
+        "event": 432,
+        "engine": 1902,
+        "engineState": 85203019,
+        "eventStateDerived": 1337311370
+      },
+      {
+        "event": 458,
+        "engine": 1998,
+        "engineState": 7731453,
+        "eventStateDerived": 396666564
+      },
+      {
+        "event": 469,
+        "engine": 2019,
+        "engineState": 433335903,
+        "eventStateDerived": 3112037957
+      },
+      {
+        "event": 475,
+        "engine": 2040,
+        "engineState": 542988505,
+        "eventStateDerived": 3677116515
+      },
+      {
+        "event": 496,
+        "engine": 2135,
+        "engineState": 814482580,
+        "eventStateDerived": 1845457866
+      },
+      {
+        "event": 506,
+        "engine": 2157,
+        "engineState": 845590315,
+        "eventStateDerived": 3834364596
+      },
+      {
+        "event": 512,
+        "engine": 2181,
+        "engineState": 238463326,
+        "eventStateDerived": 1814446746
+      },
+      {
+        "event": 535,
+        "engine": 2277,
+        "engineState": 167002300,
+        "eventStateDerived": 2258655487
+      },
+      {
+        "event": 547,
+        "engine": 2299,
+        "engineState": 301700139,
+        "eventStateDerived": 2228209835
+      },
+      {
+        "event": 553,
+        "engine": 2320,
+        "engineState": 441560781,
+        "eventStateDerived": 1718667289
+      },
+      {
+        "event": 580,
+        "engine": 2415,
+        "engineState": 564787435,
+        "eventStateDerived": 1937201582
+      },
+      {
+        "event": 590,
+        "engine": 2436,
+        "engineState": 488726971,
+        "eventStateDerived": 728426168
+      },
+      {
+        "event": 596,
+        "engine": 2460,
+        "engineState": 643312010,
+        "eventStateDerived": 1312239998
+      },
+      {
+        "event": 623,
+        "engine": 2555,
+        "engineState": 157117507,
+        "eventStateDerived": 1174813399
+      },
+      {
+        "event": 634,
+        "engine": 2576,
+        "engineState": 530368109,
+        "eventStateDerived": 4049698100
+      },
+      {
+        "event": 640,
+        "engine": 2597,
+        "engineState": 456775785,
+        "eventStateDerived": 1765476634
+      },
+      {
+        "event": 665,
+        "engine": 2692,
+        "engineState": 52069340,
+        "eventStateDerived": 2586923529
+      },
+      {
+        "event": 675,
+        "engine": 2713,
+        "engineState": 655852673,
+        "eventStateDerived": 1077449003
+      },
+      {
+        "event": 681,
+        "engine": 2734,
+        "engineState": 171360882,
+        "eventStateDerived": 3849759897
+      }
+    ]
+  }
+}

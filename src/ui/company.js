@@ -13,6 +13,7 @@ function ccElement(tag, className, markup = '') {
 }
 
 function ccPortraitMarkup(key, className = '') {
+  if (typeof ccStatePortraitMarkup === 'function') return ccStatePortraitMarkup(key, className);
   const index = Math.max(0, ccOfficers.indexOf(key));
   return `<span class="cc-portrait ${className}" aria-hidden="true" style="--portrait-x:${index % 3 * 50}%;--portrait-y:${index < 3 ? 0 : 100}%"></span>`;
 }
@@ -44,8 +45,9 @@ function ccStaffRail() {
   rail.setAttribute('aria-label', '담당자 보고 선택');
   ccOfficers.forEach(key => {
     const person = CAST[key];
+    const status = typeof ccCompanyState === 'function' ? ccCompanyState(G).staff[key] : null;
     const button = ccElement('button', 'cc-person', `${ccPortraitMarkup(key)}
-      <span><small>${ccEscape(person.role)}</small><b>${ccEscape(person.name)}</b></span>`);
+      <span><small>${ccEscape(person.role)}</small><b>${ccEscape(person.name)}</b>${status ? `<small class="cc-staff-state" data-staff-state="${status.state}">${status.state === 'concerned' ? '주의 · ' + ccEscape(status.text) : status.state === 'positive' ? '기록된 성과' : '현황 보고'}</small>` : ''}</span>`);
     button.dataset.person = key;
     button.setAttribute('aria-pressed', String(ccView.person === key));
     button.onclick = () => {
@@ -73,10 +75,12 @@ function ccShowReport() {
   const lines = ccBriefings.get(G.s).filter(line => line.who === ccView.person);
   if (!lines.length) lines.push({ kind: '현황', text: ccOfficerStatus(ccView.person) });
   const person = CAST[ccView.person];
+  const status = typeof ccCompanyState === 'function' ? ccCompanyState(G).staff[ccView.person] : null;
   const [dossier, judgment] = ccOfficerEvidence[ccView.person];
   report.dataset.reportPerson = ccView.person;
   report.innerHTML = `${ccPortraitMarkup(ccView.person, 'cc-dialogue-portrait')}
     <div><h2>${ccEscape(person.name)} <small>${ccEscape(person.role)}</small></h2>
+    ${status && status.state !== 'neutral' ? `<p class="cc-report-state" data-staff-state="${status.state}">${status.state === 'concerned' ? '주의 · ' : ''}${ccEscape(status.text)}</p>` : ''}
     ${lines.map(line => `<p><span class="cc-report-kind">${ccEscape(line.kind)}</span> ${line.text}</p>`).join('')}
     <p class="hint">${judgment} 확인을 마치면 금${G.mpt === 3 ? '분기' : '월'} 결재에서 직접 결정하십시오.</p>
     <div class="cc-report-actions"></div></div>`;
@@ -118,8 +122,14 @@ function ccShowScene(page, userAction = false) {
     ['production', '가공 공장', 50, 40], ['inventory', '소재 야드', 25, 65],
     ['inventory', '수입 항만', 78, 75], ['customers', '거래처', 80, 22], ['office', '법인 사무동', 25, 25],
   ] : [['reports', '보고 서류', 55, 64], ['finance', '경영 장부', 78, 43]];
+  const snapshot = typeof ccCompanyState === 'function' ? ccCompanyState(G) : null;
   places.forEach(([kind, label, x, y]) => {
     const button = ccElement('button', 'cc-map-place', `<span class="cc-place-mark"></span>${label}`);
+    if (snapshot) {
+      const status = ccPlaceState(kind, label, snapshot);
+      button.dataset.placeState = status.state;
+      button.append(ccElement('small', 'cc-place-state', `${ccEscape(status.text)}${status.state === 'concerned' ? `<br>주의 · ${ccEscape(status.reason.split(' · ')[0])}` : ''}`));
+    }
     button.style.left = `${x}%`; button.style.top = `${y}%`;
     button.onclick = () => kind === 'office' ? ccShowScene('office', true) : ccOpenDossier(kind, button);
     scene.append(button);

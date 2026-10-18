@@ -1,0 +1,18 @@
+.cc-portrait.cc-state-portrait { position:relative; overflow:hidden; background-image:none; }
+.cc-state-portrait > img { position:absolute; width:300%; height:200%; max-width:none; image-rendering:pixelated; }
+.cc-state-portrait > .cc-portrait-fallback { display:none; }
+.cc-portrait.cc-portrait-unavailable { width:auto; height:auto; max-width:100%; padding:4px; background:var(--cc-dark); }
+.cc-portrait-unavailable > .cc-portrait-fallback { display:block; font-size:var(--cc-text-small); line-height:1.5; white-space:normal; }
+.cc-app .cc-map-place .cc-place-state { display:block; font-size:var(--cc-text-small); color:var(--cc-muted); line-height:1.5; white-space:normal; }
+.cc-app .cc-map-place[data-place-state="concerned"] .cc-place-state,
+.cc-app [data-staff-state="concerned"] { color:var(--cc-warning); }
+.cc-app [data-staff-state="positive"] { color:var(--cc-good); }
+.cc-app .cc-person .cc-staff-state { margin-top:4px; white-space:normal; }
+.cc-app .cc-report-state { padding:8px; background:var(--cc-dark); }
+@media (max-width:760px) {
+  .cc-app .cc-map-place .cc-place-state { font-size:var(--cc-text-small); }
+}
+.cc-app .cc-map-place[data-place-state="concerned"] { max-width:240px; }
+.cc-game .cc-person:has(.cc-portrait-unavailable) { flex-direction:column; align-items:stretch; }
+.cc-app .cc-dialogue:has(> .cc-portrait-unavailable) { flex-direction:column; }
+.cc-portrait.cc-state-portrait.cc-portrait-unavailable[data-portrait-state] { width:auto; height:auto; }

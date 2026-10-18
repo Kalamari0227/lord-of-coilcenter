@@ -7,8 +7,8 @@ const lockQueues = new WeakMap();
 function session(storage = new Map(), options = {}) {
   const listeners = {};
   const context = vm.createContext({
-    console, TextEncoder, crypto, structuredClone, navigator: options.unsupported ? {} : {locks:{request:(_name,_options,action)=>{
-      const pending=(lockQueues.get(storage)||Promise.resolve()).then(action);
+    console, TextEncoder, crypto, structuredClone, navigator: options.unsupported ? {} : {locks:{request:(name,{mode},action)=>{
+      const pending=(lockQueues.get(storage)||Promise.resolve()).then(()=>action(Object.freeze({name,mode})));
       lockQueues.set(storage,pending.catch(()=>{}));return pending;
     }}}, location: { protocol: 'file:' },
     document: { querySelector: () => ({}) },
@@ -165,6 +165,26 @@ test('two writers serialize and the stale writer cannot overwrite, delete or sta
   await b.run('loadedSave()');assert.equal(await b.run('saveGame(true)'),false);
   assert.equal(await b.run('clearSave()'),false);assert.equal(await b.start(),false);
   assert.equal(store.get(key),committed);
+});
+
+for(const unsupported of [false,true])test(`read-only load preserves the live base until explicit resume (locks ${!unsupported})`,async()=>{
+  const store=new Map([[key,fixtureRaw]]),a=session(store),b=session(store,{unsupported});
+  assert.equal((await b.run('loadedSave()')).s.turn,JSON.parse(fixtureRaw).s.turn);
+  assert.equal(b.run('G'),null);
+  await Promise.all([a.run('resumeGame()'),b.run('resumeGame()')]);
+  const before=b.run('JSON.stringify(G)'),observed=b.run('ccObservedRaw');
+  a.run('G.s.cash+=17');assert.equal(await a.run('saveGame(true)'),true);
+  const committed=store.get(key);
+  assert.equal((await b.run('loadedSave()')).s.cash,JSON.parse(committed).s.cash);
+  assert.equal(b.run('JSON.stringify(G)'),before);
+  assert.equal(b.run('ccObservedRaw'),observed);
+  assert.equal(b.run('ccCheckpointStatus().state'),'conflict');
+  assert.equal(await b.run('saveGame(true)'),false);
+  assert.equal(store.get(key),committed);
+  assert.equal(await b.run('resumeGame()'),true);
+  assert.equal(b.run('ccObservedRaw'),committed);
+  assert.equal(b.run('G.s.cash'),JSON.parse(committed).s.cash);
+  assert.equal(await b.run('saveGame(true)'),!unsupported);
 });
 
 for(const stage of ['last-good','primary','meta'])test(`${stage} write failure retains a verified recoverable snapshot`,async()=>{

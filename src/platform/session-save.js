@@ -191,7 +191,7 @@ async function ccCoordinate(action, write=false) {
       if (write) {ccSaveNotice('unsupported','안전한 자동 저장을 지원하지 않습니다. 확인된 기록을 파일로 내보내세요.');return false;}
       return await action();
     }
-    return await navigator.locks.request(ccLockName, {mode:'exclusive'}, action);
+    return await navigator.locks.request(ccLockName, {mode:'exclusive'}, () => action());
   } catch {ccSaveNotice('unreadable','저장소에 접근하지 못했습니다.');return false;}
   finally {ccSaveBusy--;if(write)ccWriteBusy--;}
 }

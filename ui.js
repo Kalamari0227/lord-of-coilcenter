@@ -1769,8 +1769,8 @@ function agingPanel(s) {
 function hqCard(L, s) {
   const q = Math.round(L.quota);
   const step = Math.max(500, Math.round(q / 4 / 500) * 500);
-  const mk = (ton, label, hint, fx) => ({
-    label, hint, fx,
+  const mk = (displayId, ton, label, hint, fx) => ({
+    displayId, label, hint, fx,
     apply: (st, g) => { g.ui.hqTake = ton;
       if (ton === 0) { st.trust -= CFG.HQ_SPOT.refuseTrustCost;
         return '거절했습니다. 본사 영업팀 반응이 싸늘했습니다. 이런 건 연말 평가 때 꼭 나옵니다.'; }
@@ -1785,13 +1785,13 @@ function hqCard(L, s) {
         + `싸기는 하지만, 아직 살 고객이 정해지지 않았습니다. 우리가 직접 찾아서 팔아야 합니다. `
         + `게다가 본사 정책 때문에 유통업체에 파는 양은 전체 판매의 15%를 넘길 수 없습니다. 많이 받아도 다 못 팔면 재고로 남습니다.`,
     opts: [
-      mk(q, '배정량 전부 받는다', `${fmt(q)}톤`,
+      mk('op-hq.all', q, '배정량 전부 받는다', `${fmt(q)}톤`,
         ['+본사 신뢰 ↑↑', '−소재 구입에 많은 돈이 묶임', '?유통 판매 비중 15%를 넘는 양은 재고로 남음']),
-      mk(Math.round(q * 0.5), '절반만 받는다', `${fmt(Math.round(q * 0.5))}톤`,
+      mk('op-hq.half', Math.round(q * 0.5), '절반만 받는다', `${fmt(Math.round(q * 0.5))}톤`,
         ['+본사 요청에 일부 협조', '=판매 부담을 줄임']),
-      mk(step, '일부만 받는다', `${fmt(step)}톤`,
+      mk('op-hq.part', step, '일부만 받는다', `${fmt(step)}톤`,
         ['+재고 부담을 작게 유지', '−본사는 더 받길 원함']),
-      mk(0, '받지 않는다', '우리 회사의 자금부터 지킨다',
+      mk('op-hq.decline', 0, '받지 않는다', '우리 회사의 자금부터 지킨다',
         ['+현금 지킴', `−본사 신뢰 ${CFG.HQ_SPOT.refuseTrustCost}`]),
     ],
   };
@@ -1836,14 +1836,14 @@ function expandCard(type, L, s) {
         + `기계값만 준비하면 되는 게 아닙니다. 새 설비를 돌릴 소재도 계속 사야 합니다. `
         + `석 달치 소재만 ${money(feed)}입니다. 기계는 한 번 사지만 소재는 매달 사야 합니다.`,
     opts: [
-      { label: '짓겠습니다', hint: `${CFG.INSTALL_TURNS}개월 뒤 가동`,
+      { displayId: "op-expand.build", label: '짓겠습니다', hint: `${CFG.INSTALL_TURNS}개월 뒤 가동`,
         // 설비 대금은 착공하는 이번 달 결산에서 나간다. 여기서 바로 통장이 줄지 않는다.
         fx: [`−설비 ${money(total)} (이번 달 결산에서 차감)`, `−소재 ${money(feed)} 추가로 묶임`,
              `+${CFG.INSTALL_TURNS}개월 뒤 가공할 수 있는 양 ↑`],
         apply: (st, g) => { g.ui.expandPick = type;
           return `${CFG.LINE[type].label} 발주 넣었심더. ${CFG.INSTALL_TURNS}개월 뒤부터 돕니더. `
                + `그때까지는 돈만 나갑니더.`; } },
-      { label: '이번엔 넘어갑니다', hint: '현금을 지킨다',
+      { displayId: "op-expand.defer", label: '이번엔 넘어갑니다', hint: '현금을 지킨다',
         fx: ['+현금 지킴', '−이 물량은 못 받는다'],
         apply: () => '증설은 접었심더. 그 물량은 딴 데로 갈 겁니더.' },
     ],

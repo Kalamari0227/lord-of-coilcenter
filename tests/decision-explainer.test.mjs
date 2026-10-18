@@ -29,6 +29,7 @@ function fixture() {
   run(`G = {s:createInitialState({seed:147,equity:35000000}),qi:0,done:[],pending:[],ui:{},mult:1};
     G.W=initWorld(G.s,'normal'); ccEscape=escapeText; miniStatus=()=>''; ctxStrip=()=>''; face=()=>'';
     G.queue=[{deck:'prod',card:maintCard(G.s,G.W)}];`);
+  run(source('src/ui/decision-metadata.js'));
   if (existsSync(new URL('../src/ui/decision-explainer.js', import.meta.url))) run(source('src/ui/decision-explainer.js'));
   run(source('src/ui/dialogs.js'));
   return { run, dialog, buttons, events, nodes, cues, context };
@@ -69,9 +70,9 @@ test('conditional, approximate and ranged original effects never become guarante
   f.run(`G.queue[0].card={id:'unknown',who:'han',title:'조건 확인',text:'원문',opts:[{label:'시도',hint:'유지',
     fx:['+약 $40,000','+약$40,000','−$56,000 ~ $98,000','+통하면 물량 12%','+수요 ±10~20%','−조건 충족 시 $8,000','?성공 확률 50%','=현상 유지']}]}; openDecisions()`);
   const html = f.buttons[0].fx.replacement?.innerHTML || '';
-  assert.match(html, /불확실성·후속 위험/);
-  assert.match(html, /data-cc-effect="risk"[\s\S]*−\$56,000 ~ \$98,000/);
-  assert.match(html, /data-cc-effect="risk"[\s\S]*약\$40,000/);
+  assert.match(html, /data-cc-effect="unknown"/);
+  assert.match(html, /data-cc-timing="unspecified"/);
+  assert.match(html, /data-cc-certainty="unspecified"/);
   for (const text of f.run('G.queue[0].card.opts[0].fx')) assert.ok(html.includes(text));
   assert.doesNotMatch(html, /확정 비용|확정 효과|선택 즉시|고정 금액/);
 });
@@ -130,17 +131,39 @@ test('original sales form receives guidance while retaining its submit handler a
   f.nodes.get('#ssubmit').onclick();
   assert.equal(f.run('G.done.length'), 1);
 });
-test('contract price wording is financial while standalone approximation markers remain uncertain', () => {
+test('metadata retains timing, certainty and categories when display copy changes', () => {
+  // Given: a real deferred credit choice and its presentation contract.
   const f = fixture();
-  for (const [text, group] of [
-    ['−E사 계약 단가 −$3/t · 다음 반기 협상까지', 'cost'],
-    ['+약$40,000', 'risk'],
-    ['−손실 약 $40k', 'risk'],
-  ]) {
-    f.context.effect = text;
-    const html = f.run("ccDecisionEffects({id:'boundary'}, {label:'확인',fx:[effect]})");
-    assert.match(html, new RegExp(`data-cc-effect="${group}"`), text);
-    assert.doesNotMatch(html, new RegExp(`data-cc-effect="${group === 'cost' ? 'risk' : 'cost'}"`), text);
-    assert.ok(html.includes(text));
-  }
+  f.run('globalThis.option=creditCard(G.s,G.W).opts[0]');
+  const before = f.run('JSON.stringify(ccDecisionMetadata(option))');
+  const timing = f.run('ccDecisionTiming({},option)');
+  const groups = f.run('ccDecisionEffects({},option)').match(/data-cc-effect="[^"]+"/g);
+  // When: labels and every effect string change without changing identity.
+  f.run("option.label='전혀 다른 제목'; option.fx=['새 문구','새 문구','새 문구']");
+  // Then: classification is independent of display copy.
+  assert.equal(f.run('JSON.stringify(ccDecisionMetadata(option))'), before);
+  assert.equal(f.run('ccDecisionTiming({},option)'), timing);
+  assert.deepEqual(f.run('ccDecisionEffects({},option)').match(/data-cc-effect="[^"]+"/g), groups);
+  assert.equal(f.run('ccDecisionMetadata(option).timing'), 'deferred');
+  assert.equal(f.run('ccDecisionMetadata(option).certainty'), 'conditional');
+});
+test('unknown identity cannot inherit a promise by copying known prose', () => {
+  // Given: a known immediate maintenance choice.
+  const f = fixture();
+  f.run('globalThis.option=maintCard(G.s,G.W).opts[0]');
+  // When: its identity is absent, despite keeping all of its original prose.
+  f.run('delete option.displayId');
+  // Then: no timing or certainty is invented from prose.
+  assert.equal(f.run('ccDecisionMetadata(option) === ccDecisionUnknown'), true);
+  const html = f.run("ccDecisionEffects({id:'w-maint'},option)");
+  assert.match(html, /data-cc-effect="unknown"/);
+  assert.match(html, /data-cc-timing="unspecified"/);
+});
+test('metadata and category arrays reject mutation', () => {
+  // Given: a known metadata record.
+  const f = fixture();
+  f.run('globalThis.metadata=ccDecisionMetadata(creditCard(G.s,G.W).opts[0])');
+  // When/Then: attempts to mutate either contract level fail.
+  assert.throws(() => f.run("'use strict'; metadata.timing='immediate'"), /read only/);
+  assert.throws(() => f.run("'use strict'; metadata.categories[0]='cost'"), /read only/);
 });

@@ -1,36 +1,22 @@
 /* Presentation only: never preview an apply handler or inspect a future random outcome. */
 function ccDecisionTiming(card, option) {
-  if (card.id === 'w-maint' && option.label === '전면 정비 — 일주일 세운다' && option.fx.includes('−통장 $26,000'))
-    return '선택 즉시 현금에서 차감합니다.';
-  if (card.id === 'w-maint' && option.label === '주말에 부분 정비' && option.fx.includes('−통장 $25,000'))
-    return '선택 즉시 현금에서 차감합니다.';
-  if (card.id === 'w-load' && option.ot)
-    return '특근비는 선택할 때가 아니라 이번 달 결산에서 차감합니다.';
-  if (card.id === 'w-load' && option.label === '한 조를 더 뽑는다' && option.fx.includes('−고정비 월 $24,000'))
-    return '이번 달부터 매달 고정비에 추가됩니다. 일회성 지출이 아닙니다.';
-  return '';
+  const metadata = ccDecisionMetadata(option);
+  return metadata.note || ccDecisionUnknown.note;
 }
 
 function ccDecisionEffects(card, option) {
-  const groups = { cost: [], effect: [], risk: [] };
-  for (const text of option.fx || []) {
-    if (!text) continue;
-    // These are reading groups, not a claim of certainty; unknown effects stay unpromised.
-    const uncertain = text.startsWith('?') || /(?:^|[\s+−=-])약(?=\s|\$|\d)|조건|통하면|확률|[±~～]/.test(text);
-    const financial = /\$|현금|통장|고정비|특근비|보험료|대금|비용|차입|한도|이자/.test(text);
-    groups[uncertain ? 'risk' : financial ? 'cost' : 'effect'].push(text);
-  }
-  const timing = ccDecisionTiming(card, option);
-  const deferred = card.id === 'w-credit' && option.label === '올려준다'
-    ? '외상거래 한도를 늘리면 6개월 뒤 고객에게 돈을 받지 못하는 손실(대손)이 생길 수 있습니다. 주문이 늘어도 돈을 모두 받을 수 있다는 뜻은 아닙니다.' : '';
-  const labels = { cost: '비용·지급 조건', effect: '기대 효과', risk: '불확실성·후속 위험' };
-  const sections = Object.entries(groups).filter(([key, list]) => list.length || (key === 'risk' && deferred));
+  const metadata = ccDecisionMetadata(option);
+  const groups = { cost: [], effect: [], risk: [], unknown: [] };
+  (option.fx || []).forEach((text, index) => {
+    if (text) groups[metadata.categories[index] || 'unknown'].push(text);
+  });
+  const labels = { cost: '자금·비용·지급 조건', effect: '기대 효과', risk: '불확실성·후속 위험', unknown: '표시된 효과 · 확인 필요' };
+  const sections = Object.entries(groups).filter(([, list]) => list.length);
   return sections.map(([key, list]) => `<span class="cc-effect-group" data-cc-effect="${key}">
     <strong class="cc-effect-label">${labels[key]}</strong>
     ${list.map(text => `<span class="cc-effect-text">${ccEscape(text)}</span>`).join('')}
-    ${key === 'cost' && timing ? `<span class="cc-effect-note">${ccEscape(timing)}</span>` : ''}
-    ${key === 'risk' && deferred ? `<span class="cc-effect-note">${deferred}</span>` : ''}
-    </span>`).join('');
+    </span>`).join('')
+    + `<span class="cc-effect-note" data-cc-timing="${metadata.timing}" data-cc-certainty="${metadata.certainty}">${ccEscape(ccDecisionTiming(card, option))}</span>`;
 }
 
 function ccDecisionFormGuide(card) {
@@ -52,6 +38,7 @@ function ccExplainDecision(dialog, card) {
   title.after(ccElement('p', 'cc-decision-guide', ccEscape(explanation)));
   dialog.querySelectorAll('[data-o]').forEach(button => {
     const option = card.opts[Number(button.dataset.o)];
+    if (option.displayId) button.dataset.ccChoiceId = option.displayId;
     const effects = button.querySelector('.fx');
     if (effects) effects.replaceWith(ccElement('span', 'cc-decision-effects', ccDecisionEffects(card, option)));
   });

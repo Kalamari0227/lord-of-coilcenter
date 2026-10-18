@@ -1,0 +1,7 @@
+:root { --cc-text-scale:1; }
+.cc-preferences label { display:block; margin-bottom:8px; }
+.cc-preferences fieldset { min-width:0; display:flex; flex-wrap:wrap; gap:8px; }
+.cc-preferences [aria-pressed='true'] { background:var(--cc-gold); color:var(--cc-bg); }
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}

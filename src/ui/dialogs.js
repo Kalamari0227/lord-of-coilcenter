@@ -1,4 +1,22 @@
 const ccLegacyDecisions = openDecisions;
+document.addEventListener?.('keydown', event => {
+  const dialog = document.querySelector('dialog[open]');
+  if (!dialog) return;
+  if (event.key === 'Escape' && dialog.matches('.deck') && typeof ccApprovalOpen !== 'undefined' && ccApprovalOpen) {
+    event.preventDefault();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const controls = [...dialog.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], summary, [tabindex]')]
+    .filter(element => element.tabIndex >= 0 && !element.disabled && element.getClientRects().length && !element.closest('[hidden]'));
+  const first = controls[0], last = controls.at(-1);
+  if (!first) return;
+  if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) {
+    event.preventDefault(); last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault(); first.focus();
+  }
+});
 openDecisions = function (...args) {
   ccLegacyDecisions(...args);
   const dialog = document.querySelector('dialog.deck[open]');
@@ -12,6 +30,7 @@ openDecisions = function (...args) {
     title.focus({ preventScroll: true });
   }
   if (typeof ccExplainDecision === 'function') ccExplainDecision(dialog, G.queue[G.qi].card);
+  if (typeof ccWrapTables === 'function') ccWrapTables(dialog);
   const inputs = [...dialog.querySelectorAll('[data-ok]')];
   const sales = [...dialog.querySelectorAll('input[data-sk]')];
   let salesInvalid = sales.length > 0 && sales.every(input => !(Number(input.value) > 0));
@@ -21,6 +40,9 @@ openDecisions = function (...args) {
     salesInvalid = invalid;
   };
   if (sales.length) {
+    const summary = dialog.querySelector('#ssum');
+    summary.setAttribute('role', 'status');
+    summary.setAttribute('aria-live', 'polite');
     dialog.addEventListener('input', validateSales);
     dialog.addEventListener('click', event => { if (event.target.closest('[data-sset], #ssubmit')) validateSales(); });
   }
@@ -54,4 +76,24 @@ openDecisions = function (...args) {
   dialog.addEventListener('click', event => {
     if (event.target.closest('[data-set]')) validate();
   });
+  validate();
 };
+
+if (typeof showReport === 'function') {
+  const ccPreviousReport = showReport;
+  showReport = function (...args) {
+    const result = ccPreviousReport(...args);
+    const dialog = document.querySelector('dialog[open]:not(.deck)');
+    if (!dialog) return result;
+    ccWrapTables(dialog);
+    const title = dialog.querySelector('h2');
+    title.id = 'cc-settlement-title'; title.tabIndex = -1;
+    dialog.setAttribute('aria-labelledby', title.id);
+    title.focus({ preventScroll: true });
+    dialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); dialog.querySelector('#close').click(); }
+    });
+    dialog.addEventListener('close', () => app.querySelector('#go, #again')?.focus(), { once: true });
+    return result;
+  };
+}

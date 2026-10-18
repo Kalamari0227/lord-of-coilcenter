@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { readCommercialJson } from './commercial-read-body.mjs';
 import { mkdtemp, mkdir, cp, readFile, writeFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -37,7 +38,7 @@ const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png
 const servers=[];
 for(const [port,name] of [[4201,'monthly'],[4202,'quarterly']]){
  const server=createServer(async(req,res)=>{
-  if(req.method==='POST'&&req.url==='/__qa/observe'){let body='';for await(const chunk of req){body+=chunk;if(body.length>20_000_000){res.writeHead(413).end();return;}}JSON.parse(body);await writeFile(path.join(evidence,`${name}-actions.json`),body);res.writeHead(204).end();return;}
+  if(req.method==='POST'&&req.url==='/__qa/observe'){let data;try{data=await readCommercialJson(req);}catch(error){res.writeHead(error instanceof RangeError?413:400).end();return;}const body=JSON.stringify(data);await writeFile(path.join(evidence,`${name}-actions.json`),body);res.writeHead(204).end();return;}
   if(req.method!=='GET'){res.writeHead(405).end();return;}
   const file=path.resolve(outputDir,'.'+new URL(req.url,'http://localhost').pathname.replace(/^\/$/,'/index.html'));
   if(!file.startsWith(outputDir+path.sep)){res.writeHead(403).end();return;}

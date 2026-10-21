@@ -275,3 +275,38 @@ for(const marker of ['invalid-json','foreign-owner','symlink']) test(`rejects ${
   const before=await treeDigest(options.sourceRoot);await assert.rejects(build(options),{code:'ERR_UNSAFE_BUILD_OUTPUT'});
   assert.equal(await treeDigest(options.sourceRoot),before);
 });
+
+test('opening art is delivered and hashed but never blocks core installation', async t => {
+  const options=await fixture(t);
+  await mkdir(path.join(options.sourceRoot,'art/opening'));
+  await writeFile(path.join(options.sourceRoot,'art/opening/factory.webp'),'first');
+  const first=await build(options);
+  await writeFile(path.join(options.sourceRoot,'art/opening/factory.webp'),'second');
+  const second=await build(options);assert.notEqual(first.version,second.version);
+  assert.equal(await readFile(path.join(options.outputDir,'art/opening/factory.webp'),'utf8'),'second');
+  const handlers={}, precache=[], stored=new Map();let offline=false;
+  runInNewContext(await readFile(path.join(options.outputDir,'sw.js'),'utf8'),{URL,Response,
+    self:{location:{href:'https://game.test/sw.js'},addEventListener:(key,fn)=>handlers[key]=fn},
+    caches:{open:async()=>({addAll:async urls=>precache.push(...urls),match:async req=>stored.get(req.url),put:async(req,res)=>stored.set(req.url,res)})},
+    fetch:async()=>{if(offline)throw Error('offline');return new Response('picture');}});
+  let pending;handlers.install({waitUntil:value=>pending=value});await pending;
+  assert.equal(precache.some(url=>url.includes('opening/')),false);
+  const request=()=>{let response;handlers.fetch({request:{method:'GET',url:'https://game.test/art/opening/factory.webp'},respondWith:value=>response=value});return response;};
+  assert.equal((await request()).status,200);assert.equal(stored.size,1);
+  offline=true;assert.equal((await request()).status,200);stored.clear();assert.equal((await request()).status,503);
+});
+
+test('development responses identify opening SVG and WebP with nosniff', async () => {
+  const source=(await readFile(new URL('../scripts/dev.mjs',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');
+  let handle;const bytes=Buffer.from('picture');
+  await runInNewContext(`(async()=>{${source}})()`,{path,URL,Buffer,process:{env:{PORT:'4199'}},console:{log(){}},
+    build:async()=>{},root:'/source',output:'/output',developmentRecoveryPage:'',watch:()=>{},
+    stat:async()=>({isFile:()=>true}),readFile:async()=>bytes,
+    createServer:fn=>{handle=fn;return {listen(){}};}});
+  for(const [name,type] of [['gonsama.svg','image/svg+xml'],['harbor.webp','image/webp']]) {
+    let status,headers,body;
+    const response={writeHead(code,values){status=code;headers=values;return this;},end(value){body=value;}};
+    await handle({method:'GET',url:'/art/opening/'+name},response);
+    assert.equal(status,200);assert.equal(headers['Content-Type'],type);assert.equal(headers['X-Content-Type-Options'],'nosniff');assert.equal(body,bytes);
+  }
+});

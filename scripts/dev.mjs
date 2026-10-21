@@ -7,7 +7,7 @@ import { build, output, root, developmentRecoveryPage } from './build.mjs';
 await build({ development: true });
 const port = Number(process.env.PORT ?? 4186);
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.wav': 'audio/wav', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json' };
+  '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.wav': 'audio/wav', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json' };
 let pending;
 let rebuilding = Promise.resolve();
 watch(root, { recursive: true }, (_, filename) => {

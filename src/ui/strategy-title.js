@@ -1,4 +1,5 @@
 function ccRenderSetup() {
+  if (typeof ccOpeningGate === 'function' && ccOpeningGate()) return;
   ccAudioScene();
   if (ccView.preparing) {
     ccLegacySetup();
@@ -31,6 +32,7 @@ function ccRenderSetup() {
   });
   resume.id = 'btn-resume'; resume.disabled = !saved;
   menu.append(resume, ccCommand('게임 설명', button => ccOpenDossier('instructions', button)));
+  if (typeof ccOpeningReplay === 'function') menu.append(ccCommand('오프닝 다시 보기', ccOpeningReplay));
   ccAudioMenu(menu);
   const summary = ccElement('small'); summary.dataset.ccTitleSaved = ''; menu.append(summary);
   ccAttachSaveUI();

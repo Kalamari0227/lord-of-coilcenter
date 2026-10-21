@@ -141,13 +141,13 @@ self.addEventListener('activate', event => {
     return { sources, version, output: outputDir };
   }
   const assets = ['./', './index.html', './game.js', './game.css', './manifest.webmanifest',
-    './icon-192.png', './icon-512.png', ...art.map(file => `./art/${file}`)];
+    './icon-192.png', './icon-512.png', ...art.filter(file => !file.startsWith('opening/')).map(file => `./art/${file}`)];
   await writeFile(path.join(outputDir, 'sw.js'), `const SCOPE = new URL('./', self.location.href);
 const PREFIX = 'coilcenter-foundation:' + encodeURIComponent(SCOPE.pathname) + ':';
 const CACHE = PREFIX + '${version}';
 const VERSION = '${version}';
 const ASSETS = ${JSON.stringify(assets)};
-const AUDIO = ${JSON.stringify([...audio.keys()].sort().map(file => './' + file))};
+const AUDIO = ${JSON.stringify([...audio.keys(), ...art.filter(file => file.startsWith('opening/')).map(file => 'art/' + file)].sort().map(file => './' + file))};
 self.addEventListener('message', event => {
   const data = event.data, client = event.source;
   if (!client || !event.ports[0] || data?.protocol !== 'coilcenter-update-v1' || data.scope !== SCOPE.href) return;

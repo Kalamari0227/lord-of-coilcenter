@@ -15,6 +15,7 @@ function ccAudioCue(id, eventId) {
 }
 function ccAudioScene() {
   if (typeof CCAudio === 'undefined') return;
+  if (typeof ccOpeningActive === 'function' && ccOpeningActive()) return;
   const report = ccAudioState().report;
   const scene = !G ? 'title' : report?.game === G && report.dialog.open ? 'decision'
     : G.s.over ? (G.s.overReason === 'COMPLETE' ? 'ending' : 'downturn')

@@ -137,3 +137,10 @@ test('recovered requested track no longer needs retry despite retained notice', 
   f.run('ccAudioUpdate(status)'); // When
   assert.equal(button.disabled,true); // Then
 });
+
+test('opening owns music scene until its title handoff', () => {
+  const f = fixture(); f.sandbox.ccOpeningActive = () => true;
+  f.run('G = null; ccAudioScene()'); assert.deepEqual(f.scenes, []);
+  f.sandbox.ccOpeningActive = () => false; f.run('ccAudioScene()');
+  assert.deepEqual(f.scenes, ['title']);
+});

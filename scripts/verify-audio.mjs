@@ -2,13 +2,13 @@ import {readFile,readdir} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {sourceHash,hashBytes,projectRoot} from './render-audio.mjs';
-const GROUPS={bgm:['title','map','office','decision','downturn','ending'],jingle:['month-close','term-complete','company-failure'],sfx:['select','confirm','cancel','paper-open','officer','dossier-next','stamp','order','error','month-turn','save','alert']};
+const GROUPS={cinematic:['opening'],bgm:['title','map','office','decision','downturn','ending'],jingle:['month-close','term-complete','company-failure'],sfx:['select','confirm','cancel','paper-open','officer','dossier-next','stamp','order','error','month-turn','save','alert']};
 const EXPECTED=new Map(Object.entries(GROUPS).flatMap(([kind,ids])=>ids.map(id=>[id,kind])));
 const check=(condition,message)=>{if(!condition)throw new Error(message);};
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 export function verifyManifest(manifest,expectedSourceHash) {
  check(manifest?.version===1&&manifest.format==='pcm-s16le'&&manifest.sampleRate===22050&&manifest.channels===2&&manifest.bitsPerSample===16,'Manifest format invalid');
- check(Array.isArray(manifest.tracks)&&manifest.tracks.length===21,'Expected exactly 21 track IDs');
+ check(Array.isArray(manifest.tracks)&&manifest.tracks.length===22,'Expected exactly 22 track IDs');
  const ids=new Set();
  for(const track of manifest.tracks) {
   check(track&&EXPECTED.get(track.id)===track.kind&&!ids.has(track.id),'Unexpected/duplicate track ID or kind');ids.add(track.id);
@@ -20,6 +20,10 @@ export function verifyManifest(manifest,expectedSourceHash) {
   check(Number.isSafeInteger(track.frames)&&track.frames>0,`${track.id}: frame count invalid`);
   check(finite(track.duration)&&track.duration===track.frames/22050,`${track.id}: duration mismatch`);
   check(finite(track.gain)&&track.gain>=0&&track.gain<=1,`${track.id}: gain invalid`);
+  if(track.kind==='cinematic') {
+   check(track.frames===1587600&&track.duration===72,`${track.id}: cinematic duration must be 72 seconds`);
+   check(track.gain<=.22,`${track.id}: cinematic gain exceeds BGM ceiling`);
+  }
   if(track.kind==='bgm')check(Number.isSafeInteger(track.loopStartFrame)&&Number.isSafeInteger(track.loopEndFrame)&&track.loopStartFrame>0&&track.loopStartFrame<track.loopEndFrame&&track.loopEndFrame<=track.frames,`${track.id}: loop range invalid`);
   else check(track.loopStartFrame===null&&track.loopEndFrame===null,`${track.id}: one-shot loop must be null`);
  }
@@ -81,10 +85,10 @@ export async function verifyAudio({directory=projectRoot,manifest,files,expected
   tracks.push({id:track.id,kind:track.kind,gain:track.gain,...stats,loopJump,peakDbfs:20*Math.log10(stats.peak),fileHash:track.fileHash});
  }
  const largest=kind=>Math.max(...tracks.filter(track=>track.kind===kind).map(track=>track.peak*track.gain));
- // Allows duplicate SFX and conservative two identical-peak BGM during a crossfade.
- const mixPeakBound=2*largest('bgm')+largest('jingle')+4*largest('sfx');
+ // Allows duplicate SFX and conservative two identical-peak music tracks during a crossfade.
+ const mixPeakBound=2*Math.max(largest('bgm'),largest('cinematic'))+largest('jingle')+4*largest('sfx');
  check(mixPeakBound<1,'Worst-case mix peak bound clips');
- return {pass:true,format:'pcm-s16le',sampleRate:22050,channels:2,bitsPerSample:16,totalBytes,limitBytes:60*1024*1024,sourceHash:expectedSourceHash,mixPeakBound,mixPolicy:'2 BGM + 1 aggregate jingle budget + 4 SFX; bus/sliders <=1',listening:'UNVERIFIED; sample and seam metrics are not musical-quality judgments',tracks};
+ return {pass:true,format:'pcm-s16le',sampleRate:22050,channels:2,bitsPerSample:16,totalBytes,limitBytes:60*1024*1024,sourceHash:expectedSourceHash,mixPeakBound,mixPolicy:'2 music (BGM/cinematic) + 1 aggregate jingle budget + 4 SFX; bus/sliders <=1',listening:'UNVERIFIED; sample and seam metrics are not musical-quality judgments',tracks};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
  try {console.log(JSON.stringify(await verifyAudio(),null,2));}

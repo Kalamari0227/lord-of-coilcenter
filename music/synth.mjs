@@ -53,7 +53,7 @@ export function renderPcm(score) {
       previousNoise=n;
       const sample=tone*env*event.velocity;
       put(start+i,sample,event.pan);
-      if(score.kind==='bgm') {
+      if(score.kind==='bgm'||score.kind==='cinematic') {
         put(start+i+Math.round(SAMPLE_RATE*.113),sample*.11,-event.pan);
         put(start+i+Math.round(SAMPLE_RATE*.197),sample*.065,event.pan*.5);
       }

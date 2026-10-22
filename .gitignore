@@ -22,4 +22,4 @@ coil-center-beta.html
 # 분리형 화면의 재생성 가능한 빌드·로컬 검증 결과
 dist/
 node_modules/
-.omo/evidence/
+.omo/

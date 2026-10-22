@@ -74,7 +74,7 @@ PORT=4190 npm run dev                                # 포트 변경
 npm test                                            # tests/*.test.mjs
 node --test tests/rules.test.mjs tests/save.test.mjs  # 계산·저장만 선택
 npm run build                                       # 현재 게임 → dist/
-npm run audio:render                                # 창작 21개 음원 재생성
+npm run audio:render                                # 창작 22개 음원 재생성
 npm run audio:verify                                # 음원·해시·루프·믹스 예산 검사
 npm run check                                       # 음원 검사·테스트·프로덕션 빌드
 ```

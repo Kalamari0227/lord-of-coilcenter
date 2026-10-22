@@ -1,5 +1,11 @@
 # Strategy game media production
 
+## Location scene artwork — 2026-10-21
+
+Four new location backgrounds were generated with the built-in `image_gen.imagegen`: processing factory, coil yard, import port and automotive customer premises. The existing office was visually inspected to ground the text prompts in its palette, crisp detailed pixel illustration and warm morning light. Each scene is an independent new generation. All four are 1586×992 PNGs, copied byte-for-byte into [source-art/locations/20261021](../source-art/locations/20261021/README.md). Exact prompts and generated source filenames are in that folder's `generation-prompts.json`; `manifest.json` records dimensions, SHA-256 and exact-copy checks. Generation used no raster post-processing or external API/CLI.
+
+The user approved applying all four scenes. Runtime deliveries are `art/locations/{factory,yard,port,customers}.webp`, encoded losslessly with `cwebp -lossless -z 9 -exact`. They retain the original dimensions and decoded RGBA pixels, totaling 9,556,578 bytes. `.omo/evidence/location-scenes-20261021/assets/pixel-proof.json` (local evidence; not included in the repository) and the source manifest record the comparisons. The shared location renderer in `src/ui/company.js` opens these backgrounds from map buttons and supplies existing staff reports and dossiers. The original office remains unchanged. Navigation state is presentation-only; no time, economic calculation or save fields are added. Delivery images are included in the existing versioned build and offline art cache; source PNGs are not shipped.
+
 ## Domain corrections
 
 Initial map and office generations incorrectly included steelmaking towers. Both were corrected with built-in image editing after viewing the local inputs. Final visual inspection confirms broad cold-coil processing halls, silver cold coils and gantry cranes; no blast furnace or hot orange steel. Office technical drawing now depicts coil processing rollers.
@@ -12,9 +18,9 @@ Use case: precise-object-edit. This map is for a cold steel coil service center,
 
 Use case: precise-object-edit. Correct this fictional cold-coil service-center office scene: change ONLY the distant industrial architecture outside the windows and the subject of the framed technical drawing. Remove every blast-furnace tower and smokestack outside, replacing them with low-roof cold-coil slitting/leveling halls and gantry cranes. Keep the outdoor cold silver steel coils and harbor cranes. Replace the framed drawing of a smelter with a precise unlabelled line drawing of cold-coil slitting rollers and a low-roof warehouse. No smelting, hot glow or molten steel anywhere. Preserve entire office interior, desk, phone, folders, chairs, windows, sunrise light, camera, composition, 1990s PC98 pixel art and dithering, dimensions and palette. No people, labels, readable text, UI or new objects.
 
-Final generated map source: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-c80d3cea-77e2-48a8-ac70-bf474e9caf91.png`.
+Final generated map source: `exec-c80d3cea-77e2-48a8-ac70-bf474e9caf91.png`.
 
-Final generated office source: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-d06030f5-94f8-4ce9-a449-9346bb670df1.png`.
+Final generated office source: `exec-d06030f5-94f8-4ce9-a449-9346bb670df1.png`.
 
 
 Created 2026-10-14 using the built-in `image_gen.imagegen` tool through the imagegen skill. No paid API/CLI fallback and no external reference images were used. The scenes and six fictional people are newly generated original illustrations. Source concepts: the repository's coil-center setting and existing six officer roles; user's requested classic strategy simulation direction. No existing Koei or Renaissance image was copied.
@@ -45,17 +51,19 @@ Use case: stylized-concept. Asset type: original six-person portrait atlas for a
 
 ## Original generated files
 
-- Map: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-50d27376-c603-48c2-9f45-780313e58cac.png`
-- Office: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-2fbe0971-c49a-4c10-a88f-9412901fbbe4.png`
-- Officers: `/Users/ethanlee/.codex/generated_images/01a13a15-8853-7623-87ab-84c134225b3f/exec-0929af83-66a8-46ae-9b4e-d51856ab15e9.png`
+These are the original local generation filenames. The repository preserves the neutral officer PNG at `source-art/strategy-officers.png`; the final map and office deliveries are listed above.
+
+- Map: `exec-50d27376-c603-48c2-9f45-780313e58cac.png`
+- Office: `exec-2fbe0971-c49a-4c10-a88f-9412901fbbe4.png`
+- Officers: `exec-0929af83-66a8-46ae-9b4e-d51856ab15e9.png`
 
 ## Staff expressions — 2026-10-18 (T9)
 
 Built-in `image_gen.imagegen` edited the viewed original officer atlas twice, using `identity-preserve` prompts: concerned and positive. No external images, paid API, tint substitution, palette quantization or resampling were used. The requested edits were eyebrows, eyes and mouth; identity, apparent age, hair, clothing, pose, hands, props, cell placement and teal background were retained by visual comparison. Generative edits are not claimed to preserve every background pixel. Neutral means the unchanged baseline artwork, which already includes smiles on Jung and Lin.
 
-The exact prompts are in [generation-prompts.json](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/generation-prompts.json). Sources are `/Users/ethanlee/.codex/generated_images/01a14f0a-c84f-7b21-a34f-e63f8351c352/exec-52238584-cbab-4d3a-9914-040a78ed907b.png` (concerned) and `/Users/ethanlee/.codex/generated_images/01a14f0a-c84f-7b21-a34f-e63f8351c352/exec-afc4d287-acb7-496e-840b-c720fe5f9244.png` (positive). Source SHA-256 values respectively: `d41cb7223c10edb9c35ef9d02f8cc6af3e74d517e53d2f931cfa686edeadd210`, `f68092d9e8d415965794ca9a62d3b1b124a652fd472e04f78df0ffaa2af0a10e`.
+The exact prompts are in `.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/generation-prompts.json` (local evidence; not included in the repository). Sources are `exec-52238584-cbab-4d3a-9914-040a78ed907b.png` (concerned) and `exec-afc4d287-acb7-496e-840b-c720fe5f9244.png` (positive). Source SHA-256 values respectively: `d41cb7223c10edb9c35ef9d02f8cc6af3e74d517e53d2f931cfa686edeadd210`, `f68092d9e8d415965794ca9a62d3b1b124a652fd472e04f78df0ffaa2af0a10e`.
 
-All three delivery atlases are 1536×1024, 3 columns × 2 rows of 512×512 cells, encoded with `/opt/homebrew/bin/cwebp -lossless -z 9 INPUT -o OUTPUT`. [pixel-proof.json](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/pixel-proof.json) verifies decoded RGBA equality against each PNG, and the exact original neutral PNG bytes against the 2026-10-14 generation source. Moving that PNG to `source-art/` preserves the original without shipping both encodings; current build only ships `art/`.
+All three delivery atlases are 1536×1024, 3 columns × 2 rows of 512×512 cells, encoded with `cwebp -lossless -z 9 INPUT -o OUTPUT`. `.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/pixel-proof.json` (local evidence; not included in the repository) verifies decoded RGBA equality against each PNG, and the exact original neutral PNG bytes against the 2026-10-14 generation source. Moving that PNG to `source-art/` preserves the original without shipping both encodings; current build only ships `art/`.
 
 | Delivered asset | Bytes | SHA-256 |
 |---|---:|---|
@@ -65,4 +73,4 @@ All three delivery atlases are 1536×1024, 3 columns × 2 rows of 512×512 cells
 
 Preserved source: `source-art/strategy-officers.png`, SHA-256 `2848705ba69d47ed3477e5c60248bf9600d43956876dbb7c622250fc23ca6d56`. [staff-expressions.json](../art/staff-expressions.json) provides all 18 identity/state/file/cell mappings and the fallback order: requested state → neutral → readable name and role. It has no economic state or RNG logic. The current game displays the neutral WebP through the existing portrait CSS; T16 owns runtime expression selection and runtime failure handling. T9's failure handling is explicitly exercised in a labelled gallery fixture, alongside a separate actual game on port 4204.
 
-The [visual review](../.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/visual-review.md) links the rendered 18-image contact sheet, full-size comparison, forced HTTP 404 fallbacks, live game command checks, exact shell/art budget and cleanup. The AVIF lossless probe was larger than WebP and was rejected; only WebP is delivered. Provenance verification does not independently certify commercial rights.
+The `.omo/evidence/ulw/commercial-20261018-01a139fb/G003-trust-v1-checkpoint/a1/task-9/visual-review.md` (local evidence; not included in the repository) links the rendered 18-image contact sheet, full-size comparison, forced HTTP 404 fallbacks, live game command checks, exact shell/art budget and cleanup. The AVIF lossless probe was larger than WebP and was rejected; only WebP is delivered. Provenance verification does not independently certify commercial rights.

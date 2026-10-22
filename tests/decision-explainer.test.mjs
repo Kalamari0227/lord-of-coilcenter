@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import vm from 'node:vm';
 const source = file => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+function effectTexts(html) {
+  const decode = text => text.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) =>
+    ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity]);
+  return [...html.matchAll(/<span class="cc-effect-symbol" aria-hidden="true">([^<]*)<\/span>[\s\S]*?<span class="cc-effect-copy">([\s\S]*?)<\/span>/g)]
+    .map(([, marker, copy]) => marker + decode(copy.replace(/<[^>]*>/g, '')));
+}
+function assertEffectCopy(html, effects) {
+  assert.deepEqual(effectTexts(html).sort(), Array.from(effects).sort());
+}
 function fixture() {
   const nodes = new Map(), buttons = [], events = new Map(), cues = [];
   const node = () => ({ innerHTML: '', dataset: {}, classList: { add() {} }, setAttribute(key, value) { this[key] = value; },
@@ -57,7 +66,7 @@ test('maintenance explanation separates original cost/effects with verified imme
   const html = f.buttons[0].fx.replacement?.innerHTML || '';
   assert.match(html, /비용·지급 조건/); assert.match(html, /선택 즉시 현금에서 차감/);
   assert.match(html, /기대 효과/);
-  for (const text of f.run('G.queue[0].card.opts[0].fx')) assert.ok(html.includes(text));
+  assertEffectCopy(html, f.run('G.queue[0].card.opts[0].fx'));
 });
 test('OT and monthly hiring show settlement and recurring costs without promising sales', () => {
   const f = fixture(); f.run('G.queue[0].card=overloadCard(G.s,G.W,3); openDecisions()');
@@ -73,7 +82,7 @@ test('conditional, approximate and ranged original effects never become guarante
   assert.match(html, /data-cc-effect="unknown"/);
   assert.match(html, /data-cc-timing="unspecified"/);
   assert.match(html, /data-cc-certainty="unspecified"/);
-  for (const text of f.run('G.queue[0].card.opts[0].fx')) assert.ok(html.includes(text));
+  assertEffectCopy(html, f.run('G.queue[0].card.opts[0].fx'));
   assert.doesNotMatch(html, /확정 비용|확정 효과|선택 즉시|고정 금액/);
 });
 test('credit risk says six months later and preserves original risk without rolling its outcome', () => {
@@ -108,7 +117,7 @@ test('actual inventory discount and negotiation factories retain approximate and
     const options = f.run('G.queue[0].card.opts');
     for (const [index, option] of options.entries()) {
       const html = f.buttons[index].fx.replacement.innerHTML;
-      for (const text of option.fx || []) assert.ok(html.includes(text), text);
+      assertEffectCopy(html, option.fx || []);
       assert.doesNotMatch(html, /확정 비용|확정 효과|고정 금액/);
     }
     assert.ok(f.buttons.some(button => /data-cc-effect="risk"/.test(button.fx.replacement.innerHTML)));
@@ -166,4 +175,36 @@ test('metadata and category arrays reject mutation', () => {
   // When/Then: attempts to mutate either contract level fail.
   assert.throws(() => f.run("'use strict'; metadata.timing='immediate'"), /read only/);
   assert.throws(() => f.run("'use strict'; metadata.categories[0]='cost'"), /read only/);
+});
+
+test('effect markers describe benefits and burdens without inventing arithmetic directions', () => {
+  const f = fixture();
+  const examples = [
+    ['−올해 본사 소재 주문 목표 198,000t (가장 높음)', 'negative', '부담'],
+    ['+올해 본사 소재 주문 목표 158,400t (가장 낮음 · 달성 부담 감소)', 'positive', '유리'],
+    ['=소재 발주 ×0.6', 'neutral', '참고'],
+    ['=본사 신뢰 변화 없음', 'neutral', '참고'],
+    ['+비용 없음', 'positive', '유리'],
+    ['+통하면 판매가격 +$4/t', 'positive', '유리'],
+    ['−두 고객 계약 단가 −$4/t · 여섯 달 한시', 'negative', '부담'],
+    ['-고정비 월 $5,000', 'negative', '부담'],
+    ['?성공 확률 50%', 'uncertain', '불확실'],
+    ['조건 확인 필요', 'neutral', '참고'],
+  ];
+  for (const [text, tone, label] of examples) {
+    const html = f.run(`ccDecisionEffectMarkup(${JSON.stringify(text)})`);
+    assert.match(html, new RegExp(`data-cc-tone="${tone}"`));
+    assert.ok(html.includes(`<span>${label}</span>`));
+    assertEffectCopy(html, [text]);
+  }
+});
+
+test('number emphasis preserves bounds, qualifiers, units and escaped text', () => {
+  const f = fixture();
+  for (const text of ['−약 $56,000 ~ $98,000', '+수요 ±10~20%', '?6~10개월 뒤 가능', '+<img src=x onerror="bad()"> & \'조건\' 4']) {
+    const html = f.run(`ccDecisionEffectMarkup(${JSON.stringify(text)})`);
+    assertEffectCopy(html, [text]);
+    assert.match(html, /class="cc-effect-value"/);
+    assert.doesNotMatch(html, /<img/);
+  }
 });

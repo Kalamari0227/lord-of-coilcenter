@@ -4,6 +4,24 @@ function ccDecisionTiming(card, option) {
   return metadata.note || ccDecisionUnknown.note;
 }
 
+function ccDecisionEffectMarkup(text) {
+  const markers = {
+    '+': ['positive', '유리'], '−': ['negative', '부담'], '-': ['negative', '부담'],
+    '=': ['neutral', '참고'], '?': ['uncertain', '불확실'],
+  };
+  const marker = Object.hasOwn(markers, text[0]) ? text[0] : '';
+  const [tone, label] = markers[marker] || ['neutral', '참고'];
+  const body = marker ? text.slice(1) : text;
+  const number = /[+−±-]?\$?\d[\d,]*(?:\.\d+)?(?:\s*[~–]\s*\$?\d[\d,]*(?:\.\d+)?)?(?:%|t|k|점|개월|달|년|톤|배)?/g;
+  let copy = '', end = 0;
+  for (const match of body.matchAll(number)) {
+    copy += ccEscape(body.slice(end, match.index)) + `<strong class="cc-effect-value">${ccEscape(match[0])}</strong>`;
+    end = match.index + match[0].length;
+  }
+  copy += ccEscape(body.slice(end));
+  return `<span class="cc-effect-text" data-cc-tone="${tone}"><span class="cc-effect-badge"><span class="cc-effect-symbol" aria-hidden="true">${marker}</span><span>${label}</span></span> <span class="cc-effect-copy">${copy}</span></span>`;
+}
+
 function ccDecisionEffects(card, option) {
   const metadata = ccDecisionMetadata(option);
   const groups = { cost: [], effect: [], risk: [], unknown: [] };
@@ -14,7 +32,7 @@ function ccDecisionEffects(card, option) {
   const sections = Object.entries(groups).filter(([, list]) => list.length);
   return sections.map(([key, list]) => `<span class="cc-effect-group" data-cc-effect="${key}">
     <strong class="cc-effect-label">${labels[key]}</strong>
-    ${list.map(text => `<span class="cc-effect-text">${ccEscape(text)}</span>`).join('')}
+    <span class="cc-effect-items">${list.map(ccDecisionEffectMarkup).join('')}</span>
     </span>`).join('')
     + `<span class="cc-effect-note" data-cc-timing="${metadata.timing}" data-cc-certainty="${metadata.certainty}">${ccEscape(ccDecisionTiming(card, option))}</span>`;
 }

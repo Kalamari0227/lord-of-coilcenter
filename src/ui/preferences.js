@@ -26,7 +26,10 @@ function ccOpenPreferences(trigger = document.activeElement) {
     <button type="button" data-text-size="115">115% · 크게</button>
     <button type="button" data-text-size="130">130% · 더 크게</button></fieldset>
     <p>글자 크기는 즉시 적용되며 이 브라우저에 따로 저장됩니다. 경영 기록에는 영향을 주지 않습니다.</p>
-    <p role="status" aria-live="polite" data-preferences-status></p></div>`;
+    <p role="status" aria-live="polite" data-preferences-status></p>
+    <fieldset><legend>전체화면</legend><button type="button" data-fullscreen-toggle aria-pressed="false">전체화면으로 전환</button></fieldset>
+    <p>Esc를 누르면 창 화면으로 돌아옵니다. 게임은 계속 이어집니다.</p>
+    <p role="status" aria-live="polite" data-fullscreen-status></p></div>`;
   const sizes = [...dialog.querySelectorAll('[data-text-size]')];
   sizes.forEach(button => {
     button.setAttribute('aria-pressed', String(Number(button.dataset.textSize) === ccTextSize));
@@ -37,8 +40,22 @@ function ccOpenPreferences(trigger = document.activeElement) {
         ? `글자 크기 ${ccTextSize}%를 저장했습니다.` : '현재 화면에 적용했습니다. 브라우저 저장을 사용할 수 없어 다음 방문에는 유지되지 않습니다.';
     };
   });
+  const fullscreenButton = dialog.querySelector('[data-fullscreen-toggle]');
+  function updateFullscreen() {
+    const status = ccFullscreenStatus();
+    fullscreenButton.disabled = !status.supported || status.pending;
+    fullscreenButton.setAttribute('aria-pressed', String(status.active));
+    fullscreenButton.textContent = status.pending ? '화면 전환 중…' : status.active ? '창 화면으로 전환' : '전체화면으로 전환';
+    dialog.querySelector('[data-fullscreen-status]').textContent = !status.supported
+      ? '이 브라우저에서는 전체화면을 지원하지 않습니다. 현재 화면에서 계속 플레이할 수 있습니다.'
+      : status.error || (status.active ? '전체화면으로 플레이 중입니다.' : '창 화면으로 플레이 중입니다.');
+  }
+  fullscreenButton.onclick = () => { void ccFullscreenToggle(); };
+  const unsubscribeFullscreen = ccFullscreenSubscribe(updateFullscreen);
+  updateFullscreen();
   dialog.querySelector('.cc-dossier-close').onclick = () => dialog.close();
   dialog.addEventListener('close', () => {
+    unsubscribeFullscreen();
     dialog.remove();
     if (trigger?.isConnected) trigger.focus();
   }, { once: true });
@@ -51,7 +68,7 @@ render = function (...args) {
   const result = ccPreferencesRender(...args);
   document.documentElement.style.setProperty('--cc-text-scale', String(ccTextSize / 100));
   const menu = app.querySelector('.cc-title-menu, .cc-nav, .cc-audio-controls');
-  if (menu && !menu.querySelector('[data-cc-preferences]')) {
+  if (menu && !app.querySelector('#cc-system-menu') && !menu.querySelector('[data-cc-preferences]')) {
     const button = ccCommand('화면 설정', trigger => ccOpenPreferences(trigger));
     button.dataset.ccPreferences = '';
     menu.append(button);

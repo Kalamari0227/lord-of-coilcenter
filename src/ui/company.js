@@ -82,7 +82,7 @@ function ccShowReport() {
     <div><h2>${ccEscape(person.name)} <small>${ccEscape(person.role)}</small></h2>
     ${status && status.state !== 'neutral' ? `<p class="cc-report-state" data-staff-state="${status.state}">${status.state === 'concerned' ? '주의 · ' : ''}${ccEscape(status.text)}</p>` : ''}
     ${lines.map(line => `<p><span class="cc-report-kind">${ccEscape(line.kind)}</span> ${line.text}</p>`).join('')}
-    <p class="hint">${judgment} 확인을 마치면 금${G.mpt === 3 ? '분기' : '월'} 결재에서 직접 결정하십시오.</p>
+    <details class="cc-report-help"><summary>판단 도움말</summary><p class="hint">${judgment} 확인을 마치면 금${G.mpt === 3 ? '분기' : '월'} 결재에서 직접 결정하십시오.</p></details>
     <div class="cc-report-actions"></div></div>`;
   const actions = report.querySelector('.cc-report-actions');
   const personKey = ccView.person;
@@ -110,36 +110,114 @@ function ccOfficerStatus(key) {
   return messages[key];
 }
 
+const ccScenes = {
+  map: {
+    title: '사업 지도', caption: '노바리아 · 사업 지도', image: 'art/strategy-map.png',
+    description: '방문할 공간을 선택하십시오.',
+    alt: '항만, 공장, 소재 야드와 거래처가 연결된 노바리아 산업 지구',
+    places: [
+      ['production', '가공 공장', 50, 40, 'factory'], ['inventory', '소재 야드', 25, 65, 'yard'],
+      ['inventory', '수입 항만', 78, 75, 'port'], ['customers', '거래처', 80, 22, 'customers'],
+      ['office', '법인 사무동', 25, 25, 'office'],
+    ],
+  },
+  office: {
+    title: '법인 사무동', caption: '코일센터 · 사장 집무실', image: 'art/strategy-office.png',
+    description: '직원들의 보고를 듣고 회사 살림을 살펴봅니다.',
+    alt: '산업항을 내려다보는 코일센터 집무실',
+    places: [['reports', '보고 서류', 55, 64], ['finance', '경영 장부', 78, 43]],
+  },
+  factory: {
+    title: '가공 공장', caption: '가공 공장 · 생산 현장', image: 'art/locations/factory.webp', person: 'gu',
+    description: '소재를 자르고 펴는 현장입니다. 생산 여력과 설비 상태를 확인합니다.',
+    alt: '은빛 코일을 절단·가공하는 녹색 설비와 천장 크레인, 완성된 강판이 놓인 공장 내부',
+    places: [['production', '생산 현황', 26, 78], ['reports', '부서 보고', 74, 78]],
+  },
+  yard: {
+    title: '소재 야드', caption: '소재 야드 · 보관과 출고', image: 'art/locations/yard.webp', person: 'seo',
+    description: '가공할 코일이 기다리는 곳입니다. 재고량과 보관 기간을 확인합니다.',
+    alt: '받침대에 정렬된 은빛 코일과 지게차, 운반 트럭, 창고가 있는 소재 야드',
+    places: [['inventory', '재고 · 보관 기간', 26, 78], ['reports', '부서 보고', 74, 78]],
+  },
+  port: {
+    title: '수입 항만', caption: '수입 항만 · 소재의 도착', image: 'art/locations/port.webp', person: 'seo',
+    description: '본사에서 보낸 소재가 들어옵니다. 운송 중인 물량과 도착 일정을 확인합니다.',
+    alt: '코일을 실은 화물선과 하역 크레인, 부두에 대기 중인 소재와 트럭이 있는 수입 항만',
+    places: [['inventory', '입항 · 운송 현황', 26, 78], ['reports', '부서 보고', 74, 78]],
+  },
+  customers: {
+    title: '거래처', caption: '거래처 · 고객사 상담실', image: 'art/locations/customers.webp', person: 'jung',
+    description: '고객과 납품을 논의하는 자리입니다. 주문 예정량과 판매 기록을 확인합니다.',
+    alt: '강판·코일·자동차 부품 견본이 놓인 상담실과 유리창 너머 자동차 부품 공장',
+    places: [['customers', '주문 · 판매 현황', 26, 78], ['reports', '부서 보고', 74, 78]],
+  },
+};
+
+function ccSceneCommands(definition) {
+  const list = app.querySelector('#cc-command-list');
+  const commands = definition.person ? definition.places : [
+    ['production', '생산 현황'], ['inventory', '재고 · 입항'], ['customers', '거래처 교섭'], ['reports', '부서 보고'],
+  ];
+  list.replaceChildren();
+  commands.forEach(([kind, label]) => {
+    const button = ccCommand(label, opener => ccOpenDossier(kind, opener));
+    button.dataset.locationCommand = kind;
+    list.append(button);
+  });
+}
+
 function ccShowScene(page, userAction = false) {
-  const changed = ccView.page !== page;
+  if (userAction && document.querySelector('dialog[open]')) return;
+  const previous = ccView.page;
+  page = Object.hasOwn(ccScenes, page) ? page : 'map';
+  const changed = previous !== page;
+  const definition = ccScenes[page];
   ccView.page = page;
+  if (changed && userAction && definition.person) ccView.person = definition.person;
+  const heading = app.querySelector('#cc-location-heading');
+  heading.innerHTML = `<div><h2 tabindex="-1" id="cc-location-title">${definition.title}</h2><p>${definition.description}</p></div>`;
+  if (page !== 'map') {
+    const back = ccCommand('사업 지도로', () => ccShowScene('map', true));
+    back.dataset.locationBack = '';
+    heading.append(back);
+  }
   const scene = app.querySelector('#cc-scene');
-  const isMap = page === 'map';
-  scene.innerHTML = `<img class="cc-scene-art" src="art/strategy-${isMap ? 'map' : 'office'}.png"
-    alt="${isMap ? '항만, 공장, 소재 야드와 거래처가 연결된 노바리아 산업 지구' : '산업항을 내려다보는 코일센터 집무실'}">
-    <div class="cc-scene-caption">${isMap ? '노바리아 · 사업 지도' : '코일센터 · 사장 집무실'}</div>`;
-  const places = isMap ? [
-    ['production', '가공 공장', 50, 40], ['inventory', '소재 야드', 25, 65],
-    ['inventory', '수입 항만', 78, 75], ['customers', '거래처', 80, 22], ['office', '법인 사무동', 25, 25],
-  ] : [['reports', '보고 서류', 55, 64], ['finance', '경영 장부', 78, 43]];
+  scene.dataset.locationScene = page;
+  scene.dataset.locationInterior = String(Boolean(definition.person));
+  scene.setAttribute('aria-label', definition.title);
+  scene.innerHTML = `<img class="cc-scene-art" width="1586" height="992" src="${definition.image}" alt="${definition.alt}">
+    <div class="cc-scene-caption">${definition.caption}</div>`;
+  const artwork = scene.querySelector('.cc-scene-art');
+  artwork.onerror = () => {
+    const fallback = ccElement('div', 'cc-scene-unavailable', `<p>${definition.alt}</p><p>그림을 불러오지 못했습니다. 아래 명령은 계속 이용할 수 있습니다.</p>`);
+    fallback.setAttribute('role', 'status');
+    artwork.replaceWith(fallback);
+  };
   const snapshot = typeof ccCompanyState === 'function' ? ccCompanyState(G) : null;
-  places.forEach(([kind, label, x, y]) => {
+  definition.places.forEach(([kind, label, x, y, destination]) => {
     const button = ccElement('button', 'cc-map-place', `<span class="cc-place-mark"></span>${label}`);
-    if (snapshot) {
+    if (snapshot && (page === 'map' || page === 'office')) {
       const status = ccPlaceState(kind, label, snapshot);
       button.dataset.placeState = status.state;
       button.append(ccElement('small', 'cc-place-state', `${ccEscape(status.text)}${status.state === 'concerned' ? `<br>주의 · ${ccEscape(status.reason.split(' · ')[0])}` : ''}`));
     }
     button.style.left = `${x}%`; button.style.top = `${y}%`;
-    button.onclick = () => kind === 'office' ? ccShowScene('office', true) : ccOpenDossier(kind, button);
+    if (destination) button.dataset.location = destination;
+    else button.dataset.locationCommand = kind;
+    button.onclick = () => destination ? ccShowScene(destination, true) : ccOpenDossier(kind, button);
     scene.append(button);
   });
   app.querySelectorAll('[data-scene]').forEach(button => {
     if (button.dataset.scene === page) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   });
+  ccSceneCommands(definition);
   ccAudioScene();
-  if (changed && userAction) ccAudioCue('select');
+  if (changed && userAction) {
+    ccShowReport(); ccAudioCue('select');
+    const focus = page === 'map' ? scene.querySelector(`[data-location="${previous}"]`) : null;
+    (focus || heading.querySelector('#cc-location-title')).focus();
+  }
 }
 
 function ccCommand(label, action, className = '') {
@@ -172,29 +250,32 @@ function ccRenderPlay() {
   });
   [['finance', '경영 장부'], ['reports', '사내 보고'], ['history', '연혁']].forEach(([key, label]) =>
     nav.append(ccCommand(label, button => ccOpenDossier(key, button))));
-  const help = ccCommand('취임 안내', button => ccOpenDossier('instructions', button));
-  help.id = 'cc-help'; nav.append(help);
-  const save = ccCommand('저장 · 타이틀', ccSaveToTitle); save.id = 'btn-save'; nav.append(save); ccAudioMenu(nav);
+  const menu = ccCommand('메뉴', ccOpenSystemMenu); menu.id = 'cc-system-menu'; nav.append(menu);
   const main = ccElement('main', 'cc-main'); main.id = 'cc-main'; main.tabIndex = -1;
+  const heading = ccElement('div', 'cc-window cc-location-heading'); heading.id = 'cc-location-heading';
   const scene = ccElement('section', 'cc-window cc-scene'); scene.id = 'cc-scene';
   scene.setAttribute('aria-label', '사업 현장');
   const report = ccElement('section', 'cc-window cc-dialogue'); report.id = 'cc-person-report'; report.tabIndex = -1;
   report.setAttribute('aria-label', '선택한 직원의 보고');
-  main.append(scene, report);
+  const ledgers = ccElement('details', 'cc-window cc-field-ledgers',
+    '<summary>현장 장부</summary><div class="cc-command-list" id="cc-command-list"></div>');
+  main.append(heading, scene, ledgers);
+  const commands = ccElement('aside', 'cc-commands');
+  commands.setAttribute('aria-label', '담당자 보고와 업무 안내');
+  commands.append(report);
   const guidance = ccQuarterGuidance();
-  if (guidance) main.append(guidance);
-  const commands = ccElement('aside', 'cc-commands',
-    `<section class="cc-window"><h2 class="cc-window-title">사장의 명령</h2><div class="cc-command-list" id="cc-command-list"></div></section>
-    <section class="cc-window cc-mission"><h2 class="cc-window-title">4년의 임무</h2><div class="cc-window-body">
-      <p>모법이익 <strong>${money(G.diff.target)}</strong></p>
+  if (guidance) {
+    const guide = ccElement('details', 'cc-window cc-work-guide', '<summary>이번 기간의 업무 안내</summary>');
+    guide.append(guidance); commands.append(guide);
+  }
+  const chapter = chapterOf(s, s.turn);
+  const mission = ccElement('section', 'cc-window cc-mission',
+    `<h2 class="cc-window-title">4년의 임무</h2><div class="cc-window-body">
+      <p>모법이익 목표 <strong>${money(G.diff.target)}</strong></p>
+      <details><summary>${ccEscape(chapter.label)}</summary>
       <p class="hint">본사의 소재 이익과 법인의 영업이익을 함께 남기십시오.</p>
-      <span class="cc-rule"></span><p>${ccEscape(chapterOf(s, s.turn).label)}</p>
-      <p class="hint">${ccEscape(chapterOf(s, s.turn).brief)}</p></div></section>`);
-  const list = commands.querySelector('#cc-command-list');
-  [['production', '생산 현황'], ['inventory', '재고 · 입항'], ['customers', '거래처 교섭'], ['reports', '부서 보고']]
-    .forEach(([kind, label]) => list.append(ccCommand(label, button => ccOpenDossier(kind, button))));
-  const motion = ccCommand(motionOff() ? '움직임 켜기' : '움직임 끄기', () => { setMotion(!motionOff()); render(); });
-  motion.id = 'btn-motion'; list.append(motion);
+      <p class="hint">${ccEscape(chapter.brief)}</p></details></div></section>`);
+  commands.append(mission);
   const layout = ccElement('div', 'cc-layout'); layout.append(ccStaffRail(), main, commands);
   const footer = ccElement('footer', 'cc-window cc-turn', `<div><b>${ccEscape(periodNow())} · 결재 대기</b>
     <p>직원의 보고를 듣고, 이번 기간의 안건과 발주를 결정하십시오.</p></div>`);

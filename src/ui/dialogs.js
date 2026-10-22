@@ -1,4 +1,33 @@
 const ccLegacyDecisions = openDecisions;
+
+function ccLayoutDecision(dialog, card) {
+  const crew = dialog.querySelector('.crew');
+  if (!crew?.querySelector) return;
+  dialog.classList.add('cc-decision-layout');
+  const heading = dialog.querySelector('.deckq');
+  dialog.querySelector('.deckhead')?.after(heading);
+  const speech = crew.querySelector('.crew-body .line');
+  const text = speech?.textContent.trim() || '';
+  if (text.length > 180) {
+    const firstSentence = text.match(/^.*?[.!?。](?:\s|$)/)?.[0].trim() || text;
+    const preview = ccElement('p', 'cc-decision-preview');
+    preview.textContent = firstSentence.length > 140 ? `${firstSentence.slice(0, 140).trim()}…` : firstSentence;
+    const report = ccElement('details', 'cc-decision-disclosure');
+    const summary = ccElement('summary');
+    summary.textContent = '보고 전문 펼치기';
+    speech.before(preview, report);
+    report.append(summary, speech);
+  }
+  const guide = dialog.querySelector('.cc-decision-guide');
+  if (guide) {
+    const detail = ccElement('details', 'cc-decision-disclosure cc-decision-instructions');
+    const summary = ccElement('summary');
+    summary.textContent = card?.form ? '입력 방법과 집행 시점' : '선택과 효과를 읽는 방법';
+    guide.before(detail);
+    detail.append(summary, guide);
+  }
+}
+
 document.addEventListener?.('keydown', event => {
   const dialog = document.querySelector('dialog[open]');
   if (!dialog) return;
@@ -22,6 +51,9 @@ openDecisions = function (...args) {
   const dialog = document.querySelector('dialog.deck[open]');
   if (!dialog) return;
   ccAudioScene(); ccAudioCue('dossier-next', ccAudioEventId('dossier'));
+  if (typeof ccExplainDecision === 'function') ccExplainDecision(dialog, G.queue[G.qi].card);
+  ccLayoutDecision(dialog, G.queue?.[G.qi]?.card);
+  if (typeof ccWrapTables === 'function') ccWrapTables(dialog);
   const title = dialog.querySelector('h2');
   if (title) {
     title.id = 'cc-decision-title';
@@ -29,8 +61,6 @@ openDecisions = function (...args) {
     title.tabIndex = -1;
     title.focus({ preventScroll: true });
   }
-  if (typeof ccExplainDecision === 'function') ccExplainDecision(dialog, G.queue[G.qi].card);
-  if (typeof ccWrapTables === 'function') ccWrapTables(dialog);
   const inputs = [...dialog.querySelectorAll('[data-ok]')];
   const sales = [...dialog.querySelectorAll('input[data-sk]')];
   let salesInvalid = sales.length > 0 && sales.every(input => !(Number(input.value) > 0));

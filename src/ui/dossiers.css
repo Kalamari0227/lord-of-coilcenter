@@ -1,0 +1,58 @@
+dialog.cc-dossier {
+  padding: 2px;
+  border: 2px solid var(--cc-border);
+  border-radius: 0;
+  background: var(--cc-panel);
+  box-shadow: inset 0 0 0 2px var(--cc-dark), 8px 8px 0 var(--cc-shadow);
+}
+dialog.cc-dossier::backdrop {
+  background: color-mix(in srgb, var(--cc-shadow) 78%, transparent);
+}
+.cc-dossier > .cc-dossier-heading {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cc-space-4);
+  padding: var(--cc-space-4) var(--cc-space-6);
+  background: var(--cc-raised);
+  border-bottom: 1px solid var(--cc-border);
+}
+.cc-dossier-heading > h2 {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--cc-font-title);
+  font-size: var(--cc-text-heading);
+}
+.cc-dossier-heading > .cc-dossier-close {
+  flex: 0 0 auto;
+  min-width: 80px;
+}
+.cc-dossier > .cc-dossier-content { padding: var(--cc-space-6); }
+dialog.cc-dossier[open] {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+.cc-dossier > .cc-dossier-heading,
+.cc-dossier > .cc-dossier-actions { flex: 0 0 auto; }
+.cc-dossier > .cc-dossier-content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.cc-dossier-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--cc-space-4) var(--cc-space-6);
+  background: var(--cc-raised);
+  border-top: 1px solid var(--cc-border);
+}
+.cc-dossier-actions > button { min-width: 160px; }
+@media (max-width: 760px), (max-height: 540px) {
+  .cc-dossier > .cc-dossier-heading,
+  .cc-dossier > .cc-dossier-content,
+  .cc-dossier > .cc-dossier-actions { padding: var(--cc-space-4); }
+  .cc-dossier-actions > button { width: 100%; }
+}

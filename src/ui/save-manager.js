@@ -68,8 +68,9 @@ function ccRefreshSaveUI() {
 }
 
 function ccAttachSaveUI() {
+  if (typeof ccOpeningActive === 'function' && ccOpeningActive()) return;
   const host = document.querySelector('.cc-title-menu') || document.querySelector('.cc-nav') || app;
-  if (!host.querySelector('[data-cc-save-open]')) {
+  if (!app.querySelector('#cc-system-menu') && !host.querySelector('[data-cc-save-open]')) {
     const button = ccCommand('저장 관리', trigger => ccOpenSaveManager(trigger));
     button.dataset.ccSaveOpen = '';
     const audio = host.querySelector('[data-cc-audio-enable]');
@@ -132,11 +133,13 @@ function ccOpenSaveManager(trigger = document.activeElement) {
     else feedback.textContent = token === false ? ccSaveText() : '복구할 수 있는 이전 정상본이 없습니다. 보관한 파일을 가져오거나 손상된 기록을 삭제할 수 있습니다.';
   });
   add('브라우저의 최신 기록으로 이어하기', async () => {
-    if (G && !confirm('현재 게임의 저장되지 않은 진행을 버리고 브라우저의 최신 기록으로 바꿉니다. 먼저 파일로 내보냈는지 확인하세요. 계속할까요?')) return;
+    if (G && !await ccConfirm({ title: '최신 기록으로 이어하기', confirmLabel: '최신 기록 불러오기',
+      message: '현재 게임의 저장되지 않은 진행을 버리고 브라우저의 최신 기록으로 바꿉니다. 먼저 파일로 내보냈는지 확인하세요. 계속할까요?' })) return;
     if (!await resumeGame()) feedback.textContent = ccSaveText();
   });
   add('저장 기록 삭제', async () => {
-    if (!confirm('이 브라우저의 이어갈 저장 기록을 삭제합니다. 정상 기록은 이전 정상본으로 남을 수 있지만 손상된 기록은 복구할 수 없습니다. 현재 열린 게임과 보관한 파일은 유지됩니다. 삭제할까요?')) return;
+    if (!await ccConfirm({ title: '저장 기록 삭제', confirmLabel: '저장 기록 삭제',
+      message: '이 브라우저의 이어갈 저장 기록을 삭제합니다. 정상 기록은 이전 정상본으로 남을 수 있지만 손상된 기록은 복구할 수 없습니다. 현재 열린 게임과 보관한 파일은 유지됩니다. 삭제할까요?' })) return;
     clearPreview();
     if (await clearSave({ discardCorrupt: ccCheckpointStatus().state === 'corrupt' })) {
       feedback.textContent = '이어갈 저장 기록을 삭제했습니다. 현재 게임은 계속할 수 있습니다.';

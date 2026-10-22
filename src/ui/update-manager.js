@@ -98,8 +98,9 @@ function ccOpenUpdateManager(trigger = document.activeElement) {
 }
 
 function ccAttachUpdateUI() {
+  if (typeof ccOpeningActive === 'function' && ccOpeningActive()) return;
   const host = document.querySelector('.cc-title-menu') || document.querySelector('.cc-nav') || app;
-  if (!host.querySelector('[data-cc-update-open]')) {
+  if (!app.querySelector('#cc-system-menu') && !host.querySelector('[data-cc-update-open]')) {
     const button = ccCommand('설치 · 업데이트', ccOpenUpdateManager); button.dataset.ccUpdateOpen = ''; host.append(button);
   }
   if (!app.querySelector('[data-cc-update-banner]')) {

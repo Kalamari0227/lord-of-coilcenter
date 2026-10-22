@@ -1,0 +1,12 @@
+dialog.cc-system-menu { width: min(640px, calc(100% - 24px)); }
+.cc-system-menu .cc-dossier-content { display: grid; gap: var(--cc-space-6); }
+.cc-system-group { min-width: 0; }
+.cc-system-group h3 { margin: 0 0 var(--cc-space-3); font-size: var(--cc-text-label); color: var(--cc-gold); }
+.cc-system-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cc-space-2); }
+.cc-system-actions > button { min-width: 0; text-align: left; }
+.cc-system-audio { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cc-space-2); margin-top: var(--cc-space-3); }
+.cc-system-audio .cc-audio-mute, .cc-system-audio .cc-audio-status { grid-column: 1 / -1; margin: 0; }
+.cc-system-audio input[type='checkbox'] { width: 24px; height: 24px; accent-color: var(--cc-gold); }
+@media (max-width: 420px) {
+  .cc-system-actions { grid-template-columns: minmax(0, 1fr); }
+}

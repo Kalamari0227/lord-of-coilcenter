@@ -1,0 +1,56 @@
+dialog.deck.cc-decision-layout {
+  border: 2px solid var(--cc-border);
+  box-shadow: inset 0 0 0 2px var(--cc-dark), 8px 8px 0 var(--cc-shadow);
+}
+dialog.deck.cc-decision-layout::backdrop {
+  background: color-mix(in srgb, var(--cc-shadow) 78%, transparent);
+}
+.deck.cc-decision-layout .dlg { border: 0; }
+.deck.cc-decision-layout .deckhead {
+  background: var(--cc-raised);
+  color: var(--cc-text);
+  border-bottom: 1px solid var(--cc-border);
+  padding: var(--cc-space-3) var(--cc-space-4);
+  font-size: var(--cc-text-small);
+}
+.deck.cc-decision-layout .deckhead .step { opacity: 1; color: var(--cc-gold); }
+.deck.cc-decision-layout .deckq { padding: var(--cc-space-4); }
+.deck.cc-decision-layout .deckq h2 { margin: 0; font-size: var(--cc-text-heading); }
+.deck.cc-decision-layout .crew {
+  flex-direction: column;
+  border-block: 1px solid var(--cc-border);
+}
+.deck.cc-decision-layout .crew-pic {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+  flex: none;
+  width: 100%;
+  padding: var(--cc-space-2) var(--cc-space-4);
+  border: 0;
+  background: var(--cc-dark);
+}
+.deck.cc-decision-layout .cc-crew-portrait { width: 60px; height: 72px; flex: 0 0 60px; }
+.deck.cc-decision-layout .cc-crew-portrait.cc-portrait-unavailable { width: auto; height: auto; flex: 0 1 auto; }
+.deck.cc-decision-layout .crew-plate {
+  position: static;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--cc-text);
+}
+.deck.cc-decision-layout .crew-plate b { font-size: var(--cc-text-label); }
+.deck.cc-decision-layout .crew-plate i { font-size: var(--cc-text-small); opacity: 1; color: var(--cc-muted); }
+.deck.cc-decision-layout .crew-body { padding: var(--cc-space-3) var(--cc-space-4); }
+.deck.cc-decision-layout .crew-body .line { padding: 0; font-size: var(--cc-text-body); font-weight: 400; }
+.deck.cc-decision-layout .cc-decision-preview { margin: 0; }
+.deck.cc-decision-layout .cc-decision-disclosure > summary {
+  min-height: 44px;
+  padding-block: var(--cc-space-3);
+  cursor: pointer;
+  color: var(--cc-gold);
+  font-size: var(--cc-text-label);
+}
+.deck.cc-decision-layout .cc-decision-instructions { padding-inline: var(--cc-space-4); }
+.deck.cc-decision-layout .cc-decision-guide { margin: 0 0 var(--cc-space-3); }
+.deck.cc-decision-layout .cc-decision-disclosure > summary:focus-visible { outline: 3px solid var(--cc-gold); outline-offset: 2px; }

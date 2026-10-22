@@ -11,7 +11,7 @@ const hasAudioField = value => value !== null && typeof value === 'object' && Ob
 
 // A minimal DOM fixture retains the real decision callbacks, not the game's calculations.
 class Element {
-  constructor(tag = 'div') { this.tag = tag; this.innerHTML = ''; this.nodes = new Map(); this.groups = new Map(); this.events = new Map(); this.dataset = {}; this.classList = { add() {}, toggle() {} }; }
+  constructor(tag = 'div') { this.tag = tag; this.innerHTML = ''; this.textContent = ''; this.nodes = new Map(); this.groups = new Map(); this.events = new Map(); this.dataset = {}; this.classList = { add() {}, toggle() {} }; }
   querySelector(selector) {
     if (['#olist', '#vslot'].includes(selector) && !this.innerHTML.includes(`id="${selector.slice(1)}"`)) return null;
     if (!this.nodes.has(selector)) this.nodes.set(selector, new Element());
@@ -28,7 +28,7 @@ class Element {
     this.groups.set(selector, nodes); return nodes;
   }
   get valueAsNumber() { return Number(this.value); }
-  setAttribute() {} removeAttribute() {} before() {} focus() {} scrollIntoView() {}
+  setAttribute() {} removeAttribute() {} before() {} after() {} append() {} focus() {} scrollIntoView() {}
   addEventListener(name, fn) { const list = this.events.get(name) || []; list.push(fn); this.events.set(name, list); }
   showModal() { this.open = true; }
   close() { this.open = false; for (const fn of this.events.get('close') || []) fn(); }

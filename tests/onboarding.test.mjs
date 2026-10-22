@@ -67,6 +67,36 @@ test('new game handover opens after checkpoint, dismisses freely and resume neve
   assert.equal(f.dialogs.length, 2);
 });
 
+test('handover primary action dismisses without leaving fullscreen or changing the checkpoint', async () => {
+  const f = fixture(); await f.start();
+  const state = f.run('JSON.stringify(G)'), checkpoint = f.storage.get('coilcenter:foundation:v1');
+  f.run('document.fullscreenElement = document.querySelector("#app"); document.exitFullscreen = () => { throw Error("Guide must preserve fullscreen"); }; Math.random = () => { throw Error("Guide consumed RNG"); };');
+  const dialog = f.dialogs[0];
+  assert.match(dialog.innerHTML, /data-guidance-dismiss>업무 시작/);
+  assert.doesNotMatch(dialog.innerHTML, /Escape/);
+  dialog.querySelector('[data-guidance-dismiss]').onclick();
+  assert.equal(dialog.open, false); assert.equal(dialog.isConnected, false);
+  assert.equal(f.run('document.fullscreenElement === document.querySelector("#app")'), true);
+  assert.equal(f.run('document.activeElement === app.querySelector("#cc-system-menu")'), true);
+  assert.equal(f.run('JSON.stringify(G)'), state);
+  assert.equal(f.storage.get('coilcenter:foundation:v1'), checkpoint);
+});
+
+test('instructions have an explicit return action both at the title and during a game', async () => {
+  const f = fixture();
+  f.run('ccOpenDossier("instructions")');
+  let dialog = f.dialogs.at(-1);
+  assert.match(dialog.innerHTML, /data-guidance-dismiss>타이틀로 돌아가기/);
+  dialog.querySelector('[data-guidance-dismiss]').onclick();
+  assert.equal(dialog.open, false); assert.equal(f.run('G'), null);
+  await f.start(); f.dialogs.at(-1).close();
+  f.run('ccOpenDossier("instructions")'); dialog = f.dialogs.at(-1);
+  assert.match(dialog.innerHTML, /data-guidance-dismiss>업무로 돌아가기/);
+  const state = f.run('JSON.stringify(G)');
+  dialog.querySelector('[data-guidance-dismiss]').onclick();
+  assert.equal(dialog.open, false); assert.equal(f.run('JSON.stringify(G)'), state);
+});
+
 for (const month of [1, 2, 3]) test(`month ${month}: objective actions route to staff and ledger without changing state`, async () => {
   const f = fixture(); await f.start(); f.dialogs[0].close();
   f.run(`G.s.turn = ${month}; ccBriefings.set(G.s, []); Math.random = () => { throw Error('RNG consumed'); };`);

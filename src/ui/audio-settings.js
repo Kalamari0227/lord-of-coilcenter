@@ -82,13 +82,13 @@ function ccAudioUpdate(status) {
     label.textContent = summary + (notice ? ` ${notice}` : '');
   });
 }
-function ccAudioMenu(container) {
+function ccAudioMenu(container, openSettings = ccOpenAudioSettings) {
   if (typeof CCAudio === 'undefined') return;
   const enable = ccCommand('음악 켜기', () => { CCAudio.configure({ muted: false }); void CCAudio.unlock(); });
   enable.dataset.ccAudioEnable = '';
   const label = ccElement('small', 'cc-audio-status'); label.dataset.ccAudioStatus = '';
   label.setAttribute('role', 'status'); label.setAttribute('aria-live', 'polite');
-  container.append(enable, ccCommand('음향 설정', trigger => ccOpenAudioSettings(trigger)), label);
+  container.append(enable, ccCommand('음향 설정', trigger => openSettings(trigger)), label);
   if (!ccAudioState().watching) { ccAudioState().watching = true; CCAudio.subscribe(ccAudioUpdate); }
   ccAudioUpdate(CCAudio.status());
 }

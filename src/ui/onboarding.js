@@ -1,7 +1,7 @@
 const ccHandoverNewGame = newGame;
 newGame = async function (...args) {
   const result = await ccHandoverNewGame(...args);
-  if (result) ccOpenDossier('handover', app.querySelector('#cc-help'));
+  if (result) ccOpenDossier('handover', app.querySelector('#cc-system-menu') || app.querySelector('#cc-help'));
   return result;
 };
 
@@ -62,8 +62,8 @@ function ccHandoverContent() {
     <h3>사장님, 첫 분기는 이렇게 살펴보십시오.</h3>
     <p>${ccEscape(CAST.han.name)} · 장부와 담당자는 언제든 다시 만나실 수 있습니다.</p></div></div>
     <ol><li><b>보고를 듣습니다.</b> 직원 이름을 누르면 담당자의 보고가 나옵니다. 확인·추정·소문을 구분하십시오.</li>
-    <li><b>장부로 확인합니다.</b> 지도 거점과 명령 창에서 재고, 생산, 현금을 살펴보십시오.</li>
+    <li><b>장부로 확인합니다.</b> 지도 거점과 현장 장부에서 재고, 생산, 현금을 살펴보십시오.</li>
     <li><b>${G.mpt === 3 ? '금분기' : '금월'} 결재를 시작합니다.</b> 안건과 고객별 발주를 마치면 ${G.mpt === 3 ? '세 달' : '한 달'}이 지나고 결산을 받습니다.</li></ol>
     <p class="hint">목표는 4년간 모법이익, 즉 본사 소재 이익과 현지 영업이익을 합친 이익을 남기는 것입니다. 안내 확인은 선택 사항이며 결재를 막지 않습니다. 결재 도중 나가면 저장된 월초부터 다시 시작합니다.</p>
-    <p>닫기 또는 Escape로 바로 업무를 시작하십시오. 게임 메뉴의 <b>취임 안내</b>에서 다시 열 수 있습니다.</p></section>`;
+    <p>아래 <b>업무 시작</b> 버튼을 눌러 사업 지도로 돌아가십시오. 게임 메뉴의 <b>취임 안내</b>에서 다시 열 수 있습니다.</p></section>`;
 }

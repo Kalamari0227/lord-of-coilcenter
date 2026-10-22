@@ -26,9 +26,12 @@ function ccRenderSetup() {
     <p class="cc-title-credit">기획과 구성 · 곤사마<br>재기획, 각색 : Ethan.J</p></main>
     <span class="cc-title-edition">노바리아 · 2026</span>`;
   const menu = app.querySelector('.cc-title-menu');
-  menu.append(ccCommand('새로 시작', () => { ccView.preparing = true; ccView.page = 'map'; ccView.person = 'jung'; render(); ccAudioCue('select'); }, 'primary'));
+  menu.append(ccCommand('새로 시작', () => { ccView.preparing = true; ccView.page = 'map'; ccView.person = 'jung'; render(); ccAudioCue('select'); ccFullscreenStart(); }, 'primary'));
   const resume = ccCommand(saved ? '이어서 하기' : '이어갈 기록 없음', async () => {
-    ccView.preparing = false; ccView.page = 'map'; await ccAudioGesture(resumeGame);
+    ccView.preparing = false; ccView.page = 'map';
+    const started = ccAudioGesture(resumeGame);
+    ccFullscreenStart();
+    await started;
   });
   resume.id = 'btn-resume'; resume.disabled = !saved;
   menu.append(resume, ccCommand('게임 설명', button => ccOpenDossier('instructions', button)));
@@ -38,14 +41,23 @@ function ccRenderSetup() {
   ccAttachSaveUI();
 }
 
+var ccStartingSavedGame = false;
 async function ccStartSavedGame(mode) {
-  if (ccCheckpointStatus().busy) return;
-  const name = app.querySelector('#nm').value.trim() || '노바리아 코일센터';
-  const saved = await loadedSave(), status = ccCheckpointStatus();
-  if (status.state === 'unreadable') { ccOpenSaveManager(); return; }
-  if (status.state === 'corrupt' && status.supported) {
-    if (!confirm('손상된 저장 기록이 있습니다. 저장 관리에서 이전 정상본이나 파일로 복구할 수 있습니다. 복구 대신 손상된 기록을 영구 삭제하고 새로 시작할까요?')) return;
-    if (!await clearSave({ discardCorrupt: true })) return;
-  } else if (saved && status.supported && !confirm('새 게임으로 현재 저장 기록을 바꿉니다. 기존 정상 기록은 이전 정상본으로 보관되며, 더 오래된 이전 정상본은 바뀝니다. 먼저 파일 백업을 권합니다. 새로 시작할까요?')) return;
-  await ccAudioGesture(() => newGame({ ...SETUP, mode, name }));
+  if (ccStartingSavedGame || ccCheckpointStatus().busy) return;
+  ccStartingSavedGame = true;
+  try {
+    const trigger = document.activeElement;
+    const name = app.querySelector('#nm').value.trim() || '노바리아 코일센터';
+    const saved = await loadedSave(), status = ccCheckpointStatus();
+    if (status.state === 'unreadable') { ccOpenSaveManager(); return; }
+    if (status.state === 'corrupt' && status.supported) {
+      if (!await ccConfirm({ title: '손상된 기록을 지우고 시작', trigger, confirmLabel: '삭제하고 새로 시작',
+        message: '손상된 저장 기록이 있습니다. 저장 관리에서 이전 정상본이나 파일로 복구할 수 있습니다. 복구 대신 손상된 기록을 영구 삭제하고 새로 시작할까요?' })) return;
+      if (!await clearSave({ discardCorrupt: true })) return;
+    } else if (saved && status.supported && !await ccConfirm({ title: '새 게임 시작', trigger, confirmLabel: '새 게임 시작',
+      message: '새 게임으로 현재 저장 기록을 바꿉니다. 기존 정상 기록은 이전 정상본으로 보관되며, 더 오래된 이전 정상본은 바뀝니다. 먼저 파일 백업을 권합니다. 새로 시작할까요?' })) return;
+    await ccAudioGesture(() => newGame({ ...SETUP, mode, name }));
+  } finally {
+    ccStartingSavedGame = false;
+  }
 }

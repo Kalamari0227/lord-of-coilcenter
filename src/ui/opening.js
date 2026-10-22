@@ -2,9 +2,7 @@
 var ccOpening;
 function ccOpeningState() {
   if (!ccOpening) {
-    let seen = false;
-    try { seen = localStorage.getItem('coilcenter:opening:v1') === 'seen'; } catch { /* Private storage still permits entry. */ }
-    ccOpening = { phase: seen ? 'done' : 'gate', generation: 0, frame: 0, unsubscribe: null, scene: '', root: null };
+    ccOpening = { phase: 'ready', generation: 0, frame: 0, unsubscribe: null, scene: '', root: null };
   }
   return ccOpening;
 }
@@ -23,119 +21,126 @@ function ccOpeningScene(position) {
 }
 function ccOpeningGate() {
   if (!ccOpeningActive()) return false;
-  ccOpeningRender(); return true;
+  ccOpeningRender();
+  if (ccOpeningState().phase === 'ready') ccOpeningStart();
+  return true;
 }
 function ccOpeningReplay() {
-  ccOpening = { phase: 'gate', generation: (ccOpening?.generation || 0) + 1, frame: 0, unsubscribe: null, scene: '', root: null };
+  if (ccOpeningActive()) return;
+  ccOpening = { phase: 'ready', generation: (ccOpening?.generation || 0) + 1, frame: 0, unsubscribe: null, scene: '', root: null };
   render();
+  ccOpeningGate();
+}
+function ccOpeningSkip(event) {
+  if (!ccOpeningActive()) return;
+  event.preventDefault(); event.stopPropagation();
+  if (event.repeat) return;
+  if (event.key === 'Escape') {
+    if (!ccFullscreenExitForEscape()) ccOpeningFinish();
+    return;
+  }
+  const status = CCAudio.cinematicStatus();
+  const startingSound = status.activationRequired || (!status.muted && ['loading', 'paused'].includes(status.state));
+  if (startingSound) ccOpeningPrepare(CCAudio.resumeCinematic());
+  const startingFullscreen = ccFullscreenStart();
+  if (startingSound || startingFullscreen) return;
+  ccOpeningFinish();
 }
 function ccOpeningEscape(event) {
-  if (event.key === 'Escape' && ccOpeningActive()) { event.preventDefault(); ccOpeningFinish(ccOpeningState().phase !== 'error'); }
+  if (['Escape', 'Enter', ' '].includes(event.key)) ccOpeningSkip(event);
 }
 function ccOpeningRender() {
   const state = ccOpeningState();
-  if (state.root === app && app.className === 'cc-opening' && state.renderedPhase === state.phase) return;
-  state.root = app; state.renderedPhase = state.phase; state.scene = '';
+  if (state.root === app && app.className === 'cc-opening') return;
+  state.root = app; state.scene = '';
   app.className = 'cc-opening';
   app.innerHTML = `<main class="cc-opening-main" aria-label="철의 항로 오프닝">
-    <p class="cc-opening-eyebrow">코일센터의 제왕 <span>서막 · 철의 항로</span></p>
-    <div class="cc-opening-stage" aria-label="오프닝 장면"></div>
+    <div class="cc-opening-stage"></div>
     <div class="cc-opening-caption" aria-live="polite"></div>
-    <div class="cc-opening-actions" aria-label="오프닝 조작"></div>
-    <p class="cc-opening-status" role="status"></p></main>`;
-  const actions = app.querySelector('.cc-opening-actions');
-  document.removeEventListener('keydown', ccOpeningEscape); document.addEventListener('keydown', ccOpeningEscape);
-  if (state.phase === 'gate') {
-    app.querySelector('.cc-opening-stage').innerHTML = `<img class="cc-opening-art" src="art/strategy-map.png" alt="항구와 코일센터 전경"><div class="cc-opening-veil"></div><div class="cc-opening-title"><small>새로운 항로가 열리다</small><h1>코일센터의<br>제왕</h1></div>`;
-    app.querySelector('.cc-opening-caption').textContent = '바다 건너, 당신의 이야기가 시작됩니다.';
-    actions.append(ccCommand('음악과 함께 보기', () => ccOpeningStart(false), 'primary'), ccCommand('소리 없이 보기', () => ccOpeningStart(true)), ccCommand('바로 시작', () => ccOpeningFinish(true)));
-    app.querySelector('.cc-opening-status').textContent = '72초 오프닝 · 언제든 건너뛸 수 있습니다.';
-  } else if (state.phase === 'error') {
-    app.querySelector('.cc-opening-caption').textContent = '음악을 재생하지 못했습니다. 소리 없이 이야기를 이어갈 수 있습니다.';
-    actions.append(ccCommand('소리 없이 계속', () => ccOpeningStart(true)), ccCommand('타이틀로', () => ccOpeningFinish(false)));
-  } else {
-    const pause = ccCommand('일시정지', () => {
-      if (CCAudio.cinematicStatus().state === 'paused') void CCAudio.resumeCinematic().then(ok => { if (!ok && ccOpeningActive() && CCAudio.cinematicStatus().state === 'error') ccOpeningError(); });
-      else CCAudio.pauseCinematic();
-      ccOpeningPaint();
-    }); pause.id = 'cc-opening-pause';
-    const mute = ccCommand('음악 켜기', () => {
-      const muted = CCAudio.cinematicStatus().muted;
-      if (muted) CCAudio.configure({ muted: false });
-      void CCAudio.setCinematicMuted(!muted).then(ok => { if (!ok && ccOpeningActive() && CCAudio.cinematicStatus().state === 'error') ccOpeningError(); });
-    }); mute.id = 'cc-opening-mute';
-    actions.append(pause, mute, ccCommand('건너뛰기', () => ccOpeningFinish(true)));
-    ccOpeningPaint();
-  }
+    <p class="cc-opening-prompt" role="status" hidden></p>
+    <button type="button" class="cc-opening-skip" aria-label="오프닝 건너뛰고 타이틀로"></button></main>`;
+  app.querySelector('.cc-opening-skip').onclick = ccOpeningSkip;
+  document.removeEventListener('keydown', ccOpeningEscape);
+  document.addEventListener('keydown', ccOpeningEscape);
 }
-async function ccOpeningStart(muted) {
+function ccOpeningStart() {
   const state = ccOpeningState();
-  if (!['gate', 'error'].includes(state.phase)) return;
-  const offsetSeconds = state.phase === 'error' && typeof CCAudio !== 'undefined' ? CCAudio.cinematicStatus().position : 0;
-  state.phase = 'loading'; const generation = ++state.generation;
-  let ready;
-  try {
-    if (!muted) CCAudio.configure({ muted: false });
-    ready = CCAudio.startCinematic('opening', { muted, offsetSeconds });
-  } catch { ccOpeningError(); return; }
-  ccOpeningRender();
-  state.unsubscribe?.();
-  state.unsubscribe = CCAudio.subscribe(() => { if (ccOpeningActive()) ccOpeningPaint(); });
+  if (state.phase !== 'ready') return;
+  state.phase = 'playing';
+  const generation = ++state.generation;
+  const audio = CCAudio.status();
+  const silent = !audio.supported || audio.settings.muted || audio.settings.masterVolume === 0 || audio.settings.bgmVolume === 0;
+  state.unsubscribe = CCAudio.subscribe(() => {
+    if (ccOpening === state && state.generation === generation && state.phase === 'playing') ccOpeningPaint();
+  });
+  ccOpeningPrepare(CCAudio.startCinematic('opening', silent ? { autoplay: true, durationSeconds: 72, muted: true } : {}));
   ccOpeningTick();
-  let success = false;
-  try { success = await ready; } catch {
-    if (state.generation === generation && state.phase !== 'done') ccOpeningError();
-    return;
-  }
-  if (state.generation !== generation || state.phase === 'done') return;
-  if (!success && CCAudio.cinematicStatus().state === 'error') { ccOpeningError(); return; }
-  state.phase = CCAudio.cinematicStatus().state === 'loading' ? 'loading' : 'playing'; ccOpeningRender();
-  ccOpeningPaint();
 }
-function ccOpeningError() {
-  const state = ccOpeningState();
-  if (state.phase === 'done') return;
-  state.phase = 'error'; cancelAnimationFrame(state.frame); state.unsubscribe?.(); state.unsubscribe = null;
-  ccOpeningRender(); app.querySelector('button')?.focus();
+function ccOpeningPrepare(pending) {
+  const state = ccOpeningState(), generation = state.generation;
+  void pending.then(ready => {
+    if (ccOpening !== state || state.generation !== generation || state.phase !== 'playing') return;
+    const status = CCAudio.cinematicStatus();
+    if (!ready && status.state === 'error' && !status.activationRequired) {
+      void CCAudio.startCinematic('opening', { autoplay: true, durationSeconds: 72, offsetSeconds: status.position, muted: true });
+    }
+    ccOpeningPaint();
+  });
 }
 function ccOpeningPaint() {
   const state = ccOpeningState();
-  if (!['playing', 'loading'].includes(state.phase)) return;
+  if (state.phase !== 'playing') return;
   const status = CCAudio.cinematicStatus(), scene = ccOpeningScene(status.position);
-  if (status.state === 'error') { ccOpeningError(); return; }
   const stage = app.querySelector('.cc-opening-stage');
+  const preparing = status.state === 'loading' || status.activationRequired;
+  const needsGesture = status.activationRequired || (!status.muted && ['loading', 'paused'].includes(status.state) && CCAudio.status().needsResume);
+  const prompt = app.querySelector('.cc-opening-prompt');
+  prompt.hidden = !preparing && !needsGesture;
+  prompt.textContent = needsGesture ? '화면을 누르면 음악과 함께 시작합니다.' : preparing ? '오프닝을 준비하고 있습니다.' : '';
+  app.querySelector('.cc-opening-skip').setAttribute('aria-label', preparing || needsGesture ? '음악과 함께 오프닝 시작' : ccFullscreenStatus().startAvailable ? '전체화면으로 오프닝 보기' : '오프닝 건너뛰고 타이틀로');
   if (state.scene !== scene.id) {
+    ccOpeningMotionRemove(state);
     state.scene = scene.id; stage.dataset.scene = scene.id;
-    stage.innerHTML = scene.name ? `<div class="cc-opening-logo"><img src="art/opening/${scene.id}.svg" alt=""><h1>${scene.name}</h1></div>`
-      : `<img class="cc-opening-art" src="art/${scene.art}" alt="${({harbor:'새벽 산업항',route:'부두와 코일센터를 잇는 길',factory:'차가운 철을 가공하는 코일 공장',staff:'여섯 직원이 함께하는 현장',office:'당신을 기다리는 집무실',title:'코일센터 전경'})[scene.id]}"><div class="cc-opening-veil"></div>`;
-    if (scene.id === 'staff') stage.innerHTML += `<div class="cc-opening-staff">${ccOfficers.map(key => `<div>${ccPortraitMarkup(key)}<span>${ccEscape(CAST[key].name)}</span></div>`).join('')}</div>`;
-    if (scene.id === 'title') stage.innerHTML += '<div class="cc-opening-title"><h1>코일센터의<br>제왕</h1><small>Production Gonsama × Ethan.J Studio</small></div>';
-    const picture = stage.querySelector('.cc-opening-art');
-    if (picture) picture.onerror = () => { picture.onerror = null; picture.src = 'art/strategy-map.png'; };
-    app.querySelector('.cc-opening-caption').textContent = scene.copy || '';
+    const description = ({harbor:'새벽 산업항',route:'부두와 코일센터를 잇는 길',factory:'차가운 철을 가공하는 코일 공장',staff:'여섯 직원이 함께하는 현장',office:'당신을 기다리는 집무실',title:'코일센터의 제왕'})[scene.id];
+    const staff = scene.id === 'staff' ? ccOfficers.map(key => CAST[key].name).join(', ') : '';
+    app.querySelector('.cc-opening-caption').textContent = [scene.name || description, staff, scene.copy].filter(Boolean).join('. ');
+    const art = scene.art ? `<img class="cc-opening-art" src="art/${scene.art}" alt="${ccEscape(description)}">` : '';
+    const credits = scene.name ? `<div class="cc-opening-credit"><h1 class="cc-opening-wordmark-frame" data-logo="${scene.id}"><img class="cc-opening-wordmark" src="art/opening/studio-calligraphy.png" alt="${ccEscape(scene.name)}"></h1></div>` : '';
+    const portraits = scene.id === 'staff' ? `<div class="cc-opening-staff">${ccOfficers.map(key => `<figure>${ccPortraitMarkup(key, 'cc-opening-portrait')}<figcaption>${ccEscape(CAST[key].name)}</figcaption></figure>`).join('')}</div>` : '';
+    const title = scene.id === 'title' ? '<h1 class="cc-opening-title"><span>코일센터의</span><span>제왕</span></h1>' : '';
+    stage.innerHTML = `${credits}<div class="cc-opening-picture">${art}${ccOpeningMotionMarkup(scene)}${portraits}${title}</div>${scene.copy ? `<p class="cc-opening-copy">${ccEscape(scene.copy)}</p>` : ''}`;
+    const wordmark = stage.querySelector('.cc-opening-wordmark');
+    const creditHeading = stage.querySelector('.cc-opening-credit h1');
+    if (wordmark) wordmark.onerror = function () {
+      this.onerror = null;
+      creditHeading.textContent = scene.name;
+    };
+    const image = stage.querySelector('.cc-opening-art');
+    state.motion = ccOpeningMotionBind(stage, image);
+    if (image) image.onerror = function () {
+      this.onerror = null;
+      if (state.motion?.image === this) ccOpeningMotionRemove(state);
+      if (scene.art !== 'strategy-map.png') this.src = 'art/strategy-map.png';
+    };
   }
-  const progress = Math.max(0, Math.min(1, (status.position - scene.start) / (scene.end - scene.start)));
-  const reduced = motionOff() || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  stage.style.setProperty('--opening-fade', String(Math.min(1, Math.max(0, status.position - scene.start) / (reduced ? 0.15 : 0.7), Math.max(0, scene.end - status.position) / (reduced ? 0.15 : 0.7))));
-  stage.style.setProperty('--opening-pan', reduced ? '0%' : `${progress * 1.5 - 0.75}%`);
-  stage.style.setProperty('--opening-light', String(0.06 + progress * 0.06));
-  app.querySelector('#cc-opening-pause').textContent = status.state === 'paused' ? '계속' : '일시정지';
-  app.querySelector('#cc-opening-mute').textContent = status.muted ? '음악 켜기' : '음악 끄기';
-  app.querySelector('.cc-opening-status').textContent = status.state === 'loading' ? '음악을 준비하고 있습니다…' : status.state === 'paused' ? '일시정지 · 계속을 누르면 이어집니다.' : 'Esc · 건너뛰기';
+  ccOpeningMotionPaint(state.motion, status);
+  stage.style.opacity = preparing ? '1' : String(Math.min(1, scene.start === 0 ? 1 : Math.max(0, (status.position - scene.start) / 0.4), Math.max(0, (scene.end - status.position) / 0.4)));
 }
 function ccOpeningTick() {
   const state = ccOpeningState();
-  if (!['playing', 'loading'].includes(state.phase)) return;
-  if (CCAudio.cinematicStatus().state === 'ended') { ccOpeningFinish(true); return; }
+  if (state.phase !== 'playing') return;
+  if (CCAudio.cinematicStatus().state === 'ended') { ccOpeningFinish(); return; }
   ccOpeningPaint();
-  if (['playing', 'loading'].includes(state.phase)) state.frame = requestAnimationFrame(ccOpeningTick);
+  if (state.phase === 'playing') state.frame = requestAnimationFrame(ccOpeningTick);
 }
-function ccOpeningFinish(recordSeen) {
+function ccOpeningFinish() {
   const state = ccOpeningState();
   if (state.phase === 'done') return;
   state.phase = 'done'; state.generation++; cancelAnimationFrame(state.frame);
+  ccOpeningMotionRemove(state);
   state.unsubscribe?.(); state.unsubscribe = null; document.removeEventListener('keydown', ccOpeningEscape);
   if (typeof CCAudio !== 'undefined') CCAudio.stopCinematic();
-  if (recordSeen) { try { localStorage.setItem('coilcenter:opening:v1', 'seen'); } catch { /* Entry works without persistent preferences. */ } }
-  render(); app.querySelector('.cc-title-menu button')?.focus();
+  const skip = app.querySelector('.cc-opening-skip');
+  if (skip) skip.onclick = null;
+  render(); app.querySelector('.cc-title-menu > button')?.focus();
 }

@@ -70,7 +70,7 @@ function ccDossierContent(kind) {
   if (kind === 'handover') return ccHandoverContent();
   if (kind === 'instructions') return `<section class="card"><h2>당신의 임기는 4년입니다</h2>
     <p>사업 지도에서 공장·야드·항만·거래처를 살펴보고, 인물을 선택해 담당자의 보고를 듣습니다.
-    집무실과 명령 창에서 장부를 확인한 뒤 <b>금월 결재</b>를 시작하십시오.</p>
+    집무실과 현장 장부에서 내용을 확인한 뒤 <b>금월 결재</b>를 시작하십시오.</p>
     <p>안건의 선택과 고객별 소재 발주를 마치면 한 달이 지납니다. 분기 모드는 세 달을 함께 처리합니다.
     본사의 소재 이익과 법인의 영업이익을 합친 <b>모법이익</b>이 본사 목표입니다.</p>
     <p>저장은 이 브라우저에 남습니다. 월 결산은 자동 저장되며, 결재 도중 닫으면 월초 상태부터 다시 시작합니다.
@@ -92,11 +92,14 @@ function ccDossierContent(kind) {
 function ccOpenDossier(kind, trigger = document.activeElement, reportPerson = null) {
   if (!ccDossierTitles[kind] || (kind !== 'instructions' && !G)) return;
   if (document.querySelector('dialog[open]')) return;
-  const dialog = ccElement('dialog', 'cc-dossier');
+  const guidance = kind === 'handover' || kind === 'instructions';
+  const dismissLabel = kind === 'handover' ? '업무 시작' : G ? '업무로 돌아가기' : '타이틀로 돌아가기';
+  const dialog = ccElement('dialog', guidance ? 'cc-dossier cc-guidance-dialog' : 'cc-dossier');
   dialog.setAttribute('aria-labelledby', 'cc-dossier-title');
   dialog.innerHTML = `<div class="cc-dossier-heading"><h2 id="cc-dossier-title" tabindex="-1">${ccDossierTitles[kind]}</h2>
     <button type="button" class="cc-dossier-close">닫기</button></div>
-    <div class="cc-dossier-content">${ccDossierContent(kind)}</div>`;
+    <div class="cc-dossier-content">${ccDossierContent(kind)}</div>
+    ${guidance ? `<footer class="cc-dossier-actions"><button type="button" class="primary" data-guidance-dismiss>${dismissLabel}</button></footer>` : ''}`;
   dialog.querySelectorAll('table').forEach(table => {
     const wrapper = ccElement('div', 'cc-table-scroll');
     wrapper.tabIndex = 0;
@@ -118,6 +121,7 @@ function ccOpenDossier(kind, trigger = document.activeElement, reportPerson = nu
     dialog.querySelector('.cc-dossier-content').prepend(ccCommand('사업 화면으로 돌아가기', () => dialog.close()));
   }
   dialog.querySelector('.cc-dossier-close').onclick = () => { ccAudioCue('cancel'); dialog.close(); };
+  if (guidance) dialog.querySelector('[data-guidance-dismiss]').onclick = () => { ccAudioCue('select'); dialog.close(); };
   dialog.addEventListener('cancel', () => ccAudioCue('cancel'));
   dialog.addEventListener('close', () => {
     dialog.remove();

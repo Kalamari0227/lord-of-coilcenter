@@ -1,0 +1,3 @@
+dialog.cc-confirm { max-width: 560px; }
+.cc-confirm .cc-dossier-actions { flex-wrap: wrap; gap: var(--cc-space-3); }
+.cc-confirm .cc-dossier-content > p { margin: 0; }

@@ -1,5 +1,5 @@
 .cc-portrait.cc-state-portrait { position:relative; overflow:hidden; background-image:none; }
-.cc-state-portrait > img { position:absolute; width:300%; height:200%; max-width:none; image-rendering:pixelated; }
+.cc-state-portrait > img { position:absolute; width:300%; height:200%; max-width:none; object-fit:fill; image-rendering:pixelated; }
 .cc-state-portrait > .cc-portrait-fallback { display:none; }
 .cc-portrait.cc-portrait-unavailable { width:auto; height:auto; max-width:100%; padding:4px; background:var(--cc-dark); }
 .cc-portrait-unavailable > .cc-portrait-fallback { display:block; font-size:var(--cc-text-small); line-height:1.5; white-space:normal; }

@@ -154,7 +154,7 @@ function ccCreateAudio(options = {}) {
     } catch { if (key) seen.delete(key); debounce.delete(id); fail(); return false; }
   }
   function cinematicStatus() {
-    const elapsed = cinematic.state === 'playing' ? Math.max(0, (cinemaVoice ? context.currentTime : clock() / 1000) - cinemaStarted) : 0;
+    const elapsed = cinematic.state === 'playing' ? Math.max(0, (cinemaVoice && !cinematic.autoplay ? context.currentTime : clock() / 1000) - cinemaStarted) : 0;
     return { ...cinematic, position: Math.min(cinematic.duration || Infinity, cinematic.position + elapsed) };
   }
   function freezeCinematic() {
@@ -180,9 +180,38 @@ function ccCreateAudio(options = {}) {
     if (remaining <= 0) { endCinematic(ticket); return; }
     cinemaTimer = later(() => watchCinematic(ticket), Math.min(250, remaining * 1000));
   }
-  async function runCinematic() {
+  async function joinAutoplaySound(ticket, ready = unlock(false)) {
+    try {
+      if (!await ready || ticket !== cinemaTicket || disposed) return;
+      const entry = await load(cinematic.id);
+      if (ticket !== cinemaTicket || disposed || cinematic.state !== 'playing' || hidden || cinemaVoice) return;
+      const track = entry.track, position = cinematicStatus().position;
+      if (context.state !== 'running' || track.kind !== 'cinematic' ||
+          Math.abs(track.duration - cinematic.duration) > 1 / track.sampleRate ||
+          Math.abs(entry.buffer.duration - track.duration) > 1 / track.sampleRate || position >= cinematic.duration) return;
+      const source = context.createBufferSource(), gain = context.createGain();
+      cinemaVoice = { source, gain };
+      source.buffer = entry.buffer; source.loop = false; source.connect(gain); gain.connect(bgmBus);
+      gain.gain.setValueAtTime(track.gain, context.currentTime);
+      source.start(0, position);
+    } catch { /* Optional soundtrack failure leaves the film clock running. */ }
+  }
+  function runAutoplayCinematic() {
     const ticket = ++cinemaTicket;
-    freezeCinematic(); cinematic.state = 'loading'; cinematic.error = null;
+    freezeCinematic(); cinematic.error = null;
+    cinematic.state = hidden || cinemaManual ? 'paused' : 'playing';
+    cinemaAuto = hidden;
+    cinemaStarted = clock() / 1000;
+    if (cinematic.state === 'paused') { emit(); return Promise.resolve(false); }
+    watchCinematic(ticket); emit();
+    // The film clock never waits for browser activation, network or decoding.
+    if (!cinematic.muted) void joinAutoplaySound(ticket);
+    return Promise.resolve(true);
+  }
+  async function runCinematic() {
+    if (cinematic.autoplay) return runAutoplayCinematic();
+    const ticket = ++cinemaTicket;
+    freezeCinematic(); cinematic.state = 'loading'; cinematic.error = null; cinematic.activationRequired = false;
     // Invoke resume before the first await so a music click retains browser activation.
     const ready = cinematic.muted ? Promise.resolve(true) : unlock(false);
     emit();
@@ -191,8 +220,12 @@ function ccCreateAudio(options = {}) {
       if (ticket !== cinemaTicket || disposed) return false;
       if (track.kind !== 'cinematic') throw new Error('cinematic track required');
       cinematic.duration = track.duration; cinematic.position = Math.min(track.duration, cinematic.position);
-      if (!await ready) throw new Error('audio unavailable');
+      const available = await ready;
       if (ticket !== cinemaTicket || disposed) return false;
+      if (!available) {
+        cinematic.activationRequired = !!context && context.state !== 'running' && !hidden;
+        throw new Error('audio unavailable');
+      }
       if (hidden || cinemaManual) { cinematic.state = 'paused'; cinemaAuto = hidden; emit(); return false; }
       if (!cinematic.muted && cinematic.position < cinematic.duration) {
         const entry = await load(cinematic.id);
@@ -213,11 +246,13 @@ function ccCreateAudio(options = {}) {
       freezeCinematic(); cinematic.state = 'error'; cinematic.error = error.message || 'cinematic playback'; emit(); return false;
     }
   }
-  function startCinematic(id, { muted = false, offsetSeconds = 0 } = {}) {
+  function startCinematic(id, { muted = false, offsetSeconds = 0, autoplay = false, durationSeconds = 0 } = {}) {
     if (disposed) return Promise.resolve(false);
+    if (autoplay && !(Number.isFinite(durationSeconds) && durationSeconds > 0)) return Promise.resolve(false);
+    readSettings();
     stopCinematic();
     cinematic = { id, state: 'loading', position: Number.isFinite(offsetSeconds) ? Math.max(0, offsetSeconds) : 0,
-      duration: 0, muted: !!muted, error: null };
+      duration: autoplay ? durationSeconds : 0, autoplay, muted: !!muted || (autoplay && (settings.muted || settings.masterVolume === 0 || settings.bgmVolume === 0)), error: null };
     silence(); previewScene = null; hidden = !!doc?.hidden; attach();
     return runCinematic();
   }
@@ -258,13 +293,23 @@ function ccCreateAudio(options = {}) {
   function visibility() { if (doc?.hidden) hide(); else show(); }
   function hide() { hidden = true; pauseCinematic(false); silence(); if (context) Promise.resolve(context.suspend()).catch(fail); emit(); }
   function show() { hidden = !!doc?.hidden; if (hidden) return; if (cinematic.id) { if (cinemaAuto && !cinemaManual) void runCinematic(); } else if (unlocked) void recover(); }
+  function gesture(event) {
+    if (!event.isTrusted || disposed || hidden || settings.muted || settings.masterVolume === 0 || settings.bgmVolume === 0) return;
+    if (cinematic.autoplay && cinematic.state === 'playing' && !cinematic.muted && !cinemaVoice)
+      void joinAutoplaySound(cinemaTicket, unlock());
+    else if (unlocked && context?.state !== 'running') void unlock();
+  }
   function attach() {
     if (!attached) {
       attached = true;
       doc?.addEventListener('visibilitychange', visibility); win?.addEventListener('pagehide', hide); win?.addEventListener('pageshow', show);
+      doc?.addEventListener('click', gesture, true); doc?.addEventListener('keydown', gesture, true);
     }
     if (!context) return;
-    context.onstatechange = () => { if (context.state !== 'running') { if (cinematic.state === 'playing' && !cinematic.muted) pauseCinematic(false); life++; for (const voice of [...shots]) stop(voice); } emit(); };
+    context.onstatechange = () => { if (context.state !== 'running') { if (cinematic.state === 'playing' && !cinematic.muted) {
+      if (cinematic.autoplay && !hidden) { freezeCinematic(); void runCinematic(); }
+      else pauseCinematic(false);
+    } life++; for (const voice of [...shots]) stop(voice); } emit(); };
   }
   async function unlock(playBackground = true) {
     if (disposed || !supported) { if (!supported) fail(); return false; }
@@ -290,6 +335,7 @@ function ccCreateAudio(options = {}) {
     if (disposed) return; disposed = true; stopCinematic(); silence();
     for (const timer of timers) cancel(timer); timers.clear(); buffers.clear(); loading.clear();
     doc?.removeEventListener('visibilitychange', visibility); win?.removeEventListener('pagehide', hide); win?.removeEventListener('pageshow', show);
+    doc?.removeEventListener('click', gesture, true); doc?.removeEventListener('keydown', gesture, true);
     if (context) { context.onstatechange = null; for (const bus of [master, bgmBus, sfxBus, jingleBus]) bus.disconnect(); try { await context.close(); } catch { fail(); } }
     emit(); listeners.clear();
   }

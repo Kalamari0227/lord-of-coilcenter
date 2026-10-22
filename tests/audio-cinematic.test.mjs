@@ -103,8 +103,16 @@ for (const problem of ['unsupported', 'reject', 'decodeFail', 'fetchFail', 'inte
   const f = fixture({ [problem]: true }); // Given
   assert.equal(await f.api.startCinematic('opening', { offsetSeconds: 8 }), false); // When
   assert.equal(f.api.cinematicStatus().state, 'error'); assert.ok(f.api.cinematicStatus().error);
+  assert.equal(f.api.cinematicStatus().activationRequired, ['reject', 'interrupted'].includes(problem));
   f.options.fetchFail = false; assert.equal(await f.api.setCinematicMuted(true), true); f.advance(1000);
   assert.equal(f.api.cinematicStatus().position, 9); assert.equal(f.api.cinematicStatus().error, null); assert.equal(f.active().length, 0); // Then
+});
+test('rejected initial activation holds zero and a later gesture starts the complete soundtrack',async()=>{
+ const f=fixture({reject:true});
+ assert.equal(await f.api.startCinematic('opening'),false);f.advance(5000);
+ assert.equal(f.api.cinematicStatus().activationRequired,true);assert.equal(f.api.cinematicStatus().position,0);assert.equal(f.active().length,0);
+ f.options.reject=false;assert.equal(await f.api.resumeCinematic(),true);
+ assert.equal(f.api.cinematicStatus().activationRequired,false);assert.equal(f.active().length,1);assert.equal(f.active()[0].offset,0);
 });
 test('persisted mute is preserved by cinematic controls', async () => {
   const f = fixture({ stored: JSON.stringify({ version: 1, muted: true }) }); // Given
@@ -163,4 +171,71 @@ test('real monotonic silent clock emits completion without audio hardware', { ti
   const completed = new Promise(resolve => api.subscribe(() => { if (api.cinematicStatus().state === 'ended') resolve(); })); // Given
   const started = performance.now(); await api.startCinematic('short', { muted: true }); await completed; // When
   assert.ok(performance.now() - started >= 35); assert.equal(api.cinematicStatus().position, 0.04); assert.equal(api.status().unlocked, false); await api.dispose(); // Then
+});
+
+for (const problem of ['reject','unsupported','fetchFail','decodeFail','interrupted','pending']) test(`autoplay ${problem} advances and completes without waiting for audio`,async()=>{
+ const gate=deferred(),f=fixture(problem==='pending'?{resumeGate:gate}:{[problem]:true});
+ assert.equal(await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72}),true);await flush();
+ f.advance(10000);assert.equal(f.api.cinematicStatus().position,10);assert.equal(f.api.cinematicStatus().state,'playing');
+ f.advance(62000);assert.equal(f.api.cinematicStatus().state,'ended');
+ f.api.stopCinematic();gate.resolve();await flush();assert.equal(f.active().length,0);assert.equal(f.api.cinematicStatus().state,'idle');
+});
+test('autoplay soundtrack joins at current film position and uses one monotonic clock',async()=>{
+ const f=fixture(),gate=deferred();f.gates.set('audio/opening.wav',gate);
+ await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();f.advance(3000);gate.resolve();await flush();
+ assert.equal(f.active().length,1);assert.equal(f.active()[0].offset,3);
+ f.advance(1000,200);assert.equal(f.api.cinematicStatus().position,4);
+ await f.hidden(true);f.advance(5000);assert.equal(f.api.cinematicStatus().position,4);
+ await f.hidden(false);f.advance(1000);assert.equal(f.api.cinematicStatus().position,5);f.api.stopCinematic();
+});
+for(const stored of [{version:1,muted:true},{version:1,masterVolume:0},{version:1,bgmVolume:0}]) test(`autoplay respects saved preferences ${JSON.stringify(stored)} without manifest`,async()=>{
+ const f=fixture({stored:JSON.stringify(stored),fetchFail:true});await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();f.advance(1000);
+ assert.equal(f.created(),0);assert.equal(f.requests.length,0);assert.equal(f.api.cinematicStatus().position,1);assert.equal(f.storage.size,0);
+ for(const [key,value]of Object.entries(stored))assert.equal(f.api.status().settings[key],value);f.api.stopCinematic();
+});
+for(const boundary of ['stop','replay','pause']) test(`autoplay pending audio cannot resurrect after ${boundary}`,async()=>{
+ const f=fixture(),gate=deferred();f.gates.set('audio/opening.wav',gate);await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();
+ if(boundary==='stop')f.api.stopCinematic();else if(boundary==='pause')f.api.pauseCinematic();else await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72,muted:true});
+ gate.resolve();await flush();assert.equal(f.active().length,0);f.api.stopCinematic();f.advance(90000);assert.equal(f.api.cinematicStatus().state,'idle');
+});
+test('autoplay interruption continues silently and natural end releases all voices',async()=>{
+ const f=fixture();await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();f.advance(3000);
+ assert.equal(f.active().length,1);f.options.reject=true;f.context.state='interrupted';f.context.onstatechange();await flush();
+ assert.equal(f.active().length,0);f.advance(1000);assert.equal(f.api.cinematicStatus().position,4);assert.equal(f.api.cinematicStatus().state,'playing');
+ f.advance(68000);assert.equal(f.api.cinematicStatus().state,'ended');assert.ok(f.sources.every(s=>s.target===null));
+});
+test('autoplay pending manifest never holds the film and late completion cannot start sound',async()=>{
+ const f=fixture(),gate=deferred();f.gates.set('audio/manifest.json',gate);await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();
+ f.advance(72000);assert.equal(f.api.cinematicStatus().state,'ended');gate.resolve();await flush();assert.equal(f.active().length,0);
+});
+
+test('blocked automatic soundtrack recovers on trusted input at the current film position',async()=>{
+ const f=fixture({reject:true});await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();
+ f.advance(3000);assert.equal(f.active().length,0);f.options.reject=false;
+ f.listeners.get('d:keydown')?.({isTrusted:false});await flush();assert.equal(f.active().length,0);
+ f.listeners.get('d:keydown')?.({isTrusted:true});await flush();
+ assert.equal(f.active().length,1,'a genuine key input must retry browser audio activation');
+ assert.equal(f.active()[0].offset,3);assert.equal(f.api.cinematicStatus().position,3);
+ assert.equal(f.api.status().settings.muted,false);assert.equal(f.storage.size,0);
+ await f.api.dispose();assert.equal(f.listeners.has('d:keydown'),false);assert.equal(f.listeners.has('d:click'),false);
+});
+test('skip gesture resumes title music without reviving the opening',async()=>{
+ const f=fixture({reject:true});await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();
+ f.options.reject=false;f.listeners.get('d:click')?.({isTrusted:true});f.api.stopCinematic();await f.api.setScene('title');await flush();
+ assert.deepEqual(f.active().map(s=>s.buffer.id),['audio/title.wav']);assert.equal(f.api.cinematicStatus().state,'idle');
+});
+test('automatic soundtrack interruption preserves music intent and can recover on a gesture',async()=>{
+ const f=fixture();await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});await flush();f.advance(3000);
+ f.options.reject=true;f.context.state='interrupted';f.context.onstatechange();await flush();f.advance(1000);
+ assert.equal(f.api.cinematicStatus().muted,false,'an interruption must not become a user mute');assert.equal(f.active().length,0);
+ f.options.reject=false;f.listeners.get('d:keydown')?.({isTrusted:true});await flush();assert.equal(f.active().length,1);assert.equal(f.active()[0].offset,4);
+});
+for(const stored of [{version:1,muted:true},{version:1,masterVolume:0},{version:1,bgmVolume:0}])test(`gesture retry preserves saved silence ${JSON.stringify(stored)}`,async()=>{
+ const f=fixture({stored:JSON.stringify(stored)});await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});
+ f.listeners.get('d:click')?.({isTrusted:true});await flush();assert.equal(f.created(),0);assert.equal(f.active().length,0);assert.equal(f.storage.size,0);
+});
+test('pending automatic resume and repeated gesture retries join only one soundtrack',async()=>{
+ const gate=deferred(),f=fixture({resumeGate:gate});await f.api.startCinematic('opening',{autoplay:true,durationSeconds:72});
+ f.advance(2000);f.listeners.get('d:click')?.({isTrusted:true});f.listeners.get('d:keydown')?.({isTrusted:true});gate.resolve();await flush();
+ assert.equal(f.active().length,1);assert.equal(f.active()[0].offset,2);f.api.stopCinematic();await flush();assert.equal(f.active().length,0);
 });

@@ -1,0 +1,81 @@
+{
+  "created": "2026-10-21",
+  "artworkOnly": false,
+  "deliveryStatus": "lossless WebP assets verified for runtime integration",
+  "deliveryEncoding": "cwebp 1.6.0 -lossless -z 9 -exact",
+  "deliveryEvidence": ".omo/evidence/location-scenes-20261021/assets/pixel-proof.json",
+  "files": [
+    {
+      "id": "factory",
+      "label": "가공 공장",
+      "file": "source-art/locations/20261021/factory.png",
+      "bytes": 3365878,
+      "width": 1586,
+      "height": 992,
+      "sha256": "2920efa7e906b23b335585f3c41ec8bbc42a2979977d0dd58085ff1388c00389",
+      "exactSourceCopy": true,
+      "delivery": {
+        "file": "art/locations/factory.webp",
+        "bytes": 2511228,
+        "width": 1586,
+        "height": 992,
+        "sha256": "d6859e692630cf982bede585fc055ff09d7f7083d784712005aa5a56ab3ff3f7",
+        "decodedPixelsEqual": true
+      }
+    },
+    {
+      "id": "yard",
+      "label": "소재 야드",
+      "file": "source-art/locations/20261021/yard.png",
+      "bytes": 3178585,
+      "width": 1586,
+      "height": 992,
+      "sha256": "83b9277dce1de637325711fab2de117f19a0c91fb938ddc50ae287558021a204",
+      "exactSourceCopy": true,
+      "delivery": {
+        "file": "art/locations/yard.webp",
+        "bytes": 2359292,
+        "width": 1586,
+        "height": 992,
+        "sha256": "166aee766ca26109f70c6f840f9e654bab949c5408b8627930ab5064f19b18a4",
+        "decodedPixelsEqual": true
+      }
+    },
+    {
+      "id": "port",
+      "label": "수입 항만",
+      "file": "source-art/locations/20261021/port.png",
+      "bytes": 3200908,
+      "width": 1586,
+      "height": 992,
+      "sha256": "20cec97e518d38af29738b397a89e0a5c3f35e1890f59cd29e3a1dec7c56588e",
+      "exactSourceCopy": true,
+      "delivery": {
+        "file": "art/locations/port.webp",
+        "bytes": 2412696,
+        "width": 1586,
+        "height": 992,
+        "sha256": "0ba205b7de46bbfbf50a93f9e11d40c179d5c9f17414c9e17844d1956bd76c92",
+        "decodedPixelsEqual": true
+      }
+    },
+    {
+      "id": "customers",
+      "label": "거래처",
+      "file": "source-art/locations/20261021/customers.png",
+      "bytes": 3154624,
+      "width": 1586,
+      "height": 992,
+      "sha256": "da8348cc4d08a16af916f5da20001d25ee5afd4b978f7af8743f2227e0bf3393",
+      "exactSourceCopy": true,
+      "delivery": {
+        "file": "art/locations/customers.webp",
+        "bytes": 2273362,
+        "width": 1586,
+        "height": 992,
+        "sha256": "37be4f775ae38108924b678d6b8ae94649e6883431ad6d283c36405acb259e6f",
+        "decodedPixelsEqual": true
+      }
+    }
+  ]
+}

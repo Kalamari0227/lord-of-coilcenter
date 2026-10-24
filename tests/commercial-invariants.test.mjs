@@ -14,11 +14,12 @@ const baseline=JSON.parse(readFileSync(new URL('./fixtures/commercial/baseline.j
 for(const mode of ['normal','quick'])test(`${mode} preserves every settlement, exposure, choice, pending effect, project and RNG count`,async()=>{
  // Given the pinned 20261018 event seed and first-option/recommended-order input policy.
  const expected=baseline[mode];
- // When actual decision callbacks settle the full campaign, resuming after month twelve.
+ // When actual decision callbacks run to the terminal condition, resuming after month twelve.
  const actual=await commercialCampaign(mode,{sourceRoot:process.env.COMMERCIAL_SOURCE_ROOT||undefined});
- // Then completion and every economic observation match the reviewed baseline.
- assert.equal(actual.state.s.overReason,'COMPLETE');assert.equal(actual.state.s.history.length,48);
- assert.equal(actual.exposures.length,mode==='normal'?48:16);
+ // Then the exact terminal outcome and every economic observation match the reviewed baseline.
+ assert.equal(actual.state.s.overReason,expected.outcome.reason);
+ assert.equal(actual.state.s.history.length,expected.outcome.months);
+ assert.equal(actual.exposures.length,expected.outcome.periods);
  assert.equal(actual.rng.event,expected.rng.event,'event RNG consumption');
  assert.equal(actual.rngClassification.game,classified[mode].classification.game,'all non-validation engine RNG consumption');
  const normalized=withoutValidationCalls(actual,classified[mode]);

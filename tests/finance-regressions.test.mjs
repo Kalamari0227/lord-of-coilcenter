@@ -269,11 +269,11 @@ for(const change of ["amount:-1","amount:NaN","amount:Infinity","kind:'mystery'"
 
 test('new zero-transaction report is explicit while initial state and read-only comparison stay lazy',()=>{
   const f=funded();
-  f.run('const zeroInitial=structuredClone(G.s),zero=resolveTurn(G.s,{})');
+  f.run('G.s=createInitialState();const zeroInitial=structuredClone(G.s),zero=resolveTurn(G.s,{})');
   assert.equal(f.run('Object.hasOwn(zeroInitial,"finance")'),false);
   assert.equal(f.run('Object.hasOwn(zero.state,"finance")'),false);
   assert.deepEqual(ledgerData(f,'zero.report.finance ?? null'),{operatingAdjustment:0,financeCost:0,transactions:[]});
-  const before=f.snapshot();f.run('ccSettlementComparison(G.s.prelude.at(-1),G.s)');
+  const before=f.snapshot();f.run('ccSettlementComparison(zero.report,G.s)');
   assert.deepEqual(f.snapshot(),before);
 });
 
@@ -342,13 +342,13 @@ test('new prelude rebases nested transaction dates to each retained historical r
   await f.run("newGame({mode:'normal',diff:'normal',country:'NV',name:'Ledger prelude'})");
   const rows=ledgerData(f,'G.s.prelude');
   assert.equal(rows.length,12);
-  assert.ok(rows.every(row=>row.turn<=0&&row.finance.transactions.length===1&&row.finance.transactions[0].turn===row.turn));
+  assert.ok(rows.every(row=>row.turn<=0&&row.finance.transactions.filter(t=>t.source==='test.prelude').length===1&&row.finance.transactions.every(t=>t.turn===row.turn)));
   assert.equal(await f.run('saveGame(true)'),true);
   assert.equal(f.run('ccValidSave(JSON.parse(localStorage.getItem("coilcenter:foundation:v1")))'),true);
 });
 
 test('invalid first transaction cannot initialize the lazy ledger or invoke its balance update',()=>{
-  const f=ledgerFixture(), before=f.snapshot();
+  const f=ledgerFixture();f.run('G.s=createInitialState()');const before=f.snapshot();
   assert.throws(()=>f.run("recordFinance(G.s,{source:'test.invalid',kind:'unknown',amount:1},s=>{s.fa.land=0})"));
   assert.deepEqual(f.snapshot(),before);
   assert.equal(f.run('Object.hasOwn(G.s,"finance")'),false);
@@ -359,4 +359,137 @@ test('transaction helper changes only its explicitly supplied state',()=>{
   assert.deepEqual(f.snapshot(),before);
   assert.equal(f.run('G.s.cash-detached.cash'),10);
   assert.equal(f.run('detached.finance.pending.length'),1);
+});
+
+
+function issueFixture(setup='', random=.5) {
+  const f=managementFixture();
+  f.run(`Math.random=()=>${random};G.s.cash=1e9;G.s.equity=1e9;G.s.paidIn=1e9;G.s.debt.principal=0;
+    G.s.ar=[];G.s.ap=[];G.s.invRaw=[];G.s.invFg=[];G.s.poOpen=[];G.s.buildQueue=[];
+    G.s.market.pm=100;G.s.market.phase='NORMAL';G.pending=[];delete G.s.finance;${setup}`);
+  return f;
+}
+const closeEnough=(actual,expected,label)=>assert.ok(Math.abs(actual-expected)<1e-6,`${label}: ${actual} != ${expected}`);
+function checkIssue(f,factory,id,{cash,op=0,financial=0,kind,amount}) {
+  f.run(`const issueBefore=structuredClone(G.s);(${factory}).opts.find(o=>o.displayId===${JSON.stringify(id)}).apply(G.s,G);
+    const issueAfter=structuredClone(G.s),issueControl=structuredClone(G.s);delete issueControl.finance;
+    const issueClose=resolveTurn(G.s,{}),issueControlClose=resolveTurn(issueControl,{});`);
+  const observation=ledgerData(f,`({id:${JSON.stringify(id)},cash:G.s.cash-issueBefore.cash,
+    pending:G.s.finance?.pending||[],before:issueBefore,after:issueAfter,
+    close:{cash:issueClose.state.cash-issueControlClose.state.cash,op:issueClose.report.op-issueControlClose.report.op,
+      np:issueClose.report.np-issueControlClose.report.np,equity:issueClose.state.equity-issueControlClose.state.equity}})`);
+  console.log(JSON.stringify({scenario:'issues-ledger',observation}));
+  closeEnough(observation.cash,cash,id+' cash');
+  closeEnough(observation.pending.reduce((n,x)=>n+x.operatingDelta,0),op,id+' OP ledger');
+  closeEnough(observation.pending.reduce((n,x)=>n+x.financialDelta,0),financial,id+' financial ledger');
+  closeEnough(observation.close.cash,0,id+' no cash charged at close');
+  closeEnough(observation.close.op,op,id+' real OP');
+  closeEnough(observation.close.np,op+financial,id+' real NP');
+  closeEnough(observation.close.equity,op+financial,id+' real equity');
+  assert.ok(observation.pending.every(x=>x.source===id&&x.turn===observation.before.turn));
+  if(kind)assert.ok(observation.pending.some(x=>x.kind===kind),id+' classification');
+  if(amount!==undefined)closeEnough(observation.pending.reduce((n,x)=>n+x.amount,0),amount,id+' amount');
+  return observation;
+}
+
+const issueExpenseCases=[
+ ['maintCard(G.s,G.W)','w-maint.full',26000],['maintCard(G.s,G.W)','w-maint.partial',25000],
+ ['overloadCard(G.s,G.W,1.1)','w-load.outsource',95000],
+ ['idleCard(G.s,G.W,.2)','w-idle.maintain',29000],['idleCard(G.s,G.W,.2)','w-idle.sales',58000],
+ ['qualityCard(G.s,G.W)','w-qual.root-cause',55000],['qualityCard(G.s,G.W)','w-qual.inspect',30000],
+ ['peopleCard(G.s,G.W)','w-people.rest',42000],['churnCard(G.s,G.W,"JP")','w-churn.visit',26000],
+ ['creditCard(G.s,G.W,"JP")','w-credit.insure',30000],['sparesCard(G.s,G.W)','m-mro.buy',42000],
+ ['safetyCard(G.s,G.W)','m-safety.replace-all',29000],['safetyCard(G.s,G.W)','m-safety.wire-only',25000],
+ ['bonusCard(G.s,G.W)','h-bonus.profit',60000],['bonusCard(G.s,G.W)','h-bonus.prior',39000],
+ ['laborCard(G.s,G.W)','h-labor.reduce',20000],['housingCard(G.s,G.W)','h-house.relocate',25000],
+ ['insureCard(G.s,G.W)','h-insure.full',55000],['insureCard(G.s,G.W)','h-insure.exclude-machine',32000],
+ ['insureCard(G.s,G.W)','h-insure.deductible',40000],['taxCard(G.s,G.W)','h-tax.expert',110000],
+ ['taxCard(G.s,G.W)','h-tax.hq',95000],['vacancyCard(G.s,G.W)','h-hire.recruit',26000],
+];
+for(const [factory,id,cost] of issueExpenseCases)test(`${id} actual payment is operating expense exactly once`,()=>{
+  checkIssue(issueFixture(),factory,id,{cash:-cost,op:-cost,kind:'expense',amount:cost});
+});
+for(const [id,cost] of [['w-break.manufacturer',320000],['w-break.in-house',140000],['w-break.temporary',30000]])
+ for(const insured of [true,false])test(`${id} records actual ${insured?'insured':'uninsured'} repair bill`,()=>{
+  const bill=insured?cost:cost*1.5;
+  checkIssue(issueFixture(`G.W.insLow=${!insured};G.W.breakdown={sev:2}`),'breakdownCard(G.s,G.W)',id,{cash:-bill,op:-bill,kind:'expense',amount:bill});
+ });
+for(const [id,random,bill] of [['w-claim.compensate',.5,220000],['w-claim.investigate',0,88000],['w-claim.investigate',.99,154000],['w-claim.deny',.5,0]])
+ test(`${id} branch ${random} records only the actual compensation`,()=>{
+  checkIssue(issueFixture('G.s.custShare.JP=.35',random),'claimCard(G.s,G.W,"JP")',id,{cash:-bill,op:-bill,kind:bill?'expense':undefined,amount:bill});
+ });
+for(const [factory,id,random,bill] of [
+ ['laborCard(G.s,G.W)','h-labor.paperwork',0,110000],['laborCard(G.s,G.W)','h-labor.paperwork',.99,15000],
+ ['laborCard(G.s,G.W)','h-labor.unprepared',0,140000],['laborCard(G.s,G.W)','h-labor.unprepared',.99,0],
+ ['taxCard(G.s,G.W)','h-tax.internal',0,380000],['taxCard(G.s,G.W)','h-tax.internal',.99,26000]])
+ test(`${id} outcome ${random} uses its actual exclusive or additional cost`,()=>{
+  const x=checkIssue(issueFixture('G.W.fatigue=50',random),factory,id,{cash:-bill,op:-bill,kind:bill?'expense':undefined,amount:bill});
+  if(id==='h-labor.paperwork')assert.equal(x.pending.length,random===0?2:1,'15k and95k are two real payments, lever110k is not third');
+ });
+for(const [id,cash] of [['w-legacy.sell',72],['w-legacy.return',90]])test(`${id} recognizes actual removed book cost`,()=>{
+  const f=issueFixture("G.s.invRaw=[{qty:1,unitCost:120,arrivalTurn:-5,legacy:true,dt:'SPOT',gr:'COMMON'}]");
+  const x=checkIssue(f,'legacyCard(G.s,G.W)',id,{cash,op:cash-120,kind:'working-capital',amount:cash});
+  assert.equal(x.after.invRaw.length,0);
+});
+for(const qty of [100.25,6000.25,0])test(`partial inventory disposal preserves real remainder from ${qty}t`,()=>{
+  const f=issueFixture(`G.s.turn=5;G.s.invRaw=[{qty:${qty},unitCost:100,arrivalTurn:1,dt:'FIRM',gr:'COMMON'}]`),sold=qty===0?0:qty>.5&&qty<6000?100:6000;
+  const x=checkIssue(f,'overCard(G.s,G.W,5)','w-over.discount',{cash:sold*86,op:-sold*14,kind:sold?'working-capital':undefined,amount:sold*86});
+  closeEnough(x.after.invRaw.reduce((n,l)=>n+l.qty,0),qty-sold,'unsold actual quarter tonne');
+});
+test('local emergency purchase capitalizes actual inventory without immediate cost',()=>{
+  const x=checkIssue(issueFixture(),'shortCard(G.s,G.W,{need:1000},.5)','w-short.local',{cash:-65400,kind:'working-capital',amount:65400});
+  closeEnough(x.after.invRaw[0].qty*x.after.invRaw[0].unitCost,65400,'inventory cost');
+});
+for(const [id,take] of [['m-spot.all',1],['m-spot.half',.5]])for(const [random,cash,op,left,cost] of [[0,1800,1800,0,94],[.99,-20700,660,240,89]])
+ test(`${id} spot outcome ${random} books net gain and unsold inventory separately`,()=>{
+  const x=checkIssue(issueFixture('',random),'spotBetCard(G.s,G.W,{need:1000})',id,{cash:cash*take,op:op*take,kind:'income'});
+  closeEnough(x.after.invRaw.reduce((n,l)=>n+l.qty*l.unitCost,0),left*cost*take,'unsold capitalized inventory');
+  assert.equal(x.pending.length,left?2:1);
+ });
+for(const total of [11000,0])test(`AR factoring on ${total} removes principal and expenses only2percent`,()=>{
+  const x=checkIssue(issueFixture(`G.s.ar=[{amount:${total},dueTurn:20}]`),'cashCard(G.s,G.W,1)','w-cash.factor',
+    {cash:total*.35*.98,financial:-total*.35*.02,kind:total?'working-capital':undefined,amount:total*.35});
+  closeEnough(x.after.ar.reduce((n,a)=>n+a.amount,0),total*.65,'remaining AR');
+});
+for(const [factory,id,cost,op,financial] of [['creditCard(G.s,G.W,"JP")','w-credit.extend',980000,0,-980000],['safetyCard(G.s,G.W)','m-safety.defer',260000,-260000,0]])
+ test(`${id} original deferred effect records loss at actual payment month`,()=>{
+  const f=issueFixture('G.s.ar=[{amount:12345,dueTurn:20}]',0);
+  f.choose(factory,id);f.run('G.s.turn=G.pending[0].turn;const deferredBefore=structuredClone(G.s);G.pending[0].run(G.s)');
+  closeEnough(f.run('G.s.cash-deferredBefore.cash'),-cost,'deferred cash');
+  assert.equal(f.run('G.s.ar[0].amount'),12345);
+  const pending=ledgerData(f,'G.s.finance?.pending||[]');
+  assert.deepEqual(pending,[{turn:f.run('G.s.turn'),source:id,kind:'expense',amount:cost,operatingDelta:op,financialDelta:financial}]);
+});
+
+test('solar purchase capitalizes520k with no production line and same-month depreciation',()=>{
+  const f=issueFixture();
+  const x=checkIssue(f,'solarCard(G.s,G.W)','m-solar.own',{cash:-520000,kind:'asset',amount:520000});
+  assert.equal(x.after.fa.machineCost-x.before.fa.machineCost,520000);
+  assert.deepEqual(x.after.lines,x.before.lines);
+  f.run('const solarBeforeClose=resolveTurn(issueBefore,{})');
+  closeEnough(f.run('issueClose.report.depreciation-solarBeforeClose.report.depreciation'),520000/120,'same-month solar depreciation');
+  assert.equal(f.run('G.extraFixed'),-9000);
+});
+for(const [id,saving] of [['m-solar.own',9000],['m-solar.lease',4500]])test(`${id} actual advance applies recurring saving exactly once`,()=>{
+  const base=issueFixture(),actual=issueFixture();
+  actual.choose('solarCard(G.s,G.W)',id);base.settle();actual.settle();
+  const before=base.snapshot().s.history.at(-1),after=actual.snapshot().s.history.at(-1);
+  closeEnough(before.fixedCost-after.fixedCost,saving,'actual monthly saving');
+  closeEnough(after.depreciation-before.depreciation,id==='m-solar.own'?520000/120:0,'actual depreciation');
+  closeEnough(after.op-before.op,saving-(id==='m-solar.own'?520000/120:0),'asset purchase principal not immediate OP');
+});
+
+for(const [book,delta,label] of [[120,-48,'−손실 $48 확정'],[50,22,'+이익 $22 확정']])test(`legacy sale preview and close use actual book cost ${book}`,()=>{
+  const f=issueFixture(`G.s.invRaw=[{qty:1,unitCost:${book},arrivalTurn:-5,legacy:true,dt:'SPOT',gr:'COMMON'}]`);
+  assert.ok(ledgerData(f,"legacyCard(G.s,G.W).opts[0].fx").includes(label));
+  checkIssue(f,'legacyCard(G.s,G.W)','w-legacy.sell',{cash:72,op:delta,kind:'working-capital',amount:72});
+});
+for(const id of ['w-limit.hq-guarantee','w-limit.local-bank'])test(`${id} changes credit policy without fake payment or borrowing`,()=>{
+  const x=checkIssue(issueFixture(),'limitCard(G.s,G.W,.9)',id,{cash:0});
+  assert.equal(x.pending.length,0);assert.equal(x.after.debt.principal,x.before.debt.principal);
+  assert.ok(x.after.debt.limit>x.before.debt.limit);
+});
+test('partial disposal uses FIFO book costs across lots without deleting the unsold fraction',()=>{
+  const x=checkIssue(issueFixture("G.s.turn=5;G.s.invRaw=[{qty:40,unitCost:120,arrivalTurn:1,dt:'FIRM',gr:'COMMON'},{qty:60.25,unitCost:50,arrivalTurn:2,dt:'FIRM',gr:'COMMON'}]"),'overCard(G.s,G.W,5)','w-over.discount',{cash:8600,op:800,kind:'working-capital',amount:8600});
+  assert.equal(x.after.invRaw.length,1);assert.equal(x.after.invRaw[0].qty,.25);assert.equal(x.after.invRaw[0].unitCost,50);
 });

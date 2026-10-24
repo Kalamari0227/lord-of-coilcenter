@@ -2164,13 +2164,26 @@ function mergeReports(list) {
     for (const p in (r[k] || {})) a[p] = (a[p] || 0) + r[k][p];
     return a;
   }, {});
+  const fulfillmentMonths = list.filter(r => r.fulfillment);
+  const fulfillmentDemand = fulfillmentMonths.reduce((total, r) => total + r.fulfillment.demand, 0);
+  const fulfillmentShipped = fulfillmentMonths.reduce((total, r) => total + r.fulfillment.shipped, 0);
   return { ...last,
+    ...(fulfillmentMonths.length ? { fulfillment: {
+      demand: fulfillmentDemand, shipped: fulfillmentShipped,
+      ratio: fulfillmentDemand > 0 ? fulfillmentShipped / fulfillmentDemand : null,
+      // 분기 전체가 대상인지와 대상 월수를 구분한다. 개별 월의 판정은 history에 남는다.
+      eligible: fulfillmentMonths.length === list.length && fulfillmentMonths.every(r => r.fulfillment.eligible),
+      eligibleMonths: fulfillmentMonths.filter(r => r.fulfillment.eligible).length,
+      months: list.length,
+      trustRecovery: fulfillmentMonths.reduce((total, r) => total + r.fulfillment.trustRecovery, 0),
+    } } : {}),
     ...(list.some(r => r.finance) ? { finance: {
       operatingAdjustment: list.reduce((total, r) => total + (r.finance?.operatingAdjustment || 0), 0),
       financeCost: list.reduce((total, r) => total + (r.finance?.financeCost || 0), 0),
       transactions: list.flatMap(r => r.finance?.transactions || []),
     } } : {}),
-    revenue: sum('revenue'), gp: sum('gp'), op: sum('op'), np: sum('np'),
+    revenue: sum('revenue'), gp: sum('gp'), ebitda: sum('ebitda'), op: sum('op'), np: sum('np'),
+    cashIn: sum('cashIn'), cashOut: sum('cashOut'),
     hqMargin: sum('hqMargin'), consolidated: sum('consolidated'),
     fixedCost: sum('fixedCost'), varCost: sum('varCost'), depreciation: sum('depreciation'),
     interest: sum('interest'), valuationLoss: sum('valuationLoss'), badDebt: sum('badDebt'),
@@ -2223,7 +2236,11 @@ function advance() {
                  yieldBonus: (G.ui.yieldBonus || 0) + Math.min(0.02, Math.max(0, G.ui.yieldSpend || 0) / 100_000 * 0.004),
                  orderTon: monthTon };
     worldPre(s, G.W);                       // 설비·품질이 이번 달 캐파와 수율을 정한다
-    const res = resolveTurn(s, buildDecision(s, ui));
+    const res = resolveTurn(s, buildDecision(s, ui), {
+      beforeClose: (workingState, { nextTurn }) => {
+        if (G.W.project?.key === 'cash') projectTick(workingState, G.W, null, G, nextTurn);
+      },
+    });
     worldPost(res.state, G.W, res.report, G); // 결과가 설비·관계·피로를 움직이고, 다음 사건을 부른다
 
     CFG.FC_BASE = savedFC;

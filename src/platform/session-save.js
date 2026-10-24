@@ -31,7 +31,7 @@ function ccRestoreEffect(event, W) {
     if (kind === 'credit') {
       const probability = CFG.CUSTOMERS[k].bad > 0.005 ? 0.4 : 0.1;
       if (Math.random() >= probability) return null;
-      s.cash -= 980_000; W.rel[k] = wClamp(W.rel[k] - 10);
+      recordFinance(s, {source:'w-credit.extend',kind:'expense',amount:980_000,cashDelta:-980_000,financialDelta:-980_000}); W.rel[k] = wClamp(W.rel[k] - 10);
       fire(W, s, 'bad', `${CUST[k]}가 대금을 못 갚았습니다. $980k를 털었습니다.`, `여섯 달 전 ${CUST[k]} 여신 확대`);
       return `${CUST[k]} 대금 $980k를 떼였습니다.`;
     }
@@ -42,7 +42,7 @@ function ccRestoreEffect(event, W) {
       return '본사 감사에서 공급업체 거래가 적발됐습니다.';
     }
     if (Math.random() >= 0.3 + W.fatigue / 250) return null;
-    s.cash -= 260_000; s.morale = wClamp(s.morale - 12); W.capHit *= 0.9;
+    recordFinance(s, {source:'m-safety.defer',kind:'expense',amount:260_000,cashDelta:-260_000,operatingDelta:-260_000}); s.morale = wClamp(s.morale - 12); W.capHit *= 0.9;
     W.stats.accidents = (W.stats.accidents || 0) + 1;
     fire(W, s, 'accident', '야드에서 코일이 떨어져 작업자가 다쳤습니다. 노동청 조사로 라인이 며칠 섰습니다.', '안전 설비 교체를 미룬 일');
     return '산업재해가 났습니다. 보상과 조업 중단으로 $260k.';

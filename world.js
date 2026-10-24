@@ -351,7 +351,7 @@ function worldPost(s, W, R, G) {
   if ((G.mpt || 1) === 1 || s.turn % 3 === 0) rollIncidents(s, W, (G.mpt || 1) > 1 ? 1.8 : 1);
 
   // 13. 집중 프로젝트 진척과 이정표
-  projectTick(s, W, R, G);
+  if (W.project?.key !== 'cash') projectTick(s, W, R, G);
   checkMilestones(s, W, R);
 }
 
@@ -706,7 +706,8 @@ const PROJECTS = {
     now: s => s.myShare,
     goal: b => b * 1.09,
     start: (s, W, G) => {
-      s.cash -= 180_000;
+      recordFinance(s, { source: 'project.newcust.start', kind: 'expense', amount: 180_000,
+        cashDelta: -180_000, operatingDelta: -180_000 });
       // 기존 영업 투자 큐를 그대로 쓴다. 매달 조금씩 효과가 도착한다.
       for (let i = 0; i < 6; i++) s.effortQueue.push({ amount: 30_000, turnsLeft: CFG.SALES_EFFORT_LAG + i });
     },
@@ -731,7 +732,8 @@ const PROJECTS = {
     base: (s, W) => W.quality,
     now: (s, W) => W.quality,
     goal: b => Math.min(96, b + 6),
-    start: (s, W, G) => { s.cash -= 120_000; W.projCapHit = 0.97; },
+    start: (s, W, G) => { recordFinance(s, { source: 'project.quality.start', kind: 'expense', amount: 120_000,
+        cashDelta: -120_000, operatingDelta: -120_000 }); W.projCapHit = 0.97; },
     /* 프로젝트는 매달 실제로 일한다. 표준작업서·검사공정이 품질 목표치를 끌어올리고,
        품질은 그 목표치를 향해 천천히 따라간다(worldPost 3번).
        다만 설비가 낡거나 현장이 지쳐 있으면 목표치 자체가 안 올라간다 —
@@ -759,7 +761,8 @@ const PROJECTS = {
     goal: b => b * 0.88,
     lower: true,                                  // 낮아져야 성공하는 목표
     start: (s, W, G) => {
-      s.cash -= 60_000;
+      recordFinance(s, { source: 'project.cash.start', kind: 'expense', amount: 60_000,
+        cashDelta: -60_000, operatingDelta: -60_000 });
       for (const k in CUST) W.rel[k] = wClamp(W.rel[k] - 3);
     },
     /* 매달 채권을 조금씩 당겨 받는다. 수수료를 물고 현금을 사는 것이라 이익은 줄고 통장은 는다.
@@ -767,25 +770,28 @@ const PROJECTS = {
        채권을 걷는 것과 재고를 줄이는 것, 둘 다 해야 목표가 맞는다. */
     tick: (s, W) => {
       const ar = s.ar.reduce((a, x) => a + x.amount, 0);
-      let target = ar * 0.11, got = 0;
+      const target = ar * 0.11, reductions = [];
+      let got = 0;
       for (const a of s.ar.slice().sort((x, y) => x.dueTurn - y.dueTurn)) {
         if (got >= target) break;
         const take = Math.min(a.amount, target - got);
-        got += take; a.amount -= take;
+        got += take; reductions.push({ receivable: a, take });
       }
-      s.ar = s.ar.filter(a => a.amount > 1e-6);
-      s.cash += got * 0.985;
+      if (got > 0) recordFinance(s, { source: 'project.cash-ar', kind: 'working-capital', amount: got,
+        cashDelta: got * 0.985, financialDelta: -got * 0.015 }, state => {
+        for (const { receivable, take } of reductions) receivable.amount -= take;
+        state.ar = state.ar.filter(a => a.amount > 0);
+      });
     },
-    win: (s, W) => {
-      // 묵은 현물을 털고 채권을 당겨 받는다. 실제로 장부를 움직인다.
-      let got = 0;
-      for (const l of s.invRaw) {
-        const age = s.turn - l.arrivalTurn;
-        if (age < CFG.DUMP_AGE_TURNS || l.qty <= 0) continue;
-        got += l.qty * l.unitCost * 0.7; l.qty = 0;
-      }
-      s.invRaw = s.invRaw.filter(l => l.qty > 1e-6);
-      s.cash += got;
+    win: (s, W, evaluationTurn = s.turn) => {
+      // 완료 월의 다음 월 날짜로 재고 나이를 판단하되 거래는 마감 중인 월에 기록한다.
+      const disposed = s.invRaw.filter(l => evaluationTurn - l.arrivalTurn >= CFG.DUMP_AGE_TURNS && l.qty > 0);
+      const bookCost = disposed.reduce((total, lot) => total + lot.qty * lot.unitCost, 0);
+      const got = disposed.reduce((total, lot) => total + lot.qty * lot.unitCost * 0.7, 0);
+      if (bookCost > 0) recordFinance(s, { source: 'project.cash-disposal', kind: 'working-capital', amount: got,
+        cashDelta: got, operatingDelta: got - bookCost }, state => {
+        state.invRaw = state.invRaw.filter(l => !disposed.includes(l) && l.qty > 0);
+      });
       W.projBoost.credit = (W.projBoost.credit || 0) + 1;
       return got > 1000
         ? `오래된 재고를 처분해 현금 $${money1k(got)}을 회수했습니다. 받을 고객 대금과 남은 재고는 경영 장부에서 확인하십시오.`
@@ -842,18 +848,19 @@ function projectProgress(s, W) {
 }
 
 /* 매달 굴린다. 끝나는 달에 성공·부분·실패를 가른다. */
-function projectTick(s, W, R, G) {
+function projectTick(s, W, R, G, evaluationTurn = s.turn) {
   W.projBoost = W.projBoost || {};
   const pr = W.project;
   if (!pr) { W.projCapHit = 1; return; }
   if (PROJECTS[pr.key].tick) PROJECTS[pr.key].tick(s, W);
   pr.progress = projectProgress(s, W);
-  if (s.turn < pr.end) return;
+  if (evaluationTurn < pr.end) return;
 
   const p = PROJECTS[pr.key];
   const pct = pr.progress;
   const grade = pct >= 1 ? 'win' : pct >= 0.55 ? 'half' : 'lose';
-  const msg = p[grade](s, W);
+  const msg = p[grade](s, W, evaluationTurn);
+  const dateContext = { turn: evaluationTurn };
   W.projCapHit = 1;
   W.projectLog = W.projectLog || [];
   W.projectLog.push({ key: pr.key, name: p.name, start: pr.start, end: pr.end, pct, grade });
@@ -861,13 +868,13 @@ function projectTick(s, W, R, G) {
      미결 목록에 계속 남아 있으면 그건 예고가 아니라 잔해다. */
   for (const m of W.mem || [])
     if (m.tag === 'risk' && m.turn >= pr.start && /집중 프로젝트/.test(m.label || '')) m.risk = null;
-  fire(W, s, 'project',
+  fire(W, dateContext, 'project',
     `집중 프로젝트 「${p.name}」 ${grade === 'win' ? '목표 달성' : grade === 'half' ? '부분 달성' : '미달'} — `
     + `${p.aim} 대비 ${Math.round(pct * 100)}%. ${msg}`,
     `${dateLabel(pr.start)}에 건 프로젝트`,
     { turn: pr.start, date: dateLabel(pr.start), label: `집중 프로젝트 · ${p.name}`,
       gap: p.months, ago: ago(p.months) });
-  if (grade === 'win') milestone(W, s, 'proj-win', `첫 집중 프로젝트 성공 — ${p.name}`, p.who,
+  if (grade === 'win') milestone(W, dateContext, 'proj-win', `첫 집중 프로젝트 성공 — ${p.name}`, p.who,
     `${p.months}개월 동안 진행한 과제가 목표에 도달했습니다.`, '다음 분기에 또 하나 걸어보시죠.');
   W.project = null;
 }

@@ -160,11 +160,11 @@ function breakdownCard(s, W) {
       : W.spares === false ? '예비 부품이 없습니다. 해외에서 받으려면 열흘은 걸립니다.' : '',
     W.insLow ? '기계 보험을 줄여둔 상태라 수리비 부담도 더 큽니다.' : '',
   ].filter(Boolean).join(' ');
-  const done = (s, G, cap, cost, eq, msg, tag) => {
+  const done = (s, G, source, cap, cost, eq, msg, tag) => {
     // 예비품이 있으면 바로 갈아 끼우고, 없으면 부품이 올 때까지 선다. 기계보험을 뺐으면 수리비가 더 든다
     const c2 = W.spares ? Math.min(0.95, cap * 1.12) : W.spares === false ? cap * 0.88 : cap;
     const cost2 = W.insLow ? Math.round(cost * 1.5) : cost;
-    W.capHit *= c2; s.cash -= cost2; W.equip = wClamp(W.equip + eq); cost = cost2;
+    W.capHit *= c2; recordFinance(s, { source, kind: 'expense', amount: cost2, cashDelta: -cost2, operatingDelta: -cost2 }); W.equip = wClamp(W.equip + eq); cost = cost2;
     W.breakdown = null; W.maintCool = Math.max(W.maintCool || 0, s.turn + 3); W.stats.breakdowns++;
     for (const k of Object.keys(CUST).sort((a, b) => (s.custShare[b] || 0) - (s.custShare[a] || 0)).slice(0, 2))
       W.rel[k] = wClamp(W.rel[k] - (cap < 0.75 ? 6 : 3));
@@ -180,16 +180,16 @@ function breakdownCard(s, W) {
     opts: [
       { displayId: "w-break.manufacturer", label: '제작사 기술자를 불러 급히 고친다', hint: '수리비는 크지만 생산 중단을 줄입니다',
         fx: [`−통장 $${sev > 1 ? 320 : 200},000`, '+이번 달 가공 가능 물량 감소를 최소화', '+설비 상태 회복'],
-        apply: (s, G) => done(s, G, 0.9, sev > 1 ? 320_000 : 200_000, 18,
+        apply: (s, G) => done(s, G, 'w-break.manufacturer', 0.9, sev > 1 ? 320_000 : 200_000, 18,
           '제작사에서 사람이 와가 이틀 만에 잡았습니다. 비싸긴 한데 라인은 거의 안 섰심더.') },
       { displayId: "w-break.in-house", label: '우리 직원들이 직접 고친다', hint: '수리비는 적지만 생산 중단이 길어집니다',
         fx: [`−통장 $${sev > 1 ? 140 : 90},000`, '−이번 달 가공 가능 물량 30% 감소', '−납품이 늦어져 고객 불만 증가'],
-        apply: (s, G) => done(s, G, 0.68, sev > 1 ? 140_000 : 90_000, 10,
+        apply: (s, G) => done(s, G, 'w-break.in-house', 0.68, sev > 1 ? 140_000 : 90_000, 10,
           '직접 수리했심더. 이번 달 가공 가능량이 줄고 큰 고객 두 곳과의 관계가 나빠졌습니더. 실제 납품은 결산에서 보이소.') },
       { displayId: "w-break.temporary", label: '임시로 고치고 정식 수리는 미룬다', hint: '지금 지출은 적지만 다시 고장 날 수 있습니다',
         fx: ['−통장 $30,000', '=이번 달 가공 가능 물량 소폭 감소', '?다시 고장 날 가능성 높음'],
         apply: (s, G) => { W.deferMaint++; W.stats.deferrals++;
-          return done(s, G, 0.85, 30_000, 2, '임시로 고쳤심더. 정식 정비를 미뤄 고장 위험이 남아 있심더.', 'defer'); } },
+          return done(s, G, 'w-break.temporary', 0.85, 30_000, 2, '임시로 고쳤심더. 정식 정비를 미뤄 고장 위험이 남아 있심더.', 'defer'); } },
     ],
   };
 }
@@ -198,8 +198,8 @@ function claimCard(s, W, k) {
   // 그 고객에게 물량을 몰아준 게 제일 직접적인 원인이다. 없으면 공장 쪽 원인을 찾는다.
   const why = cause(W, s, ['volume', 'project'], k) || cause(W, s, ['outsource', 'pack-cheap', 'overtime', 'defer', 'skipqual']);
   const amt = Math.round((80 + (s.custShare[k] || 0) * 400) / 10) * 10;   // $천
-  const done = (s, G, cost, rel, trust, share, msg, tag) => {
-    s.cash -= cost; W.rel[k] = wClamp(W.rel[k] + rel); s.trust = wClamp(s.trust + trust);
+  const done = (s, G, source, cost, rel, trust, share, msg, tag) => {
+    if (cost > 0) recordFinance(s, { source, kind: 'expense', amount: cost, cashDelta: -cost, operatingDelta: -cost }); W.rel[k] = wClamp(W.rel[k] + rel); s.trust = wClamp(s.trust + trust);
     if (share !== 1) growCust(s, k, share - 1);
     W.claim = null; W.stats.claims++;
     remember(W, s, 'claim', `${CUST[k]} 품질 클레임`, { cust: k });
@@ -218,16 +218,16 @@ function claimCard(s, W, k) {
       { displayId: "w-claim.compensate", label: '전액 보상하고 원인 보고서까지 낸다', hint: '보상금을 내고 고객 신뢰를 회복합니다',
         fx: [`−통장 $${amt},000`, `+${CUST[k]} 관계 회복`, '+본사 신뢰 3'],
         apply: (s, G) => { W.qBoost += 6; styleAdd(W, 'cust', 2);
-          return done(s, G, amt * 1000, 8, 3, 1, `전액 보상하고 8D 보고서를 냈습니다. ${CUST[k]} 품질팀이 오히려 신뢰를 보였습니다.`); } },
+          return done(s, G, 'w-claim.compensate', amt * 1000, 8, 3, 1, `전액 보상하고 8D 보고서를 냈습니다. ${CUST[k]} 품질팀이 오히려 신뢰를 보였습니다.`); } },
       { displayId: "w-claim.investigate", label: '함께 조사하고 우리 책임만큼 보상한다', hint: '조사 결과에 따라 비용과 고객 반응이 달라집니다',
         fx: [`−통장 $${Math.round(amt * 0.4)},000 ~ $${Math.round(amt * 0.7)},000`,
              '?우리 책임이 크면 고객 관계·본사 신뢰 하락'],
         apply: (s, G) => wChance(0.55)
-          ? done(s, G, amt * 400, 2, 0, 1, '공동 조사 결과 절반 이상은 고객 쪽 문제였습니다. 깔끔하게 정리됐습니다.')
-          : done(s, G, amt * 700, -6, -2, 1, '조사 결과 우리 쪽 비중이 컸습니다. 돈은 돈대로 들고 시간도 끌었습니다.') },
+          ? done(s, G, 'w-claim.investigate', amt * 400, 2, 0, 1, '공동 조사 결과 절반 이상은 고객 쪽 문제였습니다. 깔끔하게 정리됐습니다.')
+          : done(s, G, 'w-claim.investigate', amt * 700, -6, -2, 1, '조사 결과 우리 쪽 비중이 컸습니다. 돈은 돈대로 들고 시간도 끌었습니다.') },
       { displayId: "w-claim.deny", label: '우리 책임이 아니라고 한다', hint: '보상금은 내지 않지만 고객을 잃을 수 있습니다',
         fx: ['+비용 없음', `−${CUST[k]} 관계 크게 악화`, `−${CUST[k]}에 파는 물량 15% 감소`, '−본사 신뢰 3'],
-        apply: (s, G) => (styleAdd(W, 'cash'), done(s, G, 0, -16, -3, 0.85,
+        apply: (s, G) => (styleAdd(W, 'cash'), done(s, G, 'w-claim.deny', 0, -16, -3, 0.85,
           `책임을 부인했습니다. ${CUST[k]}가 다음 분기 물량을 다른 코일센터와 나누겠답니다.`, 'deny')) },
     ],
   };
@@ -324,10 +324,14 @@ function legacyCard(s, W) {
   const lot = s.invRaw.find(l => l.legacy);   // applyLegacy가 붙인 표식. 프렐류드에서 넘어온 다른 lot과 섞이면 안 된다
   if (!lot) return null;
   const val = lot.qty * s.market.pm;
+  const saleDelta = val * 0.72 - lot.qty * lot.unitCost;
   const age = Math.max(1, s.turn - lot.arrivalTurn);
-  const drop = (s, pct, msg, G, label, extra = {}) => {
-    const i = s.invRaw.indexOf(lot); if (i >= 0) s.invRaw.splice(i, 1);
-    const cash = val * pct; s.cash += cash;
+  const drop = (s, source, pct, msg, G, label, extra = {}) => {
+    const i = s.invRaw.indexOf(lot);
+    if (i < 0) return msg;
+    const cash = val * pct, bookCost = lot.qty * lot.unitCost;
+    recordFinance(s, { source, kind: 'working-capital', amount: cash, cashDelta: cash,
+      operatingDelta: cash - bookCost }, state => { state.invRaw.splice(i, 1); });
     lever(G, label, { cash: Math.round(cash), ...extra });
     return msg;
   };
@@ -350,15 +354,15 @@ function legacyCard(s, W) {
         + `소재를 살 때 빌린 돈의 이자는 계속 나가고, 오래 보관할수록 녹이 슬어 가치가 떨어집니다.`;
     })(),
     opts: [
-      { displayId: "w-legacy.sell", label: '지금 싸게 판다', hint: '손해를 감수하고 현금과 창고 공간을 확보합니다',
-        fx: [`+현금 $${fmt(val * 0.72 / 1000)}k 회수`, `−손실 $${fmt(val * 0.28 / 1000)}k 확정`, '+창고 정리'],
+      { displayId: "w-legacy.sell", label: '지금 싸게 판다', hint: '현재 처분 가격으로 현금과 창고 공간을 확보합니다',
+        fx: [`+현금 $${fmt(val * 0.72)} 회수`, `${saleDelta < 0 ? '−손실' : '+이익'} $${fmt(Math.abs(saleDelta))} 확정`, '+창고 정리'],
         apply: (s, G) => { styleAdd(W, 'cash', 2); remember(W, s, 'cleanup', '묵은 재고 정리');
-          return drop(s, 0.72, '고철상보다 조금 나은 값에 넘겼습니다. 손실은 확정됐고 창고는 비었습니다. 둘 다 오늘로 끝났다는 게 중요합니다.', G, '묵은 재고 헐값 처분'); } },
+          return drop(s, 'w-legacy.sell', 0.72, '고철상보다 조금 나은 값에 넘겼습니다. 처분 손익을 반영했고 창고는 비었습니다. 둘 다 오늘로 끝났다는 게 중요합니다.', G, '묵은 재고 헐값 처분'); } },
       { displayId: "w-legacy.return", label: '본사에 반품을 부탁한다', hint: '현금을 더 회수하지만 본사 신뢰가 떨어집니다',
         fx: [`+현금 $${fmt(val * 0.9 / 1000)}k 회수`, '−본사 신뢰 7'],
         apply: (s, G) => { s.trust = wClamp(s.trust - 7); styleAdd(W, 'cash');
           remember(W, s, 'hq-favor', '묵은 재고 본사 반품');
-          return drop(s, 0.9, '본사가 받아줬습니다. "이번 한 번입니다"라는 말을 세 번 들었습니다. 세 번 말했다는 건 진심이라는 뜻입니다.', G, '묵은 재고 본사 반품', { trust: -7 }); } },
+          return drop(s, 'w-legacy.return', 0.9, '본사가 받아줬습니다. "이번 한 번입니다"라는 말을 세 번 들었습니다. 세 번 말했다는 건 진심이라는 뜻입니다.', G, '묵은 재고 본사 반품', { trust: -7 }); } },
       { displayId: "w-legacy.hold", label: '보관하며 조금씩 팔 기회를 기다린다', hint: '당장 처분하지 않고 품질 저하 위험을 감수합니다',
         fx: ['=당장 처분 손실 없음', '?녹이 슬면 반값에 처분', '−창고 공간 차지'],
         apply: (s, G) => { remember(W, s, 'keep-legacy', '묵은 재고 보유');
@@ -385,8 +389,10 @@ function shortCard(s, W, L, cov) {
       { displayId: "w-short.local", label: `현지 판매업체에서 소재 ${fmt(t)}톤을 급히 산다`, hint: '가격은 비싸지만 바로 쓸 수 있습니다',
         fx: [`−통장 $${fmt(t * s.market.pm * (1 + prem) / 1000)}k 즉시`, `−톤당 ${Math.round(prem * 100)}% 비쌈`, '+소재 부족 방지'],
         apply: (s, G) => { const c = s.market.pm * (1 + prem);
-          s.invRaw.push({ qty: t, unitCost: c, arrivalTurn: s.turn, dt: 'SPOT', gr: 'PREMIUM' });
-          s.cash -= t * c; styleAdd(W, 'cust');
+          recordFinance(s, { source: 'w-short.local', kind: 'working-capital', amount: t * c, cashDelta: -t * c }, state => {
+            state.invRaw.push({ qty: t, unitCost: c, arrivalTurn: state.turn, dt: 'SPOT', gr: 'PREMIUM' });
+          });
+          styleAdd(W, 'cust');
           lever(G, '현지 긴급 구매', { cash: -Math.round(t * c) });
           return `${fmt(t)}톤 현지에서 긁어모았습니다. 비쌉니다. 근데 라인 세우는 값에 비하면 싼 겁니다.`; } },
       { displayId: "w-short.expedite", label: '본사에 소재를 더 빨리 보내 달라고 부탁한다', hint: '입고를 앞당기지만 본사 신뢰가 떨어집니다',
@@ -423,11 +429,20 @@ function overCard(s, W, cov) {
         + `계속 보관하면 소재값이 떨어질 때 손해를 볼 수 있습니다.`,
     opts: [
       { displayId: "w-over.discount", label: `오래된 소재 ${fmt(sellT)}톤을 할인해서 판다`, hint: '손해를 감수하고 현금을 회수합니다',
-        fx: [`+현금 약 $${fmt(sellT * s.market.pm * 0.86 / 1000)}k`, `−손실 약 $${fmt(sellT * s.market.pm * 0.14 / 1000)}k`],
-        apply: (s, G) => { let left = sellT, got = 0;
-          for (const l of s.invRaw.slice().sort((a, b) => a.arrivalTurn - b.arrivalTurn)) {
-            if (left <= 0) break; const q = Math.min(l.qty, left); l.qty -= q; left -= q; got += q * s.market.pm * 0.86; }
-          s.invRaw = s.invRaw.filter(l => l.qty > 0.5); s.cash += got; styleAdd(W, 'cash', 2);
+        fx: [`+현금 약 $${fmt(sellT * s.market.pm * 0.86 / 1000)}k`, '처분대금과 장부원가 차이를 손익에 반영'],
+        apply: (s, G) => { let left = sellT, got = 0, bookCost = 0;
+          const removed = [];
+          for (const lot of s.invRaw.slice().sort((a, b) => a.arrivalTurn - b.arrivalTurn)) {
+            if (left <= 0) break;
+            const qty = Math.min(lot.qty, left);
+            removed.push({ lot, qty }); left -= qty; got += qty * s.market.pm * 0.86; bookCost += qty * lot.unitCost;
+          }
+          if (got > 0) recordFinance(s, { source: 'w-over.discount', kind: 'working-capital', amount: got,
+            cashDelta: got, operatingDelta: got - bookCost }, state => {
+            removed.forEach(({ lot, qty }) => { lot.qty -= qty; });
+            state.invRaw = state.invRaw.filter(lot => lot.qty > 0);
+          });
+          styleAdd(W, 'cash', 2);
           remember(W, s, 'dump', '재고 할인 처분');
           lever(G, '재고 할인 처분', { cash: Math.round(got) });
           return '묵은 것부터 깎아서 넘겼습니다. 장부는 아프고 통장은 숨을 쉽니다. 둘 중에 통장이 먼저 죽으면 장부는 볼 일도 없습니다.'; } },
@@ -809,16 +824,17 @@ function spotBetCard(s, W, L) {
     : '전부 팔면 이익이지만, 못 판 소재는 우리가 대금을 내고 보관해야 합니다.';
 
   /* 눌렀을 때 그 자리에서 굴린다. 팔린 만큼은 현금, 안 팔린 만큼은 장기재고. */
-  const roll = (take, st, G) => {
+  const roll = (source, take, st, G) => {
     const t = Math.round(qty * take);
     const r = Math.random();
     const f = r < pAdj ? 1 : r < pAdj + 0.34 ? 0.55 : 0.2;
     const sold = Math.round(t * f), left = t - sold;
-    st.cash += sold * gainPerTon;
+    recordFinance(st, { source, kind: 'income', amount: sold * gainPerTon, cashDelta: sold * gainPerTon, operatingDelta: sold * gainPerTon });
     if (left > 0) {
       // 안 팔린 물건은 대금을 치르고 야드에 눕는다. 여기서부터는 매달 늙는다.
-      st.cash -= left * buy;
-      st.invRaw.push({ qty: left, unitCost: buy, arrivalTurn: st.turn, dt: 'SPOT', gr: 'COMMON' });
+      recordFinance(st, { source, kind: 'working-capital', amount: left * buy, cashDelta: -left * buy }, state => {
+        state.invRaw.push({ qty: left, unitCost: buy, arrivalTurn: state.turn, dt: 'SPOT', gr: 'COMMON' });
+      });
     }
     const tr = f >= 1 ? 3 : f >= 0.5 ? 1 : -1;
     st.trust = Math.max(0, Math.min(100, st.trust + tr));
@@ -851,7 +867,7 @@ function spotBetCard(s, W, L) {
         lever(G, '유통향 스팟 거절', { trust: -1 });
         return '안 받았습니다. 본사 쪽에서 "그래요…" 하고 전화를 끊더군요. 뭐, 창고에 안 눕는 게 어딥니까.';
       }
-      return roll(take, st, G);
+      return roll(displayId, take, st, G);
     },
   });
 
@@ -952,12 +968,18 @@ function cashCard(s, W, run) {
       /* 목표액에 딱 맞춰 넘긴다. 예전에는 목표를 넘길 때까지 통째로 넘겨서
          화면에 적힌 금액보다 훨씬 큰 돈이 들어왔다 — 화면과 실제가 달랐다. */
       apply: (s, G) => { const target = ar * 0.35; let got = 0;
-        for (const a of s.ar.slice().sort((x, y) => x.dueTurn - y.dueTurn)) {
+        const discounted = [];
+        for (const receivable of s.ar.slice().sort((x, y) => x.dueTurn - y.dueTurn)) {
           if (got >= target) break;
-          const take = Math.min(a.amount, target - got);
-          got += take; a.amount -= take;
+          const amount = Math.min(receivable.amount, target - got);
+          got += amount; discounted.push({ receivable, amount });
         }
-        s.ar = s.ar.filter(a => a.amount > 1e-6); s.cash += got * 0.98; styleAdd(W, 'cash');
+        if (got > 0) recordFinance(s, { source: 'w-cash.factor', kind: 'working-capital', amount: got,
+          cashDelta: got * 0.98, financialDelta: -got * 0.02 }, state => {
+          discounted.forEach(({ receivable, amount }) => { receivable.amount -= amount; });
+          state.ar = state.ar.filter(receivable => receivable.amount > 0);
+        });
+        styleAdd(W, 'cash');
         lever(G, '매출채권 할인', { cash: Math.round(got * 0.98) });
         return '받을 대금의 35%를 넘기고 수수료 2%를 뺀 현금을 받았습니다. 받을 돈이 줄고 통장에 돈이 들어왔습니다.'; } },
     { displayId: "w-cash.reduce-orders", label: '소재 주문을 절반으로 줄인다', hint: '발주 권장량을 줄입니다. 실제 지급액과 예정 입고를 확인하십시오',
@@ -1085,14 +1107,14 @@ function maintCard(s, W) {
     opts: [
       { displayId: "w-maint.full", label: '전면 정비 — 일주일 세운다', hint: '이번 달 생산을 줄이고 크게 수리한다. 다음 정비 논의는 여섯 달 뒤다',
         fx: ['−통장 $26,000', '−이번 달 가공 가능량 12% 손실', '+설비 상태 크게 회복', '+품질 개선'],
-        apply: (s, G) => { s.cash -= 26_000; W.capHit *= 0.88; W.equip = wClamp(W.equip + 32); W.qBoost += 5;
+        apply: (s, G) => { recordFinance(s, { source: 'w-maint.full', kind: 'expense', amount: 26_000, cashDelta: -26_000, operatingDelta: -26_000 }); W.capHit *= 0.88; W.equip = wClamp(W.equip + 32); W.qBoost += 5;
           W.deferMaint = 0; W.maintAge = 0; W.maintCool = s.turn + 6; W.stats.maint++; styleAdd(W, 'craft', 2);
           remember(W, s, 'maint', '전면 정비');
           lever(G, '전면 정비', { cash: -26_000, equip: 32, quality: 1, risk: '이번 달 매출 감소' });
           return '일주일 세아놓고 전부 뜯었심더. 기름 묻은 손으로 "인자 됐습니더" 한마디 하고 나가데예. 당분간은 이 얘기 안 할 겁니더.'; } },
       { displayId: "w-maint.partial", label: '주말에 부분 정비', hint: '급한 부분만 수리한다. 다음 정비 논의는 넉 달 뒤다',
         fx: ['−통장 $25,000', '=가공 가능량 손실 거의 없음', '+설비 상태 조금 회복'],
-        apply: (s, G) => { s.cash -= 25_000; W.equip = wClamp(W.equip + 12); W.maintAge = Math.max(0, W.maintAge - 6);
+        apply: (s, G) => { recordFinance(s, { source: 'w-maint.partial', kind: 'expense', amount: 25_000, cashDelta: -25_000, operatingDelta: -25_000 }); W.equip = wClamp(W.equip + 12); W.maintAge = Math.max(0, W.maintAge - 6);
           W.maintCool = s.turn + 4; W.fatigue = wClamp(W.fatigue + 4); styleAdd(W, 'craft');
           remember(W, s, 'maint-part', '부분 정비');
           lever(G, '주말 부분 정비', { cash: -25_000, equip: 12, risk: '근본은 안 고쳤다 — 넉 달 뒤 다시' });
@@ -1127,7 +1149,7 @@ function overloadCard(s, W, hot) {
           lever(G, '잔업·특근', { fatigue: 14, note: `특근비 $${money1k(CFG.OT_COST)} (결산 반영)`, risk: '설비·품질 부담' });
           return '잔업·특근을 정했심더. 이번 결산에서 특근비와 생산량을 확인하이소. 다음 달 현장 피로도 봐야 합니더.'; } },
       { displayId: "w-load.outsource", label: '다른 업체에 가공을 맡긴다', hint: '우리 직원의 부담은 줄지만 품질을 직접 관리하기 어렵다', fx: ['−통장 $95,000', '+현장 피로 완화', '?외부 업체의 가공 품질 위험'],
-        apply: (s, G) => { s.cash -= 95_000; W.fatigue = wClamp(W.fatigue - 10); W.quality = wClamp(W.quality - 5);
+        apply: (s, G) => { recordFinance(s, { source: 'w-load.outsource', kind: 'expense', amount: 95_000, cashDelta: -95_000, operatingDelta: -95_000 }); W.fatigue = wClamp(W.fatigue - 10); W.quality = wClamp(W.quality - 5);
           styleAdd(W, 'grow'); remember(W, s, 'outsource', '외주 가공');
           lever(G, '외주 가공', { cash: -95_000, fatigue: -10, quality: -1 });
           return '일부는 외주로 넘겼심더. 오 과장이 "책임은 우리가 집니다" 카면서 서류를 한참 들여다보데예.'; } },
@@ -1159,7 +1181,7 @@ function idleCard(s, W) {
         + '여유가 있을 때 설비를 수리하거나, 교대를 줄여 비용을 아끼거나, 영업에 투자해 주문을 늘릴 수 있습니다.',
     opts: [
       { displayId: "w-idle.maintain", label: '이참에 대정비를 한다', hint: '놀 때 손본다', fx: ['−통장 $29,000', '+설비 크게 회복', '+품질'],
-        apply: (s, G) => { s.cash -= 29_000; W.equip = wClamp(W.equip + 28); W.maintAge = 0; W.deferMaint = 0; W.maintCool = s.turn + 5; W.qBoost += 4;
+        apply: (s, G) => { recordFinance(s, { source: 'w-idle.maintain', kind: 'expense', amount: 29_000, cashDelta: -29_000, operatingDelta: -29_000 }); W.equip = wClamp(W.equip + 28); W.maintAge = 0; W.deferMaint = 0; W.maintCool = s.turn + 5; W.qBoost += 4;
           styleAdd(W, 'craft', 2); remember(W, s, 'maint', '비수기 대정비');
           lever(G, '비수기 대정비', { cash: -29_000, equip: 28 });
           return '바쁠 때는 죽어도 못 하는 걸 했심더. 이래 세아놓고 뜯어보기가 어렵습니더.'; } },
@@ -1169,7 +1191,7 @@ function idleCard(s, W) {
           lever(G, '교대 축소', { risk: '물량 회복 시 캐파 부족' });
           return '한 조를 쉬게 했심더. 현장 분위기가 영 안 좋습니더.'; } },
       { displayId: "w-idle.sales", label: '영업 활동에 투자한다', hint: '새 주문을 찾는다. 효과는 석 달 뒤부터 나타난다', fx: ['−통장 $58,000', '+3개월 뒤 시장 점유율에 영업 투자 반영 · 실제 납품은 별도'],
-        apply: (s, G) => { s.cash -= 58_000; s.effortQueue.push({ amount: 58_000, turnsLeft: CFG.SALES_EFFORT_LAG });
+        apply: (s, G) => { recordFinance(s, { source: 'w-idle.sales', kind: 'expense', amount: 58_000, cashDelta: -58_000, operatingDelta: -58_000 }); s.effortQueue.push({ amount: 58_000, turnsLeft: CFG.SALES_EFFORT_LAG });
           styleAdd(W, 'grow'); remember(W, s, 'push', '영업 강화');
           lever(G, '영업 강화', { cash: -58_000, risk: '효과는 석 달 뒤' });
           return '정 부장이 신나가 나갔심더. 결과는 석 달 뒤에 봐야지예.'; } },
@@ -1191,12 +1213,12 @@ function qualityCard(s, W) {
         + `아직 고객이 문제를 제기하지는 않았습니다. 하지만 불량품이 납품되면 고객이 반품이나 보상을 요구할 수 있습니다.`,
     opts: [
       { displayId: "w-qual.root-cause", label: '불량 원인을 찾아 고친다', hint: '오 과장이 작업 기록을 분석하고 가공 방식을 개선한다', fx: ['−통장 $55,000', '+품질 크게 개선 (두세 달)', '+고객의 반품·보상 요구 위험 ↓'],
-        apply: (s, G) => { s.cash -= 55_000; W.qBoost += 14; G.ui.yieldBonus = 0.0022; styleAdd(W, 'craft', 2);
+        apply: (s, G) => { recordFinance(s, { source: 'w-qual.root-cause', kind: 'expense', amount: 55_000, cashDelta: -55_000, operatingDelta: -55_000 }); W.qBoost += 14; G.ui.yieldBonus = 0.0022; styleAdd(W, 'craft', 2);
           remember(W, s, 'qual', '품질 원인 분석');
           lever(G, '품질 원인 분석', { cash: -55_000, quality: 1 });
           return '6개월치 데이터를 전부 돌렸습니다. 원인은 나이프 교체 주기였습니다. 기준을 다시 썼습니다.'; } },
       { displayId: "w-qual.inspect", label: '납품 전 검사만 강화한다', hint: '불량품이 고객에게 나가지 않도록 검사한다', fx: ['−통장 $30,000', '+고객의 반품·보상 요구 위험 조금 ↓', '=불량이 생기는 원인은 그대로'],
-        apply: (s, G) => { s.cash -= 30_000; W.qBoost += 5; styleAdd(W, 'craft');
+        apply: (s, G) => { recordFinance(s, { source: 'w-qual.inspect', kind: 'expense', amount: 30_000, cashDelta: -30_000, operatingDelta: -30_000 }); W.qBoost += 5; styleAdd(W, 'craft');
           remember(W, s, 'inspect', '출하 검사 강화');
           lever(G, '출하 검사 강화', { cash: -30_000 });
           return '출하 검사원을 한 명 더 붙였습니다. 말씀드립니다 — 새는 곳은 그대로입니다.'; } },
@@ -1218,7 +1240,7 @@ function peopleCard(s, W) {
         + `옆 공단에서 우리 직원들에게 이직을 권하고 있다는 얘기도 있어요. 반장님이 나가면 같이 일하던 직원들까지 따라갈까 봐 걱정이에요. 쉬게 해드리거나 처우를 개선해야 할 것 같아요.`,
     opts: [
       { displayId: "w-people.rest", label: '특별휴가와 보너스를 준다', hint: '직원들이 쉬고 다시 일할 힘을 얻는다', fx: ['−통장 $42,000', '−이번 달 가공 가능량 5% 감소', '+피로 ↓↓ · 직원 사기 ↑'],
-        apply: (s, G) => { s.cash -= 42_000; W.capHit *= 0.95; W.fatigue = wClamp(W.fatigue - 25); s.morale = wClamp(s.morale + 10);
+        apply: (s, G) => { recordFinance(s, { source: 'w-people.rest', kind: 'expense', amount: 42_000, cashDelta: -42_000, operatingDelta: -42_000 }); W.capHit *= 0.95; W.fatigue = wClamp(W.fatigue - 25); s.morale = wClamp(s.morale + 10);
           styleAdd(W, 'craft', 2); remember(W, s, 'rest', '특별휴가');
           lever(G, '특별휴가·보너스', { cash: -42_000, fatigue: -25 });
           return '돌아가면서 사흘씩 쉬었어요. 어제 반장님이 저한테 웃으면서 인사했어요. 오랜만이에요.'; } },
@@ -1326,7 +1348,7 @@ function churnCard(s, W, k) {
         `직접 만나거나 가격을 할인해 거래를 지킬지, 이 고객을 포기하고 다른 고객에 집중할지 정해야 합니다.`,
     opts: [
       { displayId: "w-churn.visit", label: '사장이 직접 찾아간다', hint: '고객의 불만을 직접 듣고 관계를 회복한다', fx: ['−통장 $26,000', `+${CUST[k]} 관계 회복`],
-        apply: (s, G) => { s.cash -= 26_000; W.rel[k] = wClamp(W.rel[k] + 10); styleAdd(W, 'cust', 2);
+        apply: (s, G) => { recordFinance(s, { source: 'w-churn.visit', kind: 'expense', amount: 26_000, cashDelta: -26_000, operatingDelta: -26_000 }); W.rel[k] = wClamp(W.rel[k] + 10); styleAdd(W, 'cust', 2);
           remember(W, s, 'visit', `${CUST[k]} 사장 방문`, { cust: k });
           lever(G, `${CUST[k]} 사장 직접 방문`, { cash: -26_000, rel: [[k, 10]] });
           return `제가 직접 갔습니다. 구매 임원이 술 석 잔 들어가고 나서야 서운했던 걸 다 쏟아내더군요. 일단 잡았습니다. 이런 건 전화로는 안 됩니다.`; } },
@@ -1393,7 +1415,7 @@ function creditCard(s, W) {
         apply: (s, G) => { const v = growCust(s, k, 0.15); W.rel[k] = wClamp(W.rel[k] + 5); styleAdd(W, 'grow');
           const p = risky ? 0.4 : 0.1;
           G.pending.push({ turn: s.turn + 6, run: s2 => {
-            if (Math.random() < p) { s2.cash -= 980_000; W.rel[k] = wClamp(W.rel[k] - 10);
+            if (Math.random() < p) { recordFinance(s2, { source: 'w-credit.extend', kind: 'expense', amount: 980_000, cashDelta: -980_000, financialDelta: -980_000 }); W.rel[k] = wClamp(W.rel[k] - 10);
               fire(W, s2, 'bad', `${CUST[k]}가 대금을 못 갚았습니다. $980k를 털었습니다.`, `여섯 달 전 ${CUST[k]} 여신 확대`);
               return `${CUST[k]} 대금 $980k를 떼였습니다.`; }
             return null; } });
@@ -1401,7 +1423,7 @@ function creditCard(s, W) {
           lever(G, `${CUST[k]} 여신 확대`, { vol: v, rel: [[k, 5]], risk: '6개월 뒤 대손 가능성' });
           return '올렸습니다. 저는 반대했다는 것만 회의록에 남겨두겠습니다. 여섯 달쯤 뒤에 다시 읽어보시죠.'; } },
       { displayId: "w-credit.insure", label: '보증보험을 들고 한도를 늘린다', hint: '대금을 못 받을 때를 대비해 보험료를 내고 외상 거래를 늘린다', fx: ['−통장 $30,000', '+주문량 조금 ↑'],
-        apply: (s, G) => { s.cash -= 30_000; const v = growCust(s, k, 0.07); styleAdd(W, 'cash');
+        apply: (s, G) => { recordFinance(s, { source: 'w-credit.insure', kind: 'expense', amount: 30_000, cashDelta: -30_000, operatingDelta: -30_000 }); const v = growCust(s, k, 0.07); styleAdd(W, 'cash');
           lever(G, `${CUST[k]} 여신 (보증)`, { vol: v, cash: -30_000 });
           return '보증보험을 끼고 올렸습니다. 보험료가 아깝다고들 하는데, 아깝다고 느껴지면 사고가 안 난 겁니다.'; } },
       { displayId: "w-credit.decline", label: '한도 확대를 거절한다', hint: '이번 외상 확대에 따른 손실 위험을 피한다', fx: ['+이번 외상 확대에 따른 대금 손실 없음', `−${CUST[k]} 주문량 ↓`],
@@ -1453,7 +1475,7 @@ function sparesCard(s, W) {
         + `${W.equip < 60 ? '구 공장장님도 요즘 설비에서 이상한 소리가 난다고 하셨어요. ' : ''}지금 고장 나면 해외에서 부품이 올 때까지 열흘을 기다려야 합니다. 미리 사두거나 공급사에 맡겨둘 필요가 있어요.`,
     opts: [
       { displayId: "m-mro.buy", label: '교체 부품을 넉넉히 사둔다', hint: '미리 돈을 쓰지만 고장 났을 때 바로 수리할 수 있다', fx: ['−통장 $42,000', '+고장 나면 바로 교체 (가공 가능량 손실 ↓)'],
-        apply: (s, G) => { s.cash -= 42_000; W.spares = true; styleAdd(W, 'craft', 2);
+        apply: (s, G) => { recordFinance(s, { source: 'm-mro.buy', kind: 'expense', amount: 42_000, cashDelta: -42_000, operatingDelta: -42_000 }); W.spares = true; styleAdd(W, 'craft', 2);
           remember(W, s, 'spares', 'MRO 예비품 비축');
           lever(G, 'MRO 예비품 비축', { cash: -42_000 });
           return '채워놨습니다. 구 공장장님이 창고에 와서 한참 보시더니 "잘했다" 하고 가셨어요. 저한테 그런 말 처음 하셨어요.'; } },
@@ -1538,7 +1560,7 @@ function solarCard(s, W) {
       { displayId: "m-solar.own", label: '우리 돈으로 설치한다', hint: '설치비를 한 번 내고, 이후 매달 전기료를 줄인다',
         fx: [`−통장 $${fmt(capex / 1000)}k`, `+고정비 월 $${fmt(save / 1000)}k 영구 절감`,
              `?남은 ${left}개월 동안 $${fmt(save * left / 1000)}k 절감`],
-        apply: (s, G) => { s.cash -= capex; G.extraFixed = (G.extraFixed || 0) - save; W.solar = 'own';
+        apply: (s, G) => { recordFinance(s, { source: 'm-solar.own', kind: 'asset', amount: capex, cashDelta: -capex }, state => { state.fa.machineCost += capex; }); G.extraFixed = (G.extraFixed || 0) - save; W.solar = 'own';
           styleAdd(W, 'craft', 2); remember(W, s, 'solar', '지붕 태양광 설치');
           lever(G, '지붕 태양광 설치', { cash: -capex, risk: `고정비 월 $${fmt(save / 1000)}k 영구 절감` });
           return '설치비 $520,000을 지급했어요. 이번 결산부터 매달 고정비가 $9,000 줄어요. '
@@ -1569,12 +1591,12 @@ function safetyCard(s, W) {
         + `${W.fatigue > 35 ? '요즘 특근이 많아 장비도 더 자주 쓰고 있어요. ' : ''}교체를 계속 미루면 코일이 떨어지거나 직원이 다칠 수 있습니다. 이번에는 교체해 주셨으면 합니다.`,
     opts: [
       { displayId: "m-safety.replace-all", label: '전부 교체한다', hint: '안전 장비 교체·직원 사기 개선. 이미 예약된 사고 위험은 남는다', fx: ['−통장 $29,000', '+사고 위험 ↓', '+직원 사기 ↑'],
-        apply: (s, G) => { s.cash -= 29_000; W.safety = 0; s.morale = wClamp(s.morale + 3); styleAdd(W, 'craft');
+        apply: (s, G) => { recordFinance(s, { source: 'm-safety.replace-all', kind: 'expense', amount: 29_000, cashDelta: -29_000, operatingDelta: -29_000 }); W.safety = 0; s.morale = wClamp(s.morale + 3); styleAdd(W, 'craft');
           remember(W, s, 'safety', '안전 설비 교체');
           lever(G, '크레인 와이어·보호구 교체', { cash: -29_000 });
           return '전부 새것으로 바꿨습니다. 현장 반장님들이 고맙다고 하셨어요. 저는 한 것도 없는데…'; } },
       { displayId: "m-safety.wire-only", label: '크레인 쇠줄만 교체한다', hint: '가장 위험한 장비부터 바꾸고 보호구는 그대로 쓴다', fx: ['−통장 $25,000', '=사고 위험 조금 ↓'],
-        apply: (s, G) => { s.cash -= 25_000; W.safety = Math.max(0, (W.safety || 0) - 1);
+        apply: (s, G) => { recordFinance(s, { source: 'm-safety.wire-only', kind: 'expense', amount: 25_000, cashDelta: -25_000, operatingDelta: -25_000 }); W.safety = Math.max(0, (W.safety || 0) - 1);
           lever(G, '크레인 와이어만 교체', { cash: -25_000 });
           return '와이어만 갈았습니다. 그게 제일 위험한 거라서요. 보호구는… 다음에 다시 말씀드리겠습니다.'; } },
       { displayId: "m-safety.defer", label: '다음 분기로 미룬다', hint: '돈을 아낀다', fx: ['+비용 없음', '?산업재해 위험 ↑'],
@@ -1582,7 +1604,7 @@ function safetyCard(s, W) {
           remember(W, s, 'safety-skip', '안전 설비 교체 연기');
           G.pending.push({ turn: s.turn + 2 + Math.floor(Math.random() * 4), run: s2 => {
             if (Math.random() < 0.3 + W.fatigue / 250) {
-              s2.cash -= 260_000; s2.morale = wClamp(s2.morale - 12); W.capHit *= 0.9; W.stats.accidents = (W.stats.accidents || 0) + 1;
+              recordFinance(s2, { source: 'm-safety.defer', kind: 'expense', amount: 260_000, cashDelta: -260_000, operatingDelta: -260_000 }); s2.morale = wClamp(s2.morale - 12); W.capHit *= 0.9; W.stats.accidents = (W.stats.accidents || 0) + 1;
               fire(W, s2, 'accident', '야드에서 코일이 떨어져 작업자가 다쳤습니다. 노동청 조사로 라인이 며칠 섰습니다.', '안전 설비 교체를 미룬 일');
               return '산업재해가 났습니다. 보상과 조업 중단으로 $260k.'; }
             return null; } });
@@ -1635,11 +1657,11 @@ function bonusCard(s, W) {
         + `작년에는 전임 사장님이 기본급 한 달치를 지급했습니다. 올해도 지급할지, 얼마를 줄지 정해야 합니다. 성과급은 매달 임금과 달리 이번에 한 번 지급하는 돈입니다.`,
     opts: [
       { displayId: "h-bonus.profit", label: ytd > 0 ? `이익의 8%를 기준으로 지급한다` : '적자여도 성과급을 지급한다', hint: '최소 지급액을 포함한 실제 금액은 아래 비용을 확인한다', fx: [`−통장 $${fmt(pool)}`, '+직원 사기 ↑↑'],
-        apply: (s, G) => { s.cash -= pool; s.morale = wClamp(s.morale + 10); styleAdd(W, 'craft');
+        apply: (s, G) => { recordFinance(s, { source: 'h-bonus.profit', kind: 'expense', amount: pool, cashDelta: -pool, operatingDelta: -pool }); s.morale = wClamp(s.morale + 10); styleAdd(W, 'craft');
           lever(G, '연말 성과급', { cash: -pool });
           return '나눴습니다. 린 매니저 말로는 현장 반응이 좋다는데, 저는 통장 잔고를 보고 있었습니다.'; } },
       { displayId: "h-bonus.prior", label: '작년 수준으로 지급한다', hint: '기본 수준의 성과급만 지급한다', fx: ['−통장 $39,000', '=직원 사기 그대로'],
-        apply: (s, G) => { s.cash -= 39_000;
+        apply: (s, G) => { recordFinance(s, { source: 'h-bonus.prior', kind: 'expense', amount: 39_000, cashDelta: -39_000, operatingDelta: -39_000 });
           lever(G, '연말 성과급 기본', { cash: -39_000 });
           return '작년 수준의 일회성 성과급 $39,000을 지급했습니다.'; } },
       { displayId: "h-bonus.skip", label: '올해는 성과급을 주지 않는다', hint: '현금은 아끼지만 직원들의 의욕이 떨어진다', fx: ['+현금 지킴', '−직원 사기 ↓↓'],
@@ -1662,18 +1684,18 @@ function laborCard(s, W) {
         + `지금 교대를 조정할지, 서류만 정리할지, 그대로 점검을 받을지 정해야 합니다.`,
     opts: [
       { displayId: "h-labor.reduce", label: '지금 교대와 특근을 줄인다', hint: '점검 전에 근로시간을 줄여 직원들이 쉬게 한다', fx: ['−이번 달 가공 가능량 5%', '−통장 $20,000', '+피로 ↓'],
-        apply: (s, G) => { W.capHit *= 0.95; s.cash -= 20_000; W.fatigue = wClamp(W.fatigue - 15); styleAdd(W, 'craft');
+        apply: (s, G) => { W.capHit *= 0.95; recordFinance(s, { source: 'h-labor.reduce', kind: 'expense', amount: 20_000, cashDelta: -20_000, operatingDelta: -20_000 }); W.fatigue = wClamp(W.fatigue - 15); styleAdd(W, 'craft');
           lever(G, '근로시간 선제 조정', { cash: -20_000, fatigue: -15 });
           return '교대를 바꾸고 특근을 줄였습니다. 감독관이 "잘 정리돼 있네요" 하고 삼십 분 만에 갔습니다. 그 삼십 분이 $20k짜리였습니다.'; } },
       { displayId: "h-labor.paperwork", label: '서류만 정리한다', hint: '실제 근무는 유지한다. 기록과 현장이 다르면 문제가 드러날 수 있다', fx: ['−통장 $15,000', '?현장이 지쳐 있으면 근로시간 위반 적발'],
-        apply: (s, G) => { s.cash -= 15_000;
-          if (W.fatigue > 40 && wChance(0.55)) { s.cash -= 95_000; s.trust = wClamp(s.trust - 3);
+        apply: (s, G) => { recordFinance(s, { source: 'h-labor.paperwork', kind: 'expense', amount: 15_000, cashDelta: -15_000, operatingDelta: -15_000 });
+          if (W.fatigue > 40 && wChance(0.55)) { recordFinance(s, { source: 'h-labor.paperwork', kind: 'expense', amount: 95_000, cashDelta: -95_000, operatingDelta: -95_000 }); s.trust = wClamp(s.trust - 3);
             lever(G, '근로감독 — 적발', { cash: -110_000, trust: -3 });
             return '출퇴근 기록과 서류가 안 맞았습니다. 과태료 $95k에 시정명령이 나왔습니다.'; }
           lever(G, '근로감독 — 통과', { cash: -15_000 });
           return '서류로 넘어갔습니다. 이번엔 운이 좋았다고 말씀드리는 게 정확하겠습니다.'; } },
       { displayId: "h-labor.unprepared", label: '준비 없이 점검을 받는다', hint: '준비 비용은 없지만 위반이 확인되면 과태료를 낸다', fx: ['?근로시간 위반 적발 가능성 높음'],
-        apply: (s, G) => { if (wChance(0.65)) { s.cash -= 140_000; s.morale = wClamp(s.morale - 5); s.trust = wClamp(s.trust - 4);
+        apply: (s, G) => { if (wChance(0.65)) { recordFinance(s, { source: 'h-labor.unprepared', kind: 'expense', amount: 140_000, cashDelta: -140_000, operatingDelta: -140_000 }); s.morale = wClamp(s.morale - 5); s.trust = wClamp(s.trust - 4);
             lever(G, '근로감독 — 적발', { cash: -140_000, trust: -4 });
             return '적발됐습니다. 과태료 $140k. 본사 인사팀에서도 연락이 왔습니다.'; }
           lever(G, '근로감독 — 통과', {});
@@ -1694,7 +1716,7 @@ function housingCard(s, W) {
           lever(G, '사택 갱신', { risk: '고정비 월 $3.5k 증가' });
           return '갱신했습니다. 매달 $3.5k씩, 계약 기간 내내 조용히 나갑니다. 제일 안 아픈 지출이 제일 오래 갑니다.'; } },
       { displayId: "h-house.relocate", label: '공단 근처 싼 곳으로 옮긴다', hint: '월세 인상을 피하지만 이사비가 들고 가족들이 불편해한다', fx: ['−이사비 $25,000', '−해외 파견 직원들의 불만'],
-        apply: (s, G) => { s.cash -= 25_000; s.morale = wClamp(s.morale - 3); styleAdd(W, 'cash');
+        apply: (s, G) => { recordFinance(s, { source: 'h-house.relocate', kind: 'expense', amount: 25_000, cashDelta: -25_000, operatingDelta: -25_000 }); s.morale = wClamp(s.morale - 3); styleAdd(W, 'cash');
           lever(G, '사택 이전', { cash: -25_000 });
           return '공단 근처로 옮겼습니다. 돈은 아꼈고, 주재원 가족들은 학교가 멀다고 합니다. 둘 다 사실입니다.'; } },
       { displayId: "h-house.allowance", label: '직원에게 주거수당을 준다', hint: '회사가 매달 수당을 주고 직원이 살 집을 직접 고른다', fx: ['−고정비 월 $3,000', '=직원이 집을 선택'],
@@ -1713,16 +1735,16 @@ function insureCard(s, W) {
         + `보험이 보상하는 범위를 줄이면 지금 낼 돈은 줄어듭니다. 대신 사고가 나면 우리가 부담할 비용이 커집니다.`,
     opts: [
       { displayId: "h-insure.full", label: '기존 보장을 모두 유지한다', hint: '보험료를 내고 화재·재고·기계 보장을 그대로 유지한다', fx: ['−통장 $55,000'],
-        apply: (s, G) => { s.cash -= 55_000; W.insLow = false;
+        apply: (s, G) => { recordFinance(s, { source: 'h-insure.full', kind: 'expense', amount: 55_000, cashDelta: -55_000, operatingDelta: -55_000 }); W.insLow = false;
           lever(G, '보험 갱신', { cash: -55_000 });
           return '그대로 갱신했습니다. 올해 아무 일도 안 일어나면 $55k를 버린 셈이 되는데, 그게 제일 좋은 결말입니다.'; } },
       { displayId: "h-insure.exclude-machine", label: '기계 고장 보험을 뺀다', hint: '화재와 재고 보장만 남기고 기계 수리비는 직접 부담한다', fx: ['−통장 $32,000', '?설비 고장 수리비 전액 부담'],
-        apply: (s, G) => { s.cash -= 32_000; W.insLow = true; styleAdd(W, 'cash');
+        apply: (s, G) => { recordFinance(s, { source: 'h-insure.exclude-machine', kind: 'expense', amount: 32_000, cashDelta: -32_000, operatingDelta: -32_000 }); W.insLow = true; styleAdd(W, 'cash');
           remember(W, s, 'ins-low', '기계 보험 제외');
           lever(G, '기계 보험 제외', { cash: -32_000, risk: '고장 수리비 증가' });
           return '기계 보험을 뺐습니다. $23k 아꼈습니다. 감속기 하나가 $320k인 건 알고 계시죠.'; } },
       { displayId: "h-insure.deductible", label: '사고 때 회사가 먼저 내는 금액을 늘린다', hint: '자기부담 조건 조정 비용 $40,000을 지급한다', fx: ['−통장 $40,000', '=별도 보상 효과는 확인되지 않음'],
-        apply: (s, G) => { s.cash -= 40_000;
+        apply: (s, G) => { recordFinance(s, { source: 'h-insure.deductible', kind: 'expense', amount: 40_000, cashDelta: -40_000, operatingDelta: -40_000 });
           lever(G, '보험 자기부담 상향', { cash: -40_000 });
           return '자기부담 조건 조정 비용 $40,000을 지급했습니다.'; } },
     ],
@@ -1737,17 +1759,17 @@ function taxCard(s, W) {
         + `본사 소재를 일부러 비싸게 사서, 이 나라에서 낼 이익과 세금을 줄인 것 아니냐는 겁니다. 거래 가격이 적절했다는 자료를 준비해야 합니다. 조사 결과에 따라 세금을 추가로 낼 수 있습니다.`,
     opts: [
       { displayId: "h-tax.expert", label: '외부 세무 전문가에게 맡긴다', hint: '수수료와 추가 세금을 내고 조사를 마무리한다', fx: ['−수수료 $45,000', '−추가 세금 $65,000', '=합계 $110,000'],
-        apply: (s, G) => { s.cash -= 110_000;
+        apply: (s, G) => { recordFinance(s, { source: 'h-tax.expert', kind: 'expense', amount: 110_000, cashDelta: -110_000, operatingDelta: -110_000 });
           lever(G, '세무조사 — 외부 대응', { cash: -110_000 });
           return '세무법인이 보고서를 냈고 추징은 $65k로 끝났습니다. 수수료가 $45k니까 아낀 게 맞는지는 각자 판단입니다. 저는 맞다고 봅니다.'; } },
       { displayId: "h-tax.internal", label: '한 부장이 직접 대응한다', hint: '외부 수수료는 아끼지만 결과에 따라 추가 세금이 크게 달라진다', fx: ['?잘 되면 추가 세금 $26,000', '?안 되면 추가 세금 $380,000', '확률 반반'],
-        apply: (s, G) => { if (wChance(0.5)) { s.cash -= 380_000;
+        apply: (s, G) => { if (wChance(0.5)) { recordFinance(s, { source: 'h-tax.internal', kind: 'expense', amount: 380_000, cashDelta: -380_000, operatingDelta: -380_000 });
             lever(G, '세무조사 — 자체 대응 실패', { cash: -380_000 });
             return '논리가 부족했습니다. 추징 $380k. 제가 밤을 샌 값이 시간당 마이너스로 찍혔습니다.'; }
-          s.cash -= 26_000; lever(G, '세무조사 — 자체 대응 성공', { cash: -26_000 });
+          recordFinance(s, { source: 'h-tax.internal', kind: 'expense', amount: 26_000, cashDelta: -26_000, operatingDelta: -26_000 }); lever(G, '세무조사 — 자체 대응 성공', { cash: -26_000 });
           return '자료를 전부 맞춰냈습니다. 추징 $26k. 이런 건 두 번은 못 합니다.'; } },
       { displayId: "h-tax.hq", label: '본사 세무팀 지원을 요청한다', hint: '본사의 도움을 받지만 현지 경영에 대한 신뢰가 떨어진다', fx: ['−추가 세금 $95,000', '−본사 신뢰 3'],
-        apply: (s, G) => { s.trust = wClamp(s.trust - 3); s.cash -= 95_000;
+        apply: (s, G) => { s.trust = wClamp(s.trust - 3); recordFinance(s, { source: 'h-tax.hq', kind: 'expense', amount: 95_000, cashDelta: -95_000, operatingDelta: -95_000 });
           lever(G, '세무조사 — 본사 지원', { cash: -95_000, trust: -3 });
           return '본사 세무팀이 붙어서 추징 $95k로 막았습니다. 대신 "법인이 준비가 안 돼 있다"는 문장이 본사 보고서에 들어갔습니다. 그 문장은 오래 남습니다.'; } },
     ],
@@ -1764,7 +1786,7 @@ function vacancyCard(s, W) {
         `작업을 지휘할 사람이 없어 다른 직원들의 부담이 커지고 있습니다. 외부 경력자를 데려올지, 내부 직원을 승진시킬지, 당분간 자리를 비워둘지 정해야 합니다.`,
     opts: [
       { displayId: "h-hire.recruit", label: '채용 업체를 통해 경력자를 뽑는다', hint: '비용을 내고 경험 있는 반장을 구해 현장을 안정시킨다', fx: ['−통장 $26,000', '+품질 회복', '+작업조 안정'],
-        apply: (s, G) => { s.cash -= 26_000; W.qBoost += 5; W.fatigue = wClamp(W.fatigue - 6); styleAdd(W, 'craft');
+        apply: (s, G) => { recordFinance(s, { source: 'h-hire.recruit', kind: 'expense', amount: 26_000, cashDelta: -26_000, operatingDelta: -26_000 }); W.qBoost += 5; W.fatigue = wClamp(W.fatigue - 6); styleAdd(W, 'craft');
           lever(G, '반장 경력 채용', { cash: -26_000, quality: 1 });
           return '경력 반장을 채용했습니다. 현금 $26,000을 지급했고, 현장 피로를 줄이는 조치를 했습니다. 품질은 월별 보고로 확인하십시오.'; } },
       { displayId: "h-hire.promote", label: '우리 직원을 반장으로 승진시킨다', hint: '직원들의 의욕은 높아지지만 새 역할에 익숙해질 시간이 필요하다', fx: ['+직원 사기 ↑', '=품질 잠시 불안정'],

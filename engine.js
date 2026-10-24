@@ -731,7 +731,7 @@ function consumeFinance(s) {
   return finance;
 }
 
-function resolveTurn(state, decision) {
+function resolveTurn(state, decision, { beforeClose } = {}) {
   const s = structuredClone(state);
   s.trust = clampIndicator(s.trust);
   s.morale = clampIndicator(s.morale);
@@ -847,29 +847,34 @@ function resolveTurn(state, decision) {
     } else {
       // 4라인째는 공장동을 하나 더 지어야 한다. 설비값보다 건물값이 훨씬 크다.
       if (s.lines.length >= CFG.MAX_LINES) {
-        s.cash -= CFG.INFRA_TOTAL;
-        s.fa.land += CFG.LAND;
-        s.fa.buildingNbv += CFG.BUILDING;
-        s.buildings = (s.buildings || 1) + 1;
+        recordFinance(s, { source: 'engine.infrastructure', kind: 'asset', amount: CFG.INFRA_TOTAL,
+          cashDelta: -CFG.INFRA_TOTAL }, state => {
+          state.fa.land += CFG.LAND;
+          state.fa.buildingNbv += CFG.BUILDING;
+          state.buildings = (state.buildings || 1) + 1;
+        });
         log.push(`공장동을 한 동 더 지었습니다. 기반시설에 $${CFG.INFRA_TOTAL.toLocaleString()}을 지급했습니다.`);
       }
       /* 설비는 돈을 낸다고 그 달에 도는 게 아니다. 발주·제작·선적·설치·시운전에 넉 달.
          호황을 보고 지르면 도착했을 때 호황이 끝나 있다. 이게 증설 타이밍의 전부다. */
       const capex = CFG.LINE[t].capex;
-      s.cash -= capex;
-      s.buildQueue = s.buildQueue || [];
-      s.buildQueue.push({ type: t, capex, readyTurn: s.turn + CFG.INSTALL_TURNS });
+      recordFinance(s, { source: 'engine.add-line', kind: 'asset', amount: capex, cashDelta: -capex }, state => {
+        state.buildQueue = state.buildQueue || [];
+        state.buildQueue.push({ type: t, capex, readyTurn: state.turn + CFG.INSTALL_TURNS });
+      });
       log.push(`${CFG.LINE[t].label} 1기를 발주했습니다. $${(capex / 1e6).toFixed(1)}M · ` +
                `${CFG.INSTALL_TURNS}개월 뒤인 ${s.turn + CFG.INSTALL_TURNS}월부터 돕니다.`);
     }
   }
   if (d.invest.salesEffort > 0) {
-    s.cash -= d.invest.salesEffort;
+    recordFinance(s, { source: 'engine.sales-effort', kind: 'expense', amount: d.invest.salesEffort,
+      cashDelta: -d.invest.salesEffort, operatingDelta: -d.invest.salesEffort });
     s.effortQueue.push({ amount: d.invest.salesEffort, turnsLeft: CFG.SALES_EFFORT_LAG });
   }
   let yieldBonus = d.invest.yieldBonus || 0;
   if (d.invest.yieldProgram > 0) {
-    s.cash -= d.invest.yieldProgram;
+    recordFinance(s, { source: 'engine.yield-program', kind: 'expense', amount: d.invest.yieldProgram,
+      cashDelta: -d.invest.yieldProgram, operatingDelta: -d.invest.yieldProgram });
     yieldBonus += Math.min(0.02, d.invest.yieldProgram / 100_000 * 0.004);
   }
   // 품질·설비 상태가 수율을 밀고 당긴다 (world.js)
@@ -1243,13 +1248,25 @@ function resolveTurn(state, decision) {
   for (const p of s.ap) { if (p.dueTurn <= s.turn) cashOut += p.amount; else apKeep.push(p); }
   s.ap = apKeep;
 
-  /* STEP 16b. 차입 한도 재산정 — creditLimit()에 설명이 있다 */
+  // LC 수수료는 아래 현금 정산에 이미 포함된다. 원장에는 금융비용만 기록한다.
+  if (lcFee > 0) recordFinance(s, { source: 'engine.lc-fee', kind: 'expense', amount: lcFee,
+    financialDelta: -lcFee });
+  s.cash += cashIn - cashOut - fixedCost - varCost - interest - lcFee;
+  if (beforeClose) {
+    const cashBeforeClose = s.cash;
+    beforeClose(s, { settledTurn: s.turn, nextTurn: s.turn + 1 });
+    // 채권 회수의 cashIn은 기존 회수액처럼 수수료를 제외한 실제 순입금이다.
+    const projectCash = s.cash - cashBeforeClose;
+    cashIn += Math.max(0, projectCash);
+    cashOut += Math.max(0, -projectCash);
+  }
+
+  /* STEP 16b. 회수·처분까지 반영한 차입 한도 재산정 */
   s.debt.limit = creditLimit(s, pm);
 
   /* STEP 17. 현금 정산 및 부도 판정
      회전한도다. 모자라면 자동으로 끌어 쓰고, 남으면 자동으로 갚는다.
      통장에는 CASH_BUFFER만 남긴다 — 놀리는 현금을 쌓아두고 이자를 물 이유가 없다. */
-  s.cash += cashIn - cashOut - fixedCost - varCost - interest - lcFee;
   if (s.cash < CFG.CASH_BUFFER) {
     const need = CFG.CASH_BUFFER - s.cash;
     if (s.debt.principal + need <= s.debt.limit) {
@@ -1411,8 +1428,8 @@ function resolveTurn(state, decision) {
   });
 
   s.turn += 1;
-  if (s.turn > CFG.TOTAL_TURNS && !s.over) { s.over = true; s.overReason = 'COMPLETE'; }
   if (s.equity < 0 && !s.over) { s.over = true; s.overReason = 'CAPITAL_ERODED'; }
+  if (s.turn > CFG.TOTAL_TURNS && !s.over) { s.over = true; s.overReason = 'COMPLETE'; }
 
   return { state: s, report };
 }

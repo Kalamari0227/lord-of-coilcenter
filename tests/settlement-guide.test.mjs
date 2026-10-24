@@ -140,7 +140,7 @@ test('actual engine reports preserve pinned economics and reconcile the real war
   // When the new display helpers inspect actual engine results.
   const result = h.call('({comparison:ccSettlementComparison(report,state),items:reportItems(report,state.history.slice(-3))})');
   // Then unchanged monthly and aggregate bytes match the independent pre-change pin.
-  assert.equal(createHash('sha256').update(JSON.stringify({reports,merged})).digest('hex'), 'bffb8bf1028f6270038bb2b62c17fd178b8b57d24b63223859e252ac2c98d410');
+  assert.equal(createHash('sha256').update(JSON.stringify({reports,merged})).digest('hex'), '3ad2a5d67c2de453facf06053adfeb589ed8a824da047d31d9839f558f73ef2d');
   assert.equal(result.comparison.deltaCents, -112910397);
   assert.equal(result.items.op.find(row => row.label.includes('외부창고비')).amt, -128250);
   assert.equal(h.run('JSON.stringify(state)'), before);

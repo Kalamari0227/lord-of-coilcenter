@@ -49,3 +49,33 @@ Codex 인앱 브라우저에서 개발 서버를 실행했다. 데스크톱 1440
 ## 남은 범위
 
 전체 48개월의 수동 플레이와 밸런스 검증, 사운드, 실제 배포 후 오프라인 설치 검증은 하지 않았다. 48개월 종료 조건은 자동 검사로 확인했다. 결재·결산 내부는 기존 전역 스크립트를 재사용하는 단계이며, 새로운 게임 화면·장부·저장 경계를 분리했다. LSP 설치가 없는 환경이므로 자동 검사·빌드·브라우저 실행으로 검증했다.
+
+## 2026-10-24 경영 정합성 자동 검증
+
+제품·테스트 기준은 T14 `f6ee6c3`이다. 승인된 [경영 규칙 D1–D9](management-rules.md)와 날짜·발주·결산·기존 v1 호환을 검증했다. 위 2026-10-14의 계산 무변경·21개 검사와 README의 2026-10-22/23·515개 기록은 각 당시 결과이며 이번 통과 근거로 재사용하지 않는다.
+
+| 시나리오·실행 | 관측 결과 |
+| --- | --- |
+| `npm test` | 988개 통과, 실패·취소·생략 0. T14 root 독립 전체 실행 기록을 확인했다. |
+| 실제 선택 정책: seed 20261018/147/42 × normal/quick × 일반/추가 자본 | 12개 모두 48개월 COMPLETE, 완료한 12월 평가 4회. 추가 자본 fixture는 시작 때 cash/equity/paidIn에 각각 $1B를 한 번 더하며 재충전하지 않는다. |
+| 기본 첫선택 helper: seed 20261018 | normal은 44개월 CAPITAL_ERODED, quick은 48개월 COMPLETE. 현재 기본 경로를 과거 48개월 완주 기록과 혼용하지 않는다. |
+| seed 147 최대 발주 스트레스 | normal 22개월, quick 38개월 CAPITAL_ERODED. 실제 종료월까지만 원장에 포함한다. |
+| 같은 월별 입력의 월간 3회/분기 1회 | 100/200/300톤 합계 600톤, 유료 영업 $15,000·수율 $25,000 각 한 번. 월 원장·최종 경제·게임/사건 난수 동일. 자연 카드 노출 빈도까지 같다는 주장은 아니다. |
+| 월12 결산 후 새 VM 재개 | turn13 checkpoint 전체 동일, 이후13–18월의 경제·선택·게임/사건 난수 일치. 품질 $55,000과 예약 안전 $260,000 각각 한 번. 사건 난수 tape의 한 draw를 0으로 지정한 통제 검사이며 자연 경로로 분류하지 않는다. |
+| 실제 저장파일 4개 | default 의사결정 turn12/44/45와 HQ 감시 stress turn13. 실제 완료월은 각각11/43/44/12. 모두 검증·새 VM 재개 성공, checkpoint 전체 동일. |
+| 임시 복사본의 결함 주입 8개 | $1 추가·연말 앞당김·무조건 신뢰 회복·옛 발주 한도·분기 투자 중복·분기 둘째 달 수량 누락·같은 입력의 투자 중복·복원 예약 중복 각각 정상 exit0 → AssertionError exit1 → 원복 exit0. 전후 소스 해시 동일. |
+
+정책에서 본사 협상·현금 프로젝트·태양광 자체/임대·월간 안전 연기/교체·스트레스 본사 보증을 실제 실행했다. 분기 정책에는 안전 카드가 자연 노출되지 않았다. 안전 효과는 [후속 영향 검사](../tests/management-consequences.test.mjs)의 실제 콜백·예약 시나리오로 별도 검증한다. 새 브라우저의 사건 난수는 달라질 수 있으므로 turn44 저장 재개의 종료월을 고정 결과라고 약속하지 않는다.
+
+T1–T13의 비용·신뢰·발주·품질 변화는 순차 전파되므로 단계별 달러 차이를 단순 합산하지 않는다. 과거 감사와 현재 원장을 대조했으며 baseline 재생성·완화는 하지 않았다. 실행 소스는 [캠페인 검사](../tests/management-campaign.test.mjs), [캠페인 helper](../tests/helpers/commercial-campaign.mjs), [상용 불변식 검사](../tests/commercial-invariants.test.mjs)를 따른다.
+
+로컬 증거 루트는 `.omo/evidence/ulw/management-integrity-20261024/G001-omo-plans-coilcenter-management-inte/a1/`이다. T14의 `campaign/implementation/root-tests.txt`, `policies/policy-summary.json` 및 개별 원장, `checkpoints/manifest.json`, `mutations.json`, `T14-campaign-deltas.md/json`에 정확한 입력·결과·명령이 있다. 이 절의 문서 대조는 `docs/implementation/t14-artifact-review.json`에 입력 해시와 함께 기록한다. 과거 단계를 이번 문서 작업에서 재실행했다는 뜻은 아니다.
+
+이번 자동 결과는 최종 F3 실제 브라우저 QA의 완료 선언이 아니다. 새게임→결재→발주→결산→저장·새로고침·이어하기와 분기·오류입력·연말·조기종료의 최종 표면 검증은 별도 증거가 필요하다. 물리 iOS/Android 설치·조작, 사람의 청취·재미 평가, 아트 이용 권리와 공개 배포 환경 확인은 미확인으로 남는다.
+
+
+### T15 문서·음원·격리 빌드
+
+같은 제품·테스트 소스의 소유 복사본에서 `npm run audio:verify`를 실행해 WAV 22개(58,543,980 bytes)의 포맷·해시·루프·믹스 예산 검사를 통과했다. `build({sourceRoot, outputDir})`의 두 경로를 명시한 프로덕션 빌드는 `7544d2e2ac6e`이며 release 목록 68개 파일의 크기·SHA-256이 실제 출력과 일치했다. 공유 `dist/`·개발 서버·사용자 저장은 건드리지 않았다. 소유 source/output/tmp/npm-cache는 검증 후 삭제했다.
+
+8개 문서의 상대 파일 링크 83건에 누락이 없고 D1–D9를 실제 소스·검사와 대조했다. 링크 검사는 로컬 파일 존재 검사이며 외부 URL 접속·앵커 이동 검사를 대신하지 않는다. 증거는 위 루트의 `docs/implementation/` 아래 `audio-verify.txt`, `build.txt`, `build-invocation.mjs`, `release.json`, `build-files.json`, `links.json`, `semantic-review.md`, `source-hashes.json`, `final-receipt.json`, `cleanup.json`에 있다. 음원 기술 검사는 사람의 청취 결과가 아니다.

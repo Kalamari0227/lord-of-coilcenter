@@ -15,6 +15,25 @@
    opt.apply — 결재를 누를 때 실행. 문자열을 돌려주면 결과 화면과 결산에 찍힌다.
    ============================================================ */
 
+function fireCard(s, W) {
+  const customer = ['JP', 'EU', 'CN'].reduce((best, key) =>
+    s.custShare[key] > s.custShare[best] ? key : best, 'JP');
+  const name = CUST[customer], template = DECK.big.find(card => card.id === 'g-fire');
+  return { ...template, targetCustomer: customer, title: `🚨 ${name} 생산라인 화재`,
+    text: `${name}의 페인트칠 공정에서 불이 났습니다. 다른 고객을 찾을지, 복구를 도울지 정해야 합니다. 복구 지원은 이 고객과의 관계 및 본사 신뢰에 각각 반영됩니다.`,
+    opts: template.opts.map(option => option.displayId !== 'g-fire.assist' ? option : {
+      ...option, fx: [...option.fx, `+${name} 관계 8`],
+      apply: (state, game) => {
+        option.apply(state, game);
+        game.W.rel[customer] = clampIndicator(game.W.rel[customer] + 8);
+        const result = `${name}의 복구를 돕도록 정비 인력을 보냈습니다. 본사 신뢰와 ${name} 관계에 반영하고 지원 기록을 남겼습니다.`;
+        remember(game.W, state, 'fire-support', result, { cust: customer, choice: option.displayId });
+        return result;
+      },
+    }),
+  };
+}
+
 const DECK = {
 
   /* ---------------- 대형 사건 ---------------- */
@@ -29,7 +48,7 @@ const DECK = {
       ] },
 
     { id: 'g-fire', who: 'oh', topic: 'big', title: '🚨 주요 고객 생산라인 화재',
-      text: 'A자동차의 페인트칠 공정에서 불이 났습니다. 복구까지 두 달이랍니다. 그동안 그 고객에게 납품할 물량도 줄어듭니다. 다른 고객을 찾을지, 복구를 도울지 정해야 합니다.',
+      text: '주요 자동차 고객의 페인트칠 공정에서 불이 났습니다. 다른 고객을 찾을지, 복구를 도울지 정해야 합니다.',
       opts: [
         { displayId: "g-fire.find-customers", label: '다른 고객을 급히 찾는다', hint: '새 고객을 찾는 영업에 투자합니다. 실제 납품은 이후 결산에서 확인합니다', fx: ['−통장 $130,000', '+3개월 뒤 시장 점유율에 영업 투자 반영 · 실제 납품은 별도'],
           apply: s => { recordFinance(s, {source:'g-fire.find-customers',kind:'expense',amount:130_000,cashDelta:-130_000,operatingDelta:-130_000});
@@ -37,7 +56,7 @@ const DECK = {
             return '영업을 전면에 돌렸습니다.'; } },
         { displayId: "g-fire.assist", label: '복구를 돕는다', hint: '정비 인력을 보내 고객과의 관계를 지킨다', fx: ['−통장 $80,000', '+본사 신뢰 12'],
           apply: s => { recordFinance(s, {source:'g-fire.assist',kind:'expense',amount:80_000,cashDelta:-80_000,operatingDelta:-80_000}); s.trust = clampIndicator(s.trust + 12);
-            return '우리 정비 인력을 보냈습니다. A자동차가 이걸 아주 오래 기억할 겁니다.'; } },
+            return '고객의 복구를 돕도록 우리 정비 인력을 보냈습니다.'; } },
         { displayId: "g-fire.wait", label: '기다린다', hint: '추가 지원 없이 기다린다', fx: ['+비용 없음', '−시장 점유율(상대 변화) 8%'],
           apply: s => { s.myShare *= 0.92; return '추가 지원 없이 기다리기로 했습니다. 시장 점유율이 이전 값보다 8% 줄었습니다.'; } },
       ] },

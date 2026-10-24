@@ -120,10 +120,16 @@ function ccDeepSave(d) {
     && Object.keys(v).length === 3
     && v.operatingAdjustment === summarizeFinance(v.transactions).operatingAdjustment
     && v.financeCost === summarizeFinance(v.transactions).financeCost;
+  const watchKeys = ['cash', 'debt', 'debtLimit', 'debtRoom'];
+  const watchBalances = numbers(watchKeys.join(' '));
+  const hqWatch = (v, r) => fields(v, { ...watchBalances, shortage:bool, delta:nullable(x => fields(x, watchBalances)) })
+    && watchKeys.every(key => v[key] === r.bs?.[key])
+    && v.shortage === (r.bs.cash < 0 || r.bs.debt > r.bs.debtLimit);
   const report = v => fields(v, {
     ...numbers('turn pm hqPerTon revenue gp ebitda op np hqMargin consolidated fixedCost varCost depreciation interest valuationLoss badDebt scrapTon scrapRevenue yieldGain degradeLoss degradeTon dumpLoss dumpTon carryCost overTons hqSpotOffer hqSpotTon commonShareOfSales hqSpotCredit cashIn cashOut spotExposure util shortRatio materialTons invTons'),
     date:str, phase, sales, cum, custShare:customers, fulfillment:optional(fulfillment),
     finance:optional(x => reportFinance(x, v.turn)),
+    hqWatch:optional(x => hqWatch(x, v)),
     bs:x=>fields(x,numbers('invTons invValue longTons longValue ar arDelayed ap debt cash seaValue debtLimit debtRoom debtUse equity interest nwc')),
     stock:x=>fields(x,numbers('onhand sea prod nasi3 fg')),
     shipped:processes,produced:map(num,choice(PROC_LIST)),demand:processes,demandAuto:processes,demandCommon:processes,nasiPotential:processes,run:x=>fields(x,numbers('SLIT LEVEL TRAP DIE')),capNow:x=>fields(x,numbers('SLIT LEVEL BLANK')),
@@ -146,6 +152,13 @@ function ccDeepSave(d) {
     nasi:list(nasi),history:list(report),prelude:optional(list(report)),running:optional(bool),
     hq:x=>fields(x,{...numbers('cumMaterialTons cumHqMargin cumConsolidated'),cumAutoDemand:optional(num),cumAutoShipped:optional(num)}),
   })) return false;
+  const reports = [...(s.prelude || []), ...s.history];
+  if (!reports.every((r, index) => {
+    if (!r.hqWatch) return true;
+    const previous = reports.slice(0, index).findLast(other => other.turn === r.turn - 1);
+    return previous ? r.hqWatch.delta !== null && watchKeys.every(key =>
+      r.hqWatch.delta[key] === r.bs[key] - previous.bs[key]) : r.hqWatch.delta === null;
+  })) return false;
   const project = x=>fields(x,{key:ref(PROJECTS),...numbers('start end base goal progress'),lower:bool});
   const chain = x=>fields(x,{turn:num,date:str,label:str,gap:num,ago:str});
   const fired = x=>fields(x,{turn:num,kind:str,text:str,why:optional(nullable(str)),chain:optional(nullable(chain))});
@@ -158,7 +171,7 @@ function ccDeepSave(d) {
     projectLog:list(x=>fields(x,{key:ref(PROJECTS),name:str,...numbers('start end pct'),grade:choice(['win','half','lose'])})),
     temp:map(x=>fields(x,numbers('amt until')),customer),pledge:map(num,customer),negoTurn:map(num,customer),threat:map(bool,customer),projBoost:map(num),
     hq:x=>fields(x,{target:num,ytd:num,commit:commitment,log:list(y=>fields(y,{...numbers('year target ytd r'),commit:commitment}))}),
-    mem:list(x=>fields(x,{turn:num,tag:str,label:str,cust:optional(customer),risk:optional(nullable(str))})),
+    mem:list(x=>fields(x,{turn:num,tag:str,label:str,cust:optional(customer),risk:optional(nullable(str)),choice:optional(choice(['g-fire.assist']))})),
     impacts:list(x=>fields(x,{label:str,...Object.fromEntries('cash vol order trust equip quality fatigue'.split(' ').map(k=>[k,optional(num)])),risk:optional(str),cut:optional(pair(customer,num)),rel:optional(list(pair(customer,num)))})),
     lastImpacts:list(x=>fields(x,{label:str,rows:list(pair(str,str))})),fired:list(fired),lastFired:list(fired),miles:list(mile),newMiles:list(mile),
     snaps:list(x=>fields(x,{...numbers('turn sales op cash raw util quality equip rel trust morale'),hqPace:nullable(num)})),

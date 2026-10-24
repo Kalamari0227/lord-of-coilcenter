@@ -40,7 +40,8 @@ function ccCompanyHistory(game) {
     .sort((a, b) => (b.turn || 0) - (a.turn || 0)).slice(0, 5);
   return { months: outcome.completedMonths, reason: outcome.reason,
     reasonText: s.over && !outcome.reason ? '종료 사유 기록 없음' : outcome.reasonText,
-    comparisons, records, completedProjects, pendingProject: outcome.project, pending: outcome.pending };
+    comparisons, records, fundingReports: s.history.filter(report => report.hqWatch),
+    completedProjects, pendingProject: outcome.project, pending: outcome.pending };
 }
 
 function ccCompanyHistoryMarkup(history) {
@@ -74,6 +75,7 @@ function ccCompanyHistoryMarkup(history) {
       <section aria-labelledby="cc-history-records"><h3 id="cc-history-records">기록으로 돌아보는 재임</h3>
         <p>남아 있는 주요 기록 중 최근 다섯 건까지 표시합니다. 날짜는 각 원장에 남은 기록 시점입니다.</p>
         ${records ? `<ol class="cc-history-records">${records}</ol>` : '<p>아직 기록된 주요 이력이 없습니다. 직원의 당시 반응도 기록이 있는 경우에만 표시합니다.</p>'}</section>
+      ${ccHqWatchMarkup(history.fundingReports)}
       <section aria-labelledby="cc-history-handover"><h3 id="cc-history-handover">다음 사장에게 남기는 과제</h3>
         ${project ? `<div class="cc-history-pending" data-history-pending="true"><h4>${text(project.name)}</h4>
           <p><b>${text(project.status)}</b></p><p>${text(dateLabel(project.start))} 시작 · ${text(project.evaluationLabel)}</p>

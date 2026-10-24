@@ -10,7 +10,7 @@ const ccDecisionMetadataTable = Object.freeze(Object.fromEntries(Object.entries(
   'g-dump.hold': { categories: ["effect"], timing: 'unspecified', certainty: 'unspecified' },
   'g-dump.reduce': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
   'g-fire.find-customers': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
-  'g-fire.assist': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
+  'g-fire.assist': { categories: ["cost","effect","effect"], timing: 'immediate', certainty: 'direct', note: '선택 즉시 지원비를 지급하고 본사 신뢰 +12, 안건에 표시된 고객 관계 +8을 각각 반영합니다. 두 지표는 100을 넘지 않으며 고객·선택·월을 기록합니다.' },
   'g-fire.wait': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
   'g-fx.pass-all': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },
   'g-fx.pass-half': { categories: ["cost","effect"], timing: 'unspecified', certainty: 'unspecified' },

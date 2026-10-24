@@ -353,6 +353,15 @@ function worldPost(s, W, R, G) {
   // 13. 집중 프로젝트 진척과 이정표
   if (W.project?.key !== 'cash') projectTick(s, W, R, G);
   checkMilestones(s, W, R);
+  if (W.hqWatch) {
+    const previous = [...(s.prelude || []), ...s.history].findLast(report => report.turn === R.turn - 1);
+    const keys = ['cash', 'debt', 'debtLimit', 'debtRoom'];
+    R.hqWatch = {
+      ...Object.fromEntries(keys.map(key => [key, R.bs[key]])),
+      shortage: R.bs.cash < 0 || R.bs.debt > R.bs.debtLimit,
+      delta: previous ? Object.fromEntries(keys.map(key => [key, R.bs[key] - previous.bs[key]])) : null,
+    };
+  }
 }
 
 function rollIncidents(s, W, k = 1) {

@@ -168,7 +168,7 @@ function dealTurn() {
 
   // 1. 외부 충격 — 정해진 달에 온다
   const big = G.bigPlan && G.bigPlan[s.turn];
-  if (big) put({ ...big, topic: 'big' });
+  if (big) put({ ...(big.id === 'g-fire' ? fireCard(s, W) : big), topic: 'big' });
 
   /* 2. 회사가 만든 안건 — 반드시 올라올 것부터, 그다음 급한 순서.
      속성은 한 번 결재로 석 달을 돌리니 그 석 달치 안건이 같이 올라와야 한다.
@@ -2304,6 +2304,24 @@ function ccSettlementComparison(R, s) {
   return { available: true, months, previousCents, currentCents, deltaCents, contributions, remainingCents };
 }
 
+function ccHqWatchMarkup(reports) {
+  const watched = reports.filter(report => report.hqWatch);
+  if (!watched.length) return '';
+  const keys = ['cash', 'debt', 'debtLimit', 'debtRoom'];
+  const rows = watched.map(report => {
+    const watch = report.hqWatch;
+    return `<tr data-hq-watch-turn="${report.turn}"><th scope="row">${escapeText(report.date)}</th>
+      ${keys.map(key => `<td>${money(watch[key])}<br><span class="muted">${watch.delta === null ? '전월 기록 없음' : `전월 대비 ${watch.delta[key] > 0 ? '+' : ''}${money(watch.delta[key])}`}</span></td>`).join('')}
+      <td${watch.shortage ? ' class="bad"' : ''}>${watch.shortage ? '자금 부족' : '부족 없음'}</td></tr>`;
+  }).join('');
+  return `<section class="card"><h3>본사 월별 자금 보고</h3>
+    <p>본사 보증 후 매월 자동으로 남기는 마감 기록입니다. 현금이 음수이거나 부채가 한도를 넘으면 자금 부족으로 표시합니다.</p>
+    <div class="cc-table-scroll" tabindex="0" role="region" aria-label="본사 월별 자금 보고, 좌우 스크롤 가능">
+      <table><caption>실제 월별 결산 장부 · 단위: 달러 · 전월 대비는 연속된 월 기록이 있을 때만 표시</caption>
+      <thead><tr><th scope="col">결산월</th><th scope="col">현금</th><th scope="col">부채</th><th scope="col">대출 한도</th><th scope="col">한도 여유</th><th scope="col">자금 상태</th></tr></thead>
+      <tbody>${rows}</tbody></table></div></section>`;
+}
+
 function ccSettlementMarkup(comparison) {
   if (!comparison.available) return `<section class="cc-settlement-guide" data-settlement="unavailable" aria-label="영업이익 증감 설명">
     <h3>직전 기간과 비교</h3><p>${comparison.reason}</p></section>`;
@@ -2414,6 +2432,7 @@ function showReport(R) {
     </div>
 
     ${ccSettlementMarkup(comparison)}
+    ${ccHqWatchMarkup(monthlyReports)}
     ${impactPanel(G.W)}
 
     ${(items.op.length || items.non.length || !items.warehouseAvailable) ? `<details class="fold cc-settlement-items"><summary>이번 기간의 큰 장부 항목</summary><div class="rcause">

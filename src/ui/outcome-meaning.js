@@ -10,6 +10,8 @@ function ccCaptureImpactMeaning(s, W, R, before) {
   const groups = W.impacts.map(im => {
     const rows = [];
     const add = (kind, text) => rows.push(Object.freeze([kind, text]));
+    const immediate = typeof ccImmediateImpacts !== 'undefined' ? ccImmediateImpacts.get(im) : null;
+    if (immediate) for (const row of immediate) add('=', ccDecisionObservationText(row));
     if (im.vol && im.vol !== 1) {
       const dt = T * (1 - 1 / im.vol);
       add('=', `단순 추정 · 판매량 영향 ${dt >= 0 ? '+' : '−'}${fmt(Math.abs(dt))}톤 · 이번 ${months}개월 판매량 기준`);
@@ -22,16 +24,19 @@ function ccCaptureImpactMeaning(s, W, R, before) {
       add('=', `단순 추정 · 단가 변경에 따른 이익 영향 ${sign}$${fmt(Math.abs(x * T * sh))} · 이번 ${months}개월 판매량·현재 고객 비중 기준`);
     }
     if (im.order && im.order !== 1) add('=', `결재 요청 · 소재 발주 권장량 ×${im.order} · 최종 발주 표에서 확인`);
-    if (im.cash) add('=', `직접 적용 기록 · 현금 ${im.cash > 0 ? '회수' : '지급'} $${fmt(Math.abs(im.cash))} · 일부 반올림된 결재 기록, 실제 변화는 결재 직후 표시`);
-    if (im.rel) for (const [k, d] of im.rel) add('=', `결재 요청 · ${CUST[k]} 관계 ${d >= 0 ? '+' : ''}${d}점 / 기간 말 상태 · ${relLabel(W.rel[k])}`);
-    if (im.trust) add('=', `결재 요청 · 본사 신뢰 ${im.trust > 0 ? '+' : ''}${im.trust}점`);
-    if (im.equip) add('=', `기간 말 상태 · 설비 ${equipLabel(W.equip)} · 결재 전 ${equipLabel(before.equip)}`);
-    if (im.quality) add('=', `조치 기록 · 품질 ${im.quality > 0 ? '개선' : '저하'} 조치 적용 · 현재 품질은 별도 확인`);
-    if (im.fatigue) add('=', `기간 말 상태 · 현장 피로 ${fatigueLabel(W.fatigue)}`);
+    if (!immediate && im.cash) add('=', `직접 적용 기록 · 현금 ${im.cash > 0 ? '회수' : '지급'} $${fmt(Math.abs(im.cash))} · 일부 반올림된 결재 기록, 실제 변화는 결재 직후 표시`);
+    if (!immediate && im.rel) for (const [k, d] of im.rel) add('=', `결재 요청 · ${CUST[k]} 관계 ${d >= 0 ? '+' : ''}${d}점 / 기간 말 상태 · ${relLabel(W.rel[k])}`);
+    if (!immediate && im.trust) add('=', `결재 요청 · 본사 신뢰 ${im.trust > 0 ? '+' : ''}${im.trust}점`);
+    if (!immediate && im.equip) add('=', `기간 말 상태 · 설비 ${equipLabel(W.equip)} · 결재 전 ${equipLabel(before.equip)}`);
+    if (!immediate && im.quality) add('=', `조치 기록 · 품질 ${im.quality > 0 ? '개선' : '저하'} 조치 적용 · 현재 품질은 별도 확인`);
+    if (!immediate && im.fatigue) add('=', `기간 말 상태 · 현장 피로 ${fatigueLabel(W.fatigue)}`);
     if (im.risk) add('?', `확인할 사항 · ${ccMeaningRisk(im.risk)} · 위험은 발생 확정이 아닙니다`);
     return Object.freeze({ label: im.label, rows: Object.freeze(rows) });
   }).filter(group => group.rows.length);
-  ccImpactMeanings.set(W.lastImpacts, Object.freeze(groups));
+  const unlinked = typeof ccUnlinkedDecisions !== 'undefined' ? ccUnlinkedDecisions.get(W.impacts) || [] : [];
+  ccImpactMeanings.set(W.lastImpacts, Object.freeze(groups.concat(unlinked.map(group => Object.freeze({
+    label: group.label, rows: Object.freeze(group.rows.map(row => Object.freeze(['=', ccDecisionObservationText(row)]))),
+  })))));
 }
 function ccMeaningImpacts(W) {
   return ccImpactMeanings.get(W.lastImpacts) || (W.lastImpacts || []).map(im => ({

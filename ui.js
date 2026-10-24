@@ -322,7 +322,7 @@ async function openDecisions() {
       fc.innerHTML = `
         <table class="ordt fct">
           <tr><th>예상</th>${f.rows.map(r => `<th>${dateLabel(r.turn).replace(/^\d+년 /, '')}</th>`).join('')}</tr>
-          <tr><td class="oname">입고</td>${f.rows.map(r => `<td>${r.arrive ? fmtOrderTons(r.arrive) : '–'}</td>`).join('')}</tr>
+          <tr><td class="oname">입고 추정<br><small>소수 둘째 자리 표시 반올림</small></td>${f.rows.map(r => `<td>${r.arrive ? ccEstimatedOrderTons(r.arrive) : '–'}</td>`).join('')}</tr>
           <tr><td class="oname">월말 재고</td>${f.rows.map(r => `<td class="${r.short ? 'dn' : ''}">${r.short ? '결품' : fmt(r.stock)}</td>`).join('')}</tr>
           <tr><td class="oname">보관장 사용률</td>${f.rows.map(r => `<td class="${yl(r.yard)}">${Math.round(r.yard * 100)}%</td>`).join('')}</tr>
           <tr><td class="oname">재고율(개월)</td>${f.rows.map(r => `<td>${r.coverM.toFixed(1)}</td>`).join('')}</tr>
@@ -375,6 +375,8 @@ async function openDecisions() {
             <button class="mini" data-set="1.2">권장 ×1.2</button>
           </div>
         </div>
+        ${ccOrderExplanation(rows)}
+        ${ccAnnualOrderProgress(G.s, G.W)}
         <div id="ofc" class="ofc"></div>
         <p class="hint">고객군별 재고는 판매 비중으로 나눈 추정치입니다. 같은 규격의 소재를 여러 고객이 함께 씁니다.
           지금 주문하면 <b>${lead}개월 뒤</b> 도착합니다.<br>
@@ -511,11 +513,14 @@ async function openDecisions() {
   const submitForm = (vals, verdictLabel, doneLabel) => {
     if (!canCommit()) return false;
     const before = snap(G.s);
+    const observedBefore = typeof ccDecisionSnapshot === 'function' ? ccDecisionSnapshot(G.s, G.W) : null;
+    const impactStart = G.W.impacts.length;
     const result = card.submit(vals, G.s, G);
     if (result === false) return false;
     committed = true;
     const msg = result || '';
-    const chips = deltaChips(before, snap(G.s));
+    const chips = observedBefore ? ccDecisionObservationMarkup(ccDecisionObservation(card, null, observedBefore,
+      ccDecisionSnapshot(G.s, G.W), G.W.impacts.slice(impactStart))) : deltaChips(before, snap(G.s));
     G.done.push({ deck, title: card.title, choice: doneLabel, msg });
     if (msg) G.resultLines = (G.resultLines || []).concat(msg);
     showVerdict(verdictLabel, msg, chips);
@@ -526,12 +531,18 @@ async function openDecisions() {
     if (!canCommit()) return;
     const o = card.opts[i];
     const before = snap(G.s);
+    const observedBefore = typeof ccDecisionSnapshot === 'function' ? ccDecisionSnapshot(G.s, G.W) : null;
+    const impactStart = G.W.impacts.length;
     let msg = '';
     if (o.apply) msg = o.apply(G.s, G) || '';
     committed = true;
     if (o.mult) G.mult *= o.mult;
     if (o.ot) G.ui.overtime = true;
-    const chips = deltaChips(before, snap(G.s));
+    const observed = observedBefore ? ccDecisionObservation(card, o, observedBefore,
+      ccDecisionSnapshot(G.s, G.W), G.W.impacts.slice(impactStart)) : null;
+    if (observed?.length && G.W.impacts.length === impactStart)
+      ccUnlinkedDecisions.set(G.W.impacts, [...(ccUnlinkedDecisions.get(G.W.impacts) || []), { label: o.label, rows: observed }]);
+    const chips = observed ? ccDecisionObservationMarkup(observed) : deltaChips(before, snap(G.s));
     G.done.push({ deck, title: card.title, choice: o.label, msg });
     if (msg) G.resultLines = (G.resultLines || []).concat(msg);
 
@@ -911,6 +922,8 @@ function orderRows(s, L) {
     return { k, sh, use, oh, sea: se, prod: pr, inv, res, max: maxR,
       invM: useM > 0 ? inv / useM : 0, resM: useM > 0 ? res / useM : 0,
       capBy, yardRoom: Math.round(yardRoom), useM,
+      baseBeforePolicy: Math.max(0, use + gap), policyMult: cardMult, baseAfterPolicy: base,
+      capped, beforeRounding: rec, yardRoomRaw: yardRoom,
       rec: recR };
   }).filter(r => r.sh > 0.01);
 }
@@ -1396,6 +1409,7 @@ function goalPanel(s, W) {
   }
   return `<div class="card goal">
     <h2>${yr}년차 ${periodNow().replace(/^\d+년 /, '')} — 이번에 할 일</h2>
+    ${ccAnnualOrderProgress(s, W)}
     <div class="goalrow">
       ${W.hq.target > 0 ? `<div class="gbox">
         <span class="gl">본사 소재 판매 목표</span>
@@ -1578,10 +1592,11 @@ function topResults(s, W) {
 }
 
 function impactPanel(W) {
-  if (!W.lastImpacts.length) return '';
+  const meanings = typeof ccMeaningImpacts === 'function' ? ccMeaningImpacts(W) : W.lastImpacts;
+  if (!meanings.length) return '';
   return `<div class="card">
     <h2>지난 결재의 영향</h2>
-    <div class="imps">${(typeof ccMeaningImpacts === 'function' ? ccMeaningImpacts(W) : W.lastImpacts).map(im => `<div class="imp"><b>${escapeText(im.label)}</b>
+    <div class="imps">${meanings.map(im => `<div class="imp"><b>${escapeText(im.label)}</b>
       <div class="fx">${im.rows.map(([k, t]) => {
         const cls = k === '+' ? 'up' : k === '−' ? 'dn' : k === '?' ? 'rsk' : 'neu';
         return `<span class="${cls}">${k === '?' ? '⚠ ' : ''}${escapeText(ccNarrativeText(t))}</span>`; }).join('')}</div></div>`).join('')}</div>
@@ -2432,7 +2447,8 @@ function showReport(R) {
     </div>
 
     ${ccSettlementMarkup(comparison)}
-    ${ccHqWatchMarkup(monthlyReports)}
+    ${ccMonthlyEvidenceMarkup(monthlyReports, G.W)}
+    <details class="fold"><summary>본사 월별 자금 보고 근거</summary>${ccHqWatchMarkup(monthlyReports) || '<p>이 기간의 본사 자금 보고는 세부 미기록입니다.</p>'}</details>
     ${impactPanel(G.W)}
 
     ${(items.op.length || items.non.length || !items.warehouseAvailable) ? `<details class="fold cc-settlement-items"><summary>이번 기간의 큰 장부 항목</summary><div class="rcause">
@@ -2582,3 +2598,71 @@ function renderEnd() {
 }
 
 /* save.js가 뒤에 붙는다. 거기서 render()를 부른다 — 설치 안내와 저장 목록이 첫 화면에 필요하다. */
+
+function ccEstimatedOrderTons(value) {
+  return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+function ccOrderExplanation(rows) {
+  return `<details class="fold cc-order-evidence"><summary>권장 발주량 계산 근거</summary>
+    <p>기준 권장량에 정책 배수를 적용한 뒤 본사 공급·재원 천장·야드 여유와 최소 발주선을 반영하고 50톤 단위로 반올림합니다. 같은 한도에 걸리면 배수를 높여도 권장량이 같을 수 있습니다. 직접 입력한 수량에는 배수를 다시 곱하지 않습니다.</p>
+    <ul>${rows.map(r => `<li data-order-customer="${r.k}"><b>${CUST[r.k]}</b> · 기준 ${ccEstimatedOrderTons(r.baseBeforePolicy)}톤 → 정책 ×${r.policyMult} → ${ccEstimatedOrderTons(r.baseAfterPolicy)}톤 → 한도 후 ${ccEstimatedOrderTons(r.capped)}톤 → 최소 발주선 반영 ${ccEstimatedOrderTons(r.beforeRounding)}톤 → 50톤 반올림 후 권장 <b>${fmtOrderTons(r.rec)}톤</b><br>결정 이유: ${r.capBy} · 야드 여유 기준 ${ccEstimatedOrderTons(r.yardRoomRaw)}톤 · 입력 최대 ${fmtOrderTons(r.max)}톤</li>`).join('')}</ul>
+    <p class="hint">중간 계산은 소수 둘째 자리까지 표시 반올림한 값입니다. 권장량·입력 합계·월별 계획은 별도로 확인하십시오.</p></details>`;
+}
+function ccAnnualOrderProgress(s, W) {
+  if (s.over || s.turn > CFG.TOTAL_TURNS) return '<p class="hint">재임 종료 · 앞으로 집행할 연간 발주 진도는 없습니다.</p>';
+  if (!(W.hq.target > 0)) return '<p class="hint">올해 본사 소재 주문 목표는 아직 설정되지 않았습니다.</p>';
+  const remaining = Math.max(0, W.hq.target - W.hq.ytd), months = 12 - ((s.turn - 1) % 12);
+  return `<p class="hint cc-annual-order" data-remaining="${remaining}" data-months="${months}">올해 목표 잔량 <b>${ccEstimatedOrderTons(remaining)}톤</b> · 이번 달 포함 ${months}개월 · 단순 월평균 ${ccEstimatedOrderTons(remaining / months)}톤. 남은 목표를 기간으로 나눈 참고값이며 자동 발주나 납품 약속이 아닙니다.</p>`;
+}
+
+const ccFinanceSourceNames = Object.freeze({
+  'engine.lc-fee': '소재 수입 신용장 수수료', 'engine.infrastructure': '공장 기반시설 취득',
+  'engine.add-line': '가공 라인 증설', 'engine.sales-effort': '영업 활동 투자', 'engine.yield-program': '수율 개선 투자',
+  'w-break.manufacturer': '제조사 고장 수리', 'w-break.in-house': '자체 고장 수리', 'w-break.temporary': '임시 고장 수리',
+  'w-claim.compensate': '고객 클레임 보상', 'w-claim.investigate': '고객 클레임 조사', 'w-claim.deny': '고객 클레임 대응',
+  'w-legacy.sell': '묵은 재고 처분', 'w-legacy.return': '묵은 재고 본사 반품', 'w-short.local': '현지 긴급 소재 구매',
+  'w-over.discount': '재고 할인 처분', 'w-cash.factor': '매출채권 할인 회수',
+  'w-maint.full': '전면 정비', 'w-maint.partial': '부분 정비', 'w-load.outsource': '외주 가공',
+  'w-idle.maintain': '유휴 설비 정비', 'w-idle.sales': '유휴기 영업 투자',
+  'w-qual.root-cause': '품질 원인 개선', 'w-qual.inspect': '품질 검사 강화', 'w-people.rest': '현장 휴식',
+  'w-churn.visit': '이탈 우려 고객 방문', 'w-credit.extend': '외상 연장 뒤 미회수 손실', 'w-credit.insure': '외상 보험',
+  'm-mro.buy': '예비 부품 구매', 'm-solar.own': '태양광 설비 취득',
+  'm-safety.replace-all': '안전 설비 전면 교체', 'm-safety.wire-only': '크레인 쇠줄 부분 교체', 'm-safety.defer': '미룬 안전 교체 뒤 사고',
+  'h-bonus.profit': '이익 연동 상여', 'h-bonus.prior': '기존 수준 상여',
+  'h-labor.reduce': '노동 점검에 따른 근무 축소', 'h-labor.paperwork': '노동 점검 서류 대응', 'h-labor.unprepared': '노동 점검 미대응',
+  'h-house.relocate': '직원 숙소 이전', 'h-insure.full': '종합 보험', 'h-insure.exclude-machine': '기계 제외 보험',
+  'h-insure.deductible': '자기부담 보험', 'h-tax.expert': '세무 전문가 대응', 'h-tax.internal': '세무 자체 대응', 'h-tax.hq': '본사 세무 지원',
+  'h-hire.recruit': '기술 인력 채용', 'm-spot.all': '유통향 소재 전량 거래', 'm-spot.half': '유통향 소재 일부 거래',
+  'project.cash-ar': '운전자본 과제 · 채권 회수', 'project.cash-disposal': '운전자본 과제 · 재고 처분',
+});
+function ccFinanceSourceLabel(source) {
+  if (Object.hasOwn(ccFinanceSourceNames, source)) return ccFinanceSourceNames[source];
+  for (const card of [...DECK.big, ...DECK.life]) {
+    const option = card.opts.find(option => option.displayId === source);
+    if (option) return option.label;
+  }
+  for (const [key, project] of Object.entries(PROJECTS)) if (source === `project.${key}.start`) return `${project.name} · 시작 예산`;
+  return '기록된 결재·사건 거래 (상세 명칭 미기록)';
+}
+function ccMonthlyEvidenceMarkup(reports, W) {
+  const exactMoney = value => `${value < 0 ? '−' : value > 0 ? '+' : ''}$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const kindLabels = { expense: '비용 거래', income: '수익 거래', asset: '자산 취득', 'working-capital': '운전자본 거래', financing: '자금 조달 거래' };
+  const months = reports.map(report => {
+    const finance = report.finance, fulfillment = report.fulfillment;
+    let reason = '세부 미기록 · 당시 납품에 따른 본사 신뢰 회복을 확인할 수 없습니다.';
+    if (fulfillment) reason = !fulfillment.eligible ? '초기 가동 준비 기간으로 회복 평가 대상 아님'
+      : fulfillment.ratio === null ? '자동차 내시가 없어 이행률 평가 없음'
+      : fulfillment.ratio + 1e-9 < 0.95 ? '자동차 내시 이행률이 95% 미만'
+      : fulfillment.trustRecovery === 0 ? '이행률 95% 이상이나 본사 신뢰 상한으로 실제 회복 0점'
+      : '자동차 내시 이행률 95% 이상으로 본사 신뢰 회복';
+    return `<section data-turn="${report.turn}"><h3>${escapeText(report.date || dateLabel(report.turn))}</h3>
+      <div data-finance="${finance ? 'recorded' : 'missing'}">${finance ? `<p>결재·사건 영업이익 반영 ${exactMoney(finance.operatingAdjustment)} · 금융비용 ${exactMoney(finance.financeCost)}</p>
+      ${finance.transactions.length ? `<ul>${finance.transactions.map(entry => `<li><b>${escapeText(ccFinanceSourceLabel(entry.source))}</b> · ${kindLabels[entry.kind]} · 거래액 $${entry.amount.toLocaleString('en-US', {maximumFractionDigits:2})}<br>영업이익 반영 ${exactMoney(entry.operatingDelta)} · 금융손익 반영 ${exactMoney(entry.financialDelta)}${entry.kind === 'asset' ? '<br>취득액은 자산으로 기록되며 전액을 당월 영업비용으로 다시 빼지 않습니다.' : entry.kind === 'working-capital' ? '<br>채권·재고 등의 회수·구매·처분 거래입니다. 거래액 자체가 이익이나 현금 지출액을 뜻하지 않습니다.' : ''}</li>`).join('')}</ul>` : '<p>기록된 결재·사건 거래 0건</p>'}` : '<p>비용·금융·자산 거래 세부 미기록 · 비용이 0이었다는 뜻은 아닙니다.</p>'}</div>
+      <p data-fulfillment="${fulfillment ? 'recorded' : 'missing'}" data-recovery="${fulfillment?.trustRecovery ?? 'missing'}">${reason}${fulfillment ? ` · 자동차 내시 ${ccEstimatedOrderTons(fulfillment.demand)}톤 / 납품 ${ccEstimatedOrderTons(fulfillment.shipped)}톤${fulfillment.ratio === null ? '' : ` (${(fulfillment.ratio * 100).toFixed(1)}%)`} · 실제 회복 +${fulfillment.trustRecovery}점` : ''}</p></section>`;
+  }).join('');
+  const evaluations = (W.hq.log || []).filter(entry => reports.some(report => report.turn === entry.year * 12));
+  return `<details class="fold cc-monthly-evidence"><summary>월별 비용·자산·본사 신뢰 근거</summary>
+    <p>실제 월별 원장입니다. 개별 결재 직후의 변화 전후값은 현재 실행 중에만 확인하며, 저장을 다시 불러온 뒤에는 해당 세부 관측값이 미기록입니다. 영업이익 반영과 금융손익 반영은 서로 다른 항목이며 위 결산에 이미 포함되어 있습니다. 거래액만으로 현금 지출을 추정하지 않습니다.</p>${months || '<p>월별 원장 세부 미기록</p>'}
+    ${evaluations.map(entry => `<p>${entry.year}년차 연말 본사 평가 · 주문 목표 ${ccEstimatedOrderTons(entry.target)}톤 / 실적 ${ccEstimatedOrderTons(entry.ytd)}톤 · 달성률 ${(entry.r * 100).toFixed(1)}%. 당시 개별 신뢰 변화량은 이 평가 기록에 남아 있지 않습니다.</p>`).join('')}
+    <p>본사 신뢰에는 위 납품 회복 외에 결재·사건·연말 평가도 영향을 줍니다. 고객 관계와 직원 사기는 별도 지표입니다. 사기는 월 손익·연속 적자와 기본 수준 복귀, 월말 현장 피로·휴식에 따라 변합니다. 설비는 가동으로 닳고, 피로는 가동률에 따라 변하며, 품질은 설비·사기·피로·개선 조치에 따라 월말에 점진적으로 변합니다. 월말 품질은 그달 고객 반품·보상 위험 판정과 다음 달 수율에 영향을 줍니다. 여러 변화가 합쳐진 월말 상태를 한 결재의 효과로 해석하지 않습니다.</p></details>`;
+}

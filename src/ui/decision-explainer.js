@@ -43,7 +43,7 @@ function ccDecisionFormGuide(card) {
     + '0점인 고객군은 관리가 끊겨 물량이 줄어듭니다. 물량 전망은 매출을 확정하지 않습니다.';
   if (card.form === 'order') return `입력 단위는 소재 톤입니다. 지금 발주한 소재는 기본 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤 입고되며, `
     + `대금은 입고 후 ${CFG.DPO_TURNS}개월 뒤 결제합니다. 입고와 현금 지출은 시점이 다릅니다. `
-    + (card.months > 1 ? '분기 발주량은 3분의 1씩 세 달에 나누어 집행하고 입고·결제도 나뉩니다. ' : '')
+    + (card.months > 1 ? `이번 발주는 표시된 월별 계획대로 ${card.months}개월에 나눠 집행하며, 마지막 달에 나머지 수량을 주문합니다. 입고·결제도 나뉩니다. ` : '')
     + '아래 재고량, 보관장(야드)의 여유, 소재 부족량은 수요와 입고 시점에 따른 추정입니다. 주문이 늘거나 소재가 늦게 도착하는 경우도 함께 비교해 보십시오.';
   return '';
 }
@@ -60,4 +60,54 @@ function ccExplainDecision(dialog, card) {
     const effects = button.querySelector('.fx');
     if (effects) effects.replaceWith(ccElement('span', 'cc-decision-effects', ccDecisionEffects(card, option)));
   });
+}
+
+const ccImmediateImpacts = new WeakMap();
+const ccUnlinkedDecisions = new WeakMap();
+function ccDecisionSnapshot(s, W) {
+  return Object.freeze({ cash: s.cash, trust: s.trust, morale: s.morale, share: s.myShare,
+    equip: W.equip, quality: W.quality, fatigue: W.fatigue, safety: W.safety ?? null,
+    qBoost: W.qBoost, ...Object.fromEntries(Object.entries(W.rel).map(([key, value]) => [`rel.${key}`, value])) });
+}
+function ccDecisionObservation(card, option, before, after, impacts = []) {
+  const requests = {};
+  for (const impact of impacts) {
+    for (const key of ['trust', 'equip', 'fatigue']) if (Number.isFinite(impact[key])) requests[key] = (requests[key] || 0) + impact[key];
+    for (const [key, value] of impact.rel || []) requests[`rel.${key}`] = (requests[`rel.${key}`] || 0) + value;
+  }
+  const authored = ccDecisionRequests[option?.displayId] || {};
+  for (const [key, value] of Object.entries(authored)) {
+    if (key === 'targetRelation') {
+      if (Object.hasOwn(CUST, card.targetCustomer)) requests[`rel.${card.targetCustomer}`] = value;
+    } else requests[key] = value;
+  }
+  const rows = Object.keys(after).filter(key => before[key] !== after[key] || Object.hasOwn(requests, key))
+    .map(key => Object.freeze({ key, before: before[key], after: after[key],
+      actual: key === 'share' ? (before.share > 0 ? (after.share / before.share - 1) * 100 : null)
+        : Number.isFinite(before[key]) && Number.isFinite(after[key]) ? after[key] - before[key] : null,
+      requested: requests[key] ?? null }));
+  const observation = Object.freeze(rows);
+  if (impacts.length) ccImmediateImpacts.set(impacts[0], observation);
+  return observation;
+}
+function ccDecisionMetricLabel(key) {
+  return key.startsWith('rel.') ? `${CUST[key.slice(4)]} 고객 관계` :
+    ({ cash: '현금', share: '시장 점유율(상대 변화)', trust: '본사 신뢰', morale: '직원 사기', equip: '설비 상태', quality: '품질 지수',
+      fatigue: '현장 피로', safety: '안전 위험 지수', qBoost: '품질 개선 조치' })[key];
+}
+function ccDecisionNumber(value) {
+  return Number.isFinite(value) ? String(Number(value.toPrecision(8))) : '미기록';
+}
+function ccDecisionObservationText(row) {
+  const signed = value => value === null ? '미기록' : `${value > 0 ? '+' : ''}${ccDecisionNumber(value)}`;
+  const unit = row.key === 'cash' ? '달러' : row.key === 'share' ? '%' : '점';
+  const request = row.requested === null ? '' : `요청 ${signed(row.requested)}${unit} / `;
+  if (row.key === 'share') return `시장 점유율 · 선택 직후 ${ccDecisionNumber(row.before * 100)}% → ${ccDecisionNumber(row.after * 100)}% · 상대 변화 ${row.actual === null ? '이전 점유율이 0이어서 계산 불가' : signed(row.actual) + '%'}`;
+  return `${ccDecisionMetricLabel(row.key)} · ${request}선택 직후 실제 ${signed(row.actual)}${row.actual === null ? '' : unit} (${ccDecisionNumber(row.before)} → ${ccDecisionNumber(row.after)})`;
+}
+function ccDecisionObservationMarkup(rows) {
+  if (!rows.length) return '<p class="hint">선택 직후 확인된 현금·상태 지표 변화 없음. 월말·조건부 효과는 해당 시점에 확인합니다.</p>';
+  return `<div class="cc-decision-observed"><h3>선택 직후 실제 변화</h3><ul>${rows.map(row =>
+    `<li data-metric="${row.key}" data-requested="${row.requested ?? 'missing'}" data-actual="${row.actual ?? 'missing'}">${ccEscape(ccDecisionObservationText(row))}</li>`).join('')}</ul>
+    <p class="hint">선택 직후 관측값입니다. 긴 소수는 반올림해 표시하며 작은 변화도 0으로 생략하지 않습니다. 0~100점 지표는 상·하한에 걸리면 요청보다 적게 변합니다. ${rows.some(row => row.key === 'qBoost' || row.key === 'quality') ? '품질 개선 조치는 월말 고객 반품·보상 위험 판정과 다음 달 수율에 영향을 주며, 실제 양품률 상승을 보장하지 않습니다. ' : ''}이후 월말 변화·예약 사건은 이 수치와 별도입니다.</p></div>`;
 }

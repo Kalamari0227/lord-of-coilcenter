@@ -108,7 +108,7 @@ test('form guidance explains sales points and arrival versus payment with curren
   const order = f.run("ccDecisionFormGuide({form:'order',months:3})");
   assert.match(order, new RegExp(`${f.run('CFG.LEAD_TURNS+CFG.GRADE.PREMIUM.leadAdd')}개월 뒤`));
   assert.match(order, new RegExp(`입고 후 ${f.run('CFG.DPO_TURNS')}개월`));
-  assert.match(order, /3분의 1씩/); assert.match(order, /추정/);
+  assert.match(order, /월별 계획대로 3개월/); assert.doesNotMatch(order, /3분의 1씩/); assert.match(order, /추정/);
 });
 test('actual inventory discount and negotiation factories retain approximate and conditional text', () => {
   const f = fixture();

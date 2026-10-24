@@ -163,3 +163,31 @@ function ccDecisionMetadata(option) {
   return Object.hasOwn(ccDecisionMetadataTable, option.displayId)
     ? ccDecisionMetadataTable[option.displayId] : ccDecisionUnknown;
 }
+
+// Authored requests are independent of fx copy; quality measures are not yield promises.
+const ccDecisionRequests = Object.freeze(Object.fromEntries(Object.entries({
+  'g-fire.assist': { trust: 12, targetRelation: 8 },
+  'g-fx.pass-all': { trust: -8 }, 'g-fx.pass-half': { trust: -2 }, 'g-fx.absorb': { trust: 8 },
+  'g-policy.absorb': { trust: 4 },
+  'l-kick.decline': { morale: -3 }, 'l-cat.leave-row': { morale: 4 }, 'l-name.accept-name': { morale: -2 },
+  'l-menu.both': { morale: 8 }, 'l-menu.hold': { morale: -2 }, 'l-gosa.skip': { morale: -3 },
+  'l-photo.write-full': { morale: -2, trust: 6 }, 'l-photo.decline': { trust: -4 },
+  'w-load.hire': { morale: 5, fatigue: -18 }, 'w-idle.reduce-shifts': { morale: -8 },
+  'w-people.raise-wages': { morale: 12 },
+  'h-wage.full': { morale: 10 }, 'h-wage.inflation': { morale: 2 }, 'h-wage.freeze': { morale: -12 },
+  'h-bonus.skip': { morale: -10 }, 'h-hire.promote': { morale: 5, quality: -2 },
+  'h-tax.hq': { trust: -3 },
+  'l-visit.entertain': { trust: 7 }, 'l-visit.improve': { morale: 4 }, 'l-visit.delegate': { morale: -2 },
+  'l-audit.reconcile-all': { trust: 5, morale: -4 }, 'l-audit.reconcile-major': { trust: 2 },
+  'l-kick.uniforms': { morale: 9 }, 'l-kick.balls': { morale: 3 },
+  'l-cat.build-house': { morale: 7 }, 'l-cat.relocate': { morale: -8 },
+  'l-name.make-video': { trust: 6 }, 'l-gosa.full': { morale: 6 }, 'l-gosa.simple': { morale: 3 },
+  'w-maint.full': { equip: 32, qBoost: 5 }, 'w-maint.partial': { equip: 12 },
+  'w-idle.maintain': { equip: 28, qBoost: 4 },
+  'w-qual.root-cause': { qBoost: 14 }, 'w-qual.inspect': { qBoost: 5 },
+  'w-load.outsource': { fatigue: -10, quality: -5 },
+  'w-people.rest': { fatigue: -25, morale: 10 },
+  'm-safety.replace-all': { morale: 3 }, 'h-bonus.profit': { morale: 10 },
+  'h-labor.reduce': { fatigue: -15 }, 'h-house.relocate': { morale: -3 },
+  'h-hire.recruit': { fatigue: -6, qBoost: 5 },
+}).map(([id, requested]) => [id, Object.freeze(requested)])));

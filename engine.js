@@ -686,7 +686,7 @@ function resolveTurn(state, decision) {
     buy:     { totalTon: 0, alpha: 0.7, beta: 0, hqSpotTon: 0, ...(decision.buy || {}) },
     run:     { SLIT: 0, LEVEL: 0, TRAP: 0, DIE: 0, ...(decision.run || {}) },
     sell:    { C2C: 0, SLIT: 0, LEVEL: 0, TRAP: 0, DIE: 0, ...(decision.sell || {}) },
-    invest:  { addLine: null, newBuilding: false, salesEffort: 0, yieldProgram: 0, ...(decision.invest || {}) },
+    invest:  { addLine: null, newBuilding: false, salesEffort: 0, yieldProgram: 0, yieldBonus: 0, ...(decision.invest || {}) },
     options: { overtime: false, discount: 0, trimYield: 0, custFocus: null, salesMix: null, ...(decision.options || {}) },
   };
 
@@ -811,10 +811,10 @@ function resolveTurn(state, decision) {
     s.cash -= d.invest.salesEffort;
     s.effortQueue.push({ amount: d.invest.salesEffort, turnsLeft: CFG.SALES_EFFORT_LAG });
   }
-  let yieldBonus = 0;
+  let yieldBonus = d.invest.yieldBonus || 0;
   if (d.invest.yieldProgram > 0) {
     s.cash -= d.invest.yieldProgram;
-    yieldBonus = Math.min(0.02, d.invest.yieldProgram / 100_000 * 0.004);
+    yieldBonus += Math.min(0.02, d.invest.yieldProgram / 100_000 * 0.004);
   }
   // 품질·설비 상태가 수율을 밀고 당긴다 (world.js)
   yieldBonus += (s.mods && s.mods.yieldAdj) || 0;

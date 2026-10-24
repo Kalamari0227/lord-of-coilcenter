@@ -111,7 +111,7 @@ function newGame(opt) {
      48개월 ÷ 3 = 16번이면 끝난다. */
   const mpt = opt.mode === 'quick' ? 3 : 1;
   G = { s, mode: opt.mode || 'normal', mpt, diff: D,
-        ui: { cover: 1, hqTake: 0, expandPick: null, overtime: false, yieldSpend: 0, salesSpend: 0 },
+        ui: { cover: 1, hqTake: 0, expandPick: null, overtime: false, yieldSpend: 0, yieldBonus: 0, salesSpend: 0 },
         pending: [], seen: {}, cards: {}, picks: {},
         turnDiscount: 0, yieldPenalty: 0, extraFixed: 0 };
 
@@ -257,7 +257,10 @@ async function openDecisions() {
   // 오늘 결재가 끝났으면 바로 한 달을 보낸다. 공장에 다시 들를 일이 없다.
   if (!G.queue || G.qi >= G.queue.length) { await advance(); return; }
 
-  const { deck, card } = G.queue[G.qi];
+  const game = G, entry = G.queue[G.qi];
+  const { deck, card } = entry;
+  let committed = false;
+  const canCommit = () => !committed && G === game && G.queue?.[G.qi] === entry;
   const who = CAST[card.who] || CAST.han;
   const dlg = document.createElement('dialog');
   dlg.className = 'deck';
@@ -414,7 +417,7 @@ async function openDecisions() {
       validate(); paint();
     });
     submit.onclick = () => {
-      if (!validate()) return;
+      if (!canCommit() || !validate()) return;
       const current = Object.fromEntries([...dlg.querySelectorAll('[data-ok]')].map(input => [input.dataset.ok, input.valueAsNumber]));
       if (submitOrder(current) === false) {
         error.textContent = '고객군별 발주량과 표시된 최대량을 다시 확인하십시오.';
@@ -496,6 +499,7 @@ async function openDecisions() {
       paint();
     });
     dlg.querySelector('#ssubmit').onclick = () => {
+      if (!canCommit()) return;
       const tot = rows.reduce((a, r) => a + (vals[r.k] || 0), 0);
       if (tot <= 0) { dlg.querySelector('#ssum').innerHTML = '<b class="dn">한 군데에는 붙여야 합니다.</b>'; return; }
       const shown = rows.filter(r => vals[r.k] > 0).map(r => `${CUST[r.k]} ${Math.round(vals[r.k] / tot * 100)}`).join(' · ');
@@ -505,9 +509,11 @@ async function openDecisions() {
   };
 
   const submitForm = (vals, verdictLabel, doneLabel) => {
+    if (!canCommit()) return false;
     const before = snap(G.s);
     const result = card.submit(vals, G.s, G);
     if (result === false) return false;
+    committed = true;
     const msg = result || '';
     const chips = deltaChips(before, snap(G.s));
     G.done.push({ deck, title: card.title, choice: doneLabel, msg });
@@ -517,10 +523,12 @@ async function openDecisions() {
   };
 
   const choose = (i) => {
+    if (!canCommit()) return;
     const o = card.opts[i];
     const before = snap(G.s);
     let msg = '';
     if (o.apply) msg = o.apply(G.s, G) || '';
+    committed = true;
     if (o.mult) G.mult *= o.mult;
     if (o.ot) G.ui.overtime = true;
     const chips = deltaChips(before, snap(G.s));
@@ -566,7 +574,7 @@ async function openDecisions() {
       dlg.setAttribute('aria-label', card.title);
     }
     dlg.querySelector('#nx').onclick = async () => {
-      if (!dlg.open) return;
+      if (!dlg.open || G !== game || G.queue?.[G.qi] !== entry) return;
       if (last && typeof ccAudioCue === 'function') ccAudioCue('month-turn', ccAudioEventId('advance'));
       dlg.close(); dlg.remove(); G.qi++; await openDecisions();
     };
@@ -1064,7 +1072,7 @@ function buildDecision(s, ui) {
   return {
     buy: { totalTon: buy, alpha: 1, beta: 1, hqSpotTon: ui.hqTake },
     invest: { addLine: ui.expandPick, newBuilding: s.lines.length >= CFG.MAX_LINES,
-              yieldProgram: ui.yieldSpend, salesEffort: ui.salesSpend },
+              yieldProgram: ui.yieldSpend, yieldBonus: ui.yieldBonus || 0, salesEffort: ui.salesSpend },
     options: { overtime: ui.overtime, // 깎아준 단가는 그 고객 비중만큼 매달 판가에 남는다
                discount: G ? (G.turnDiscount || 0) + (G.W ? standingCut(s, G.W) : 0) : 0,
                trimYield: G && G.trim ? G.trim.options[G.trimPick].yield : 0,
@@ -2194,7 +2202,8 @@ function advance() {
     const savedFC = CFG.FC_BASE;
     if (G.extraFixed) CFG.FC_BASE += G.extraFixed;
 
-    /* 증설·본사 지시·영업 자원 배분은 한 번 결정한 것이므로 분기 첫 달에만 집행한다.
+    /* 증설·본사 지시·영업 배분·유료 영업/수율 투자는 분기 첫 달에만 집행한다.
+       수율 개선 효과·잔업·가격/트리밍 방침은 실제 진행하는 매월 유지한다.
 
        소재 발주는 다르다. 사장이 적어낸 건 석 달치이고, 화면에도 "세 달에 나눠서 집행합니다"라고
        적혀 있다. 그런데 예전에는 첫 달에 석 달치를 통째로 걸었다. 그래서
@@ -2204,7 +2213,10 @@ function advance() {
     const plan = G.ui.orderPlan;
     const monthTon = plan ? (plan[i] ?? 0) : (i === 0 ? G.ui.orderTon : 0);
     const ui = i === 0 ? { ...G.ui, orderTon: monthTon }
-             : { ...G.ui, expandPick: null, hqTake: 0, custFocus: null, salesMix: null, orderTon: monthTon };
+             : { ...G.ui, expandPick: null, hqTake: 0, custFocus: null, salesMix: null,
+                 salesSpend: 0, yieldSpend: 0,
+                 yieldBonus: (G.ui.yieldBonus || 0) + Math.min(0.02, Math.max(0, G.ui.yieldSpend || 0) / 100_000 * 0.004),
+                 orderTon: monthTon };
     worldPre(s, G.W);                       // 설비·품질이 이번 달 캐파와 수율을 정한다
     const res = resolveTurn(s, buildDecision(s, ui));
     worldPost(res.state, G.W, res.report, G); // 결과가 설비·관계·피로를 움직이고, 다음 사건을 부른다
@@ -2228,7 +2240,7 @@ function advance() {
 
   G.resultLines = [];
   G.turnDiscount = 0;
-  Object.assign(G.ui, { hqTake: 0, expandPick: null, overtime: false, yieldSpend: 0, salesSpend: 0, custFocus: null, salesMix: null, orderTon: null, orderBy: null, orderPlan: null });
+  Object.assign(G.ui, { hqTake: 0, expandPick: null, overtime: false, yieldSpend: 0, yieldBonus: 0, salesSpend: 0, custFocus: null, salesMix: null, orderTon: null, orderBy: null, orderPlan: null });
   showReport(mergeReports(reports));
 }
 

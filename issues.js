@@ -1191,7 +1191,7 @@ function qualityCard(s, W) {
         + `아직 고객이 문제를 제기하지는 않았습니다. 하지만 불량품이 납품되면 고객이 반품이나 보상을 요구할 수 있습니다.`,
     opts: [
       { displayId: "w-qual.root-cause", label: '불량 원인을 찾아 고친다', hint: '오 과장이 작업 기록을 분석하고 가공 방식을 개선한다', fx: ['−통장 $55,000', '+품질 크게 개선 (두세 달)', '+고객의 반품·보상 요구 위험 ↓'],
-        apply: (s, G) => { s.cash -= 55_000; W.qBoost += 14; G.ui.yieldSpend = 55_000; styleAdd(W, 'craft', 2);
+        apply: (s, G) => { s.cash -= 55_000; W.qBoost += 14; G.ui.yieldBonus = 0.0022; styleAdd(W, 'craft', 2);
           remember(W, s, 'qual', '품질 원인 분석');
           lever(G, '품질 원인 분석', { cash: -55_000, quality: 1 });
           return '6개월치 데이터를 전부 돌렸습니다. 원인은 나이프 교체 주기였습니다. 기준을 다시 썼습니다.'; } },

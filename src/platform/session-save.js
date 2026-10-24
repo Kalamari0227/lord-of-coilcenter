@@ -83,6 +83,7 @@ function ccValidSave(d) {
   if (!d.s.lines.every(line => ccObject(line) && Object.hasOwn(CFG.LINE, line.type))) return false;
   if (!ccShape(d.ui, { cover: 1, hqTake: 0, expandPick: null, overtime: false, yieldSpend: 0, salesSpend: 0 }) ||
     !ccObject(d.seen) || !ccObject(d.picks) || !ccObject(d.bigPlan)) return false;
+  if (Object.hasOwn(d.ui, 'yieldBonus') && (!Number.isFinite(d.ui.yieldBonus) || d.ui.yieldBonus < 0)) return false;
   if (!['turnDiscount', 'yieldPenalty', 'extraFixed'].every(key => Number.isFinite(d[key]))) return false;
   if (!Array.isArray(d.resultLines) || !d.resultLines.every(item => typeof item === 'string')) return false;
   if (!Object.entries(d.bigPlan).every(([turn, id]) => /^\d+$/.test(turn) && +turn >= 1 &&

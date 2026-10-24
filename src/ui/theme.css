@@ -121,3 +121,6 @@ dialog.deck .cc-decision-effects { font-size:var(--cc-text-small); }
   dialog .ctx { grid-template-columns:minmax(0,1fr); }
   dialog .ctx .cv, dialog .ctx .cn { grid-column:auto; white-space:normal; }
 }
+
+.cc-table-scroll .cc-hq-watch-table { width:max-content; min-width:100%; table-layout:auto; }
+.cc-hq-watch-table .cc-hq-watch-number { white-space:nowrap; overflow-wrap:normal; }

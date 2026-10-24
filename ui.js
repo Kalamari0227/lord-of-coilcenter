@@ -2326,13 +2326,13 @@ function ccHqWatchMarkup(reports) {
   const rows = watched.map(report => {
     const watch = report.hqWatch;
     return `<tr data-hq-watch-turn="${report.turn}"><th scope="row">${escapeText(report.date)}</th>
-      ${keys.map(key => `<td>${money(watch[key])}<br><span class="muted">${watch.delta === null ? '전월 기록 없음' : `전월 대비 ${watch.delta[key] > 0 ? '+' : ''}${money(watch.delta[key])}`}</span></td>`).join('')}
+      ${keys.map(key => `<td class="cc-hq-watch-number">${money(watch[key])}<br><span class="muted">${watch.delta === null ? '전월 기록 없음' : `전월 대비 ${watch.delta[key] > 0 ? '+' : ''}${money(watch.delta[key])}`}</span></td>`).join('')}
       <td${watch.shortage ? ' class="bad"' : ''}>${watch.shortage ? '자금 부족' : '부족 없음'}</td></tr>`;
   }).join('');
   return `<section class="card"><h3>본사 월별 자금 보고</h3>
     <p>본사 보증 후 매월 자동으로 남기는 마감 기록입니다. 현금이 음수이거나 부채가 한도를 넘으면 자금 부족으로 표시합니다.</p>
     <div class="cc-table-scroll" tabindex="0" role="region" aria-label="본사 월별 자금 보고, 좌우 스크롤 가능">
-      <table><caption>실제 월별 결산 장부 · 단위: 달러 · 전월 대비는 연속된 월 기록이 있을 때만 표시</caption>
+      <table class="cc-hq-watch-table"><caption>실제 월별 결산 장부 · 단위: 달러 · 전월 대비는 연속된 월 기록이 있을 때만 표시</caption>
       <thead><tr><th scope="col">결산월</th><th scope="col">현금</th><th scope="col">부채</th><th scope="col">대출 한도</th><th scope="col">한도 여유</th><th scope="col">자금 상태</th></tr></thead>
       <tbody>${rows}</tbody></table></div></section>`;
 }

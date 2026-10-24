@@ -292,8 +292,8 @@ async function openDecisions() {
   const askOrder = () => {
     /* 발주는 언제나 결재의 맨 마지막이다. 앞에서 고른 카드들이 권장량을 이미 바꿨으니
        여기서 다시 계산해야 화면의 권장량과 실제로 나갈 양이 일치한다. */
-    card.rows = orderRows(G.s, look(G.s));
-    const rows = card.rows;
+    const { rows, months, title, text } = orderCard(G.s, G.W, look(G.s));
+    Object.assign(card, { rows, months, title, text });
     const vals = {};
     for (const r of rows) vals[r.k] = r.rec;
     const lead = CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd;
@@ -306,8 +306,8 @@ async function openDecisions() {
       const pct = totRec > 0 ? Math.round(tot / totRec * 100) : 100;
       const box = dlg.querySelector('#osum');
       if (box) box.innerHTML =
-        `<b>합계 ${fmt(Math.round(tot))}톤</b>`
-        + (card.months > 1 ? `<span class="sub">월 ${fmt(Math.round(tot / card.months))}톤씩 석 달</span>` : '')
+        `<b>합계 ${fmtOrderTons(tot)}톤</b>`
+        + (card.months > 1 ? `<span class="sub">${orderMonthlyPlan(tot, card.months).map((qty, i) => `${i + 1}개월차 ${fmtOrderTons(qty)}톤`).join(' · ')}</span>` : '')
         + `<span class="${pct > 125 || pct < 75 ? 'dn' : 'up'}">권장 대비 ${pct}%</span>`;
 
       const f = orderForecast(G.s, rows, vals);
@@ -319,7 +319,7 @@ async function openDecisions() {
       fc.innerHTML = `
         <table class="ordt fct">
           <tr><th>예상</th>${f.rows.map(r => `<th>${dateLabel(r.turn).replace(/^\d+년 /, '')}</th>`).join('')}</tr>
-          <tr><td class="oname">입고</td>${f.rows.map(r => `<td>${r.arrive ? fmt(r.arrive) : '–'}</td>`).join('')}</tr>
+          <tr><td class="oname">입고</td>${f.rows.map(r => `<td>${r.arrive ? fmtOrderTons(r.arrive) : '–'}</td>`).join('')}</tr>
           <tr><td class="oname">월말 재고</td>${f.rows.map(r => `<td class="${r.short ? 'dn' : ''}">${r.short ? '결품' : fmt(r.stock)}</td>`).join('')}</tr>
           <tr><td class="oname">보관장 사용률</td>${f.rows.map(r => `<td class="${yl(r.yard)}">${Math.round(r.yard * 100)}%</td>`).join('')}</tr>
           <tr><td class="oname">재고율(개월)</td>${f.rows.map(r => `<td>${r.coverM.toFixed(1)}</td>`).join('')}</tr>
@@ -344,7 +344,7 @@ async function openDecisions() {
       <div class="deckq"><h2>${card.title}</h2></div>
       <div class="ordwrap">
         <table class="ordt">
-          <tr><th>고객군</th><th>${card.months > 1 ? '분기 사용<br><i>석 달치 · 소재' : '월 사용<br><i>소재'} 기준</i></th>
+          <tr><th>고객군</th><th>${card.months > 1 ? `분기 사용<br><i>${card.months === 3 ? '석 달치' : `${card.months}개월치`} · 소재` : '월 사용<br><i>소재'} 기준</i></th>
               <th>창고에<br>있는 양</th><th>배로<br>오는 양</th>
               <th>본사<br>생산 중</th><th>재고율</th><th>재원율</th>
               <th class="capby">권장량<br>결정 기준</th>
@@ -379,28 +379,54 @@ async function openDecisions() {
           <b>재원율</b>은 본사에서 생산 중인 소재까지 합쳐 몇 개월을 쓸 수 있는지입니다.<br>
           권장량은 이번에 사용할 양을 기준으로, 소재가 부족하면 더하고 넘치면 줄여 계산합니다.
           본사가 공급할 수 있는 양과 보관장 여유도 반영합니다. 「권장량 결정 기준」에서 그 이유를 볼 수 있습니다.
-          ${card.months > 1 ? '<br>적어주신 톤수는 <b>3분의 1씩 세 달에 나눠</b> 주문합니다. 도착도 그만큼 나뉩니다.' : ''}</p>
+          ${card.months > 1 ? `<br>적어주신 톤수는 <b>위 월별 계획대로 ${card.months === 3 ? '세 달' : `${card.months}개월`}에 나눠</b> 주문합니다. 마지막 달에 나머지 수량을 주문하며, 도착도 그만큼 나뉩니다.` : ''}</p>
         <button class="primary" id="osubmit">${card.months > 1 ? '이대로 분기 발주' : '이대로 발주한다'}</button>
       </div>
     </div>`;
 
-    dlg.querySelectorAll('[data-ok]').forEach(inp => inp.oninput = () => {
-      const r = rows.find(x => x.k === inp.dataset.ok);
-      vals[inp.dataset.ok] = Math.min(r.max, Math.max(0, +inp.value || 0)); paint();
+    const inputs = [...dlg.querySelectorAll('[data-ok]')];
+    const submit = dlg.querySelector('#osubmit');
+    const error = document.createElement('p');
+    error.className = 'cc-input-error'; error.id = 'cc-order-error';
+    error.setAttribute('role', 'alert');
+    submit.before(error);
+    inputs.forEach(input => input.setAttribute('aria-describedby', error.id));
+    let wasInvalid = false;
+    const validate = () => {
+      const invalid = inputs.filter(input => input.value === '' || !Number.isFinite(input.valueAsNumber) ||
+        input.valueAsNumber < 0 || input.valueAsNumber > Number(input.max));
+      inputs.forEach(input => input.setAttribute('aria-invalid', String(invalid.includes(input))));
+      submit.disabled = invalid.length > 0;
+      if (invalid.length && !wasInvalid && typeof ccAudioCue === 'function') ccAudioCue('error');
+      wasInvalid = invalid.length > 0;
+      error.textContent = invalid.length
+        ? `${CUST[invalid[0].dataset.ok]} 발주량은 0~${fmt(Number(invalid[0].max))}톤 사이로 입력하십시오.` : '';
+      return !invalid.length;
+    };
+    inputs.forEach(inp => inp.oninput = () => {
+      vals[inp.dataset.ok] = inp.valueAsNumber;
+      if (validate()) paint();
     });
     dlg.querySelectorAll('[data-set]').forEach(b => b.onclick = () => {
       const m = b.dataset.set;
       rows.forEach(r => { vals[r.k] = m === 'rec' ? r.rec : m === '0' ? 0 : Math.min(r.max, Math.round(r.rec * +m / 50) * 50); });
       dlg.querySelectorAll('[data-ok]').forEach(i => i.value = vals[i.dataset.ok]);
-      paint();
+      validate(); paint();
     });
-    dlg.querySelector('#osubmit').onclick = () => submitOrder(vals);
-    paint();
+    submit.onclick = () => {
+      if (!validate()) return;
+      const current = Object.fromEntries([...dlg.querySelectorAll('[data-ok]')].map(input => [input.dataset.ok, input.valueAsNumber]));
+      if (submitOrder(current) === false) {
+        error.textContent = '고객군별 발주량과 표시된 최대량을 다시 확인하십시오.';
+        submit.disabled = true;
+      }
+    };
+    validate(); paint();
   };
 
   const submitOrder = (vals) => {
-    const tot = fmt(Math.round(Object.values(vals).reduce((a, b) => a + b, 0)));
-    submitForm(vals, `${tot}톤 발주`, `${tot}톤`);
+    const tot = fmtOrderTons(Object.values(vals).reduce((a, b) => a + b, 0));
+    return submitForm(vals, `${tot}톤 발주`, `${tot}톤`);
   };
 
   /* 반기 영업 자원 배분 — 100점을 고객군에 나눈다.
@@ -480,11 +506,14 @@ async function openDecisions() {
 
   const submitForm = (vals, verdictLabel, doneLabel) => {
     const before = snap(G.s);
-    const msg = card.submit(vals, G.s, G) || '';
+    const result = card.submit(vals, G.s, G);
+    if (result === false) return false;
+    const msg = result || '';
     const chips = deltaChips(before, snap(G.s));
     G.done.push({ deck, title: card.title, choice: doneLabel, msg });
     if (msg) G.resultLines = (G.resultLines || []).concat(msg);
     showVerdict(verdictLabel, msg, chips);
+    return true;
   };
 
   const choose = (i) => {
@@ -528,7 +557,7 @@ async function openDecisions() {
         ${extra}
       </div>
       <div class="vfoot"><button class="primary" id="nx">${
-        last ? (G.mpt > 1 ? '석 달 보내기' : '한 달 보내기') : '다음 결재'}</button></div>`;
+        last ? (orderMonths() > 1 ? orderMonths() === 3 ? '석 달 보내기' : `${orderMonths()}개월 보내기` : '한 달 보내기') : '다음 결재'}</button></div>`;
     if (slot) { slot.innerHTML = html; }
     else {
       // 발주·영업계획처럼 폼 화면이면 통째로 갈아끼운다 (선택지가 없으므로 남길 게 없다)
@@ -762,7 +791,21 @@ function salesPlanCard(s, W) {
    노멀은 매달 결재하니 한 달치, 속성은 분기마다 결재하니 석 달치를 한 번에 건다.
    분기 결재인데 한 달치만 걸면 나머지 두 달은 사장이 안 본 사이에 자동으로 나가버린다.
    그건 발주를 결정한 게 아니다. */
-function orderMonths() { return (G && G.mpt) || 1; }
+function orderMonths() {
+  const remaining = G?.s ? CFG.TOTAL_TURNS - G.s.turn + 1 : 1;
+  return Math.max(1, Math.min(G?.mpt || 1, remaining));
+}
+
+function fmtOrderTons(value) {
+  return value.toLocaleString('en-US', { maximumSignificantDigits: 21 });
+}
+
+function orderMonthlyPlan(total, months) {
+  // 기존 배분을 유지하되 앞선 달의 합계가 총량을 넘으면 내림하고, 마지막 달은 잔차를 그대로 받는다.
+  let per = Math.round(total / months / 10) * 10;
+  if (per * (months - 1) > total) per = Math.floor(total / months / 10) * 10;
+  return Array.from({ length: months }, (_, i) => i === months - 1 ? total - per * (months - 1) : per);
+}
 
 /* 발주 계획에 쓰는 월 소요량.
    look(s).need는 지금 손에 든 석 달 내시로만 계산한다. 내시는 달마다 흔들리므로
@@ -872,7 +915,7 @@ function orderForecast(s, rows, vals, opt = {}) {
   const demandMult = opt.demand ?? 1;      // 수요 증가 시나리오
   const lateBy = opt.late ?? 0;            // 입고 지연 시나리오 (개월)
   const tot = rows.reduce((a, r) => a + (vals[r.k] || 0), 0);
-  const perMonth = tot / mo;
+  const plan = orderMonthlyPlan(tot, mo);
   const useM = rows.reduce((a, r) => a + r.useM, 0) * demandMult;
 
   /* 예측의 1번째 달 = 지금 결재하고 곧 돌릴 달.
@@ -885,10 +928,10 @@ function orderForecast(s, rows, vals, opt = {}) {
     const m = Math.max(1, p.etaTurn - s.turn + 1) + lateBy;
     incoming[m] = (incoming[m] || 0) + p.qty;
   }
-  // 이번에 거는 것 — i번째 달에 perMonth씩 걸고 lead개월 뒤 도착
+  // 확정 때와 같은 월별 발주량이 lead개월 뒤 도착한다.
   for (let i = 0; i < mo; i++) {
     const m = i + 1 + lead + lateBy;
-    incoming[m] = (incoming[m] || 0) + perMonth;
+    incoming[m] = (incoming[m] || 0) + plan[i];
   }
   const cap = CFG.WAREHOUSE_CAP_BASE;
   const out = [];
@@ -896,11 +939,11 @@ function orderForecast(s, rows, vals, opt = {}) {
     onhand = onhand + (incoming[m] || 0) - useM;
     const short = onhand < 0;
     if (short) onhand = 0;
-    out.push({ turn: s.turn + m - 1, arrive: Math.round(incoming[m] || 0),
+    out.push({ turn: s.turn + m - 1, arrive: incoming[m] || 0,
       stock: Math.round(onhand), yard: onhand / cap, coverM: useM > 0 ? onhand / useM : 0, short });
   }
   const peak = Math.max(...out.map(o => o.stock));
-  return { rows: out, tot, perMonth: Math.round(perMonth), peak,
+  return { rows: out, tot, perMonth: tot / mo, peak,
     peakYard: peak / cap, over: peak > cap,
     shortMonths: out.filter(o => o.short).length,
     // 소재 대금은 B/L 90일 조건이라 DPO_TURNS 뒤에 나간다. 그 사이 현금이 묶인다.
@@ -935,39 +978,37 @@ function orderCard(s, W, L) {
     title: mo > 1 ? '이번 분기 소재 발주를 정해주십시오' : '이번 달 소재 발주를 정해주십시오',
     text: `사장님, ${mo > 1 ? '이번 분기' : '이번 달'}에 본사에서 살 소재량을 정할 차례입니다. `
         + `창고와 운송 중인 소재를 합치면 ${sn.invM.toFixed(1)}개월치, 본사에서 생산 중인 것까지 합치면 ${sn.resM.toFixed(1)}개월치입니다. `
-        + `${mo > 1 ? `분기 결재라 석 달치 총량을 적습니다. 적어주신 톤수를 세 달에 나눠 주문합니다. ` : ''}`
+        + `${mo > 1 ? `분기 결재라 ${mo === 3 ? '석 달치' : `${mo}개월치`} 총량을 적습니다. 적어주신 톤수를 ${mo === 3 ? '세 달' : `${mo}개월`}에 나눠 주문합니다. ` : ''}`
         + `${needNote}`
         + `${rumor}`
         + `고객군마다 쓰는 소재량이 다르니 한 줄씩 확인해 주십시오. `
         + `고객의 주문 예정량이 유지된다고 보고 권장량을 넣어뒀습니다. `
         + `지금 주문한 소재는 ${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤 도착합니다. 도착할 때 가서 주문량을 바꿀 수는 없습니다.`,
-    submit: (vals, s, G) => {
-      // 본사가 한 달에 받아주는 한도. 넘겨 적어도 여기서 잘린다.
-      for (const r of rows) vals[r.k] = Math.min(vals[r.k] || 0, r.max);
-      const tot = Object.values(vals).reduce((a, b) => a + b, 0);
+    submit(vals, s, G) {
+      const rows = this.rows, mo = this.months;
+      if (!vals || typeof vals !== 'object' || Reflect.ownKeys(vals).length !== rows.length ||
+          rows.some(r => !Object.hasOwn(vals, r.k) || !Number.isFinite(vals[r.k]) || vals[r.k] < 0 || vals[r.k] > r.max)) return false;
+      const tot = rows.reduce((sum, r) => sum + vals[r.k], 0);
       const rec = rows.reduce((a, r) => a + r.rec, 0);
-      G.ui.orderBy = { ...vals };
+      G.ui.orderBy = Object.fromEntries(rows.map(r => [r.k, vals[r.k]]));
       G.ui.orderTon = tot;
-      /* 월별 집행 계획. 화면에 "세 달에 나눠서 집행합니다"라고 적었으면 실제로 그렇게 나가야 한다.
-         마지막 달이 반올림 잔차를 받는다 — 합계는 사장이 적어낸 숫자와 정확히 같다. */
-      const per = Math.round(tot / mo / 10) * 10;
-      G.ui.orderPlan = Array.from({ length: mo }, (_, i) => i === mo - 1 ? Math.round(tot - per * (mo - 1)) : per);
+      G.ui.orderPlan = orderMonthlyPlan(tot, mo);
       const ratio = rec > 0 ? tot / rec : 1;
       const tag = ratio > 1.25 ? 'overbuy' : ratio < 0.75 ? 'underbuy' : 'normal-buy';
-      remember(W, s, tag, `소재 발주 ${fmt(Math.round(tot))}톤 (권장의 ${Math.round(ratio * 100)}%)`);
-      lever(G, `소재 발주 ${fmt(Math.round(tot))}톤`, {
+      remember(W, s, tag, `소재 발주 ${fmtOrderTons(tot)}톤 (권장의 ${Math.round(ratio * 100)}%)`);
+      lever(G, `소재 발주 ${fmtOrderTons(tot)}톤`, {
         risk: ratio > 1.25 ? `${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤 재고 과다 · 현금 묶임`
             : ratio < 0.75 ? `${CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd}개월 뒤 결품 위험` : null,
       });
       if (ratio > 1.25) styleAdd(W, 'grow');
       if (ratio < 0.75) styleAdd(W, 'cash');
-      const detail = rows.map(r => `${CUST[r.k]} ${fmt(Math.round(vals[r.k] || 0))}t`).join(' · ');
-      const span = mo > 1 ? `석 달치 ` : '';
+      const detail = rows.map(r => `${CUST[r.k]} ${fmtOrderTons(vals[r.k])}t`).join(' · ');
+      const span = mo > 1 ? mo === 3 ? '석 달치 ' : `${mo}개월치 ` : '';
       return ratio > 1.25
-        ? `${span}${fmt(Math.round(tot))}톤 걸었습니다. 권장보다 ${Math.round((ratio - 1) * 100)}% 많습니다. ${detail}. 창고는 각오하셔야 합니다.`
+        ? `${span}${fmtOrderTons(tot)}톤 걸었습니다. 권장보다 ${Math.round((ratio - 1) * 100)}% 많습니다. ${detail}. 창고는 각오하셔야 합니다.`
         : ratio < 0.75
-        ? `${span}${fmt(Math.round(tot))}톤만 걸었습니다. 권장의 ${Math.round(ratio * 100)}%입니다. ${detail}. 석 달 뒤는 제 책임 아닙니다.`
-        : `${span}${fmt(Math.round(tot))}톤 걸었습니다. ${detail}. 무난합니다.`;
+        ? `${span}${fmtOrderTons(tot)}톤만 걸었습니다. 권장의 ${Math.round(ratio * 100)}%입니다. ${detail}. 석 달 뒤는 제 책임 아닙니다.`
+        : `${span}${fmtOrderTons(tot)}톤 걸었습니다. ${detail}. 무난합니다.`;
     },
   };
 }

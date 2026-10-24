@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { orderSession } from './helpers/order-session.mjs';
 const helper = readFileSync(new URL('../src/ui/audio-settings.js', import.meta.url), 'utf8');
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
 function fixture() {
@@ -75,16 +76,13 @@ test('async confirmation is discarded after another session replaces the game', 
   f.run('ccAudioGesture(() => true); G = {s: {turn: 1}}'); resolve(true); await flush(); // When
   assert.equal(f.cues.length, 0); // Then
 });
-test('order input error sounds only when entering invalid state', () => {
-  const f = fixture(), events = new Map(), input = { value: '10', valueAsNumber: 10, max: '100', dataset: {ok: 'JP'}, setAttribute() {} };
-  const submit = { before() {} }, error = { setAttribute() {} };
-  const dialog = { querySelector: selector => selector === '#osubmit' ? submit : null,
-    querySelectorAll: selector => selector === '[data-ok]' ? [input] : [], addEventListener: (key, fn) => events.set(key, fn) };
-  Object.assign(f.sandbox, { document: { querySelector: () => dialog }, ccElement: () => error, CUST: {JP: 'JP'}, fmt: String });
-  f.run('function openDecisions() {}'); f.run(readFileSync(new URL('../src/ui/dialogs.js', import.meta.url), 'utf8')); f.run('openDecisions()'); f.cues.length = 0; // Given
-  input.value = '-1'; input.valueAsNumber = -1; events.get('input')(); input.valueAsNumber = -2; events.get('input')();
-  input.value = '20'; input.valueAsNumber = 20; events.get('input')(); input.value = ''; events.get('input')(); // When
-  assert.deepEqual(f.cues.map(cue => cue.id), ['error', 'error']); assert.equal(submit.disabled, true); // Then
+test('order input error sounds only when entering invalid state', async () => {
+  const f = orderSession(); await f.open(); f.cues.length = 0;
+  const input = f.inputs()[0];
+  f.input(input, -1); f.input(input, -2);
+  f.input(input, 20); f.input(input, '');
+  assert.deepEqual(f.cues, ['error', 'error']);
+  assert.equal(f.dialog().querySelector('#osubmit').disabled, true);
 });
 
 test('failed load offers retry while intentional zero music bus stays quiet', () => {

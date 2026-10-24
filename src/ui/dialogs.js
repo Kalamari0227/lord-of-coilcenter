@@ -81,32 +81,10 @@ openDecisions = function (...args) {
     input.inputMode = 'numeric';
   });
   if (!inputs.length) return;
-  const error = ccElement('p', 'cc-input-error');
-  error.id = 'cc-order-error';
-  error.setAttribute('role', 'alert');
-  const submit = dialog.querySelector('#osubmit');
-  submit.before(error);
   inputs.forEach(input => {
     input.setAttribute('aria-label', `${CUST[input.dataset.ok]} 발주량 (톤)`);
-    input.setAttribute('aria-describedby', error.id);
     input.inputMode = 'numeric';
   });
-  let wasInvalid = false;
-  const validate = () => {
-    const invalid = inputs.filter(input => input.value === '' || !Number.isFinite(input.valueAsNumber) ||
-      input.valueAsNumber < 0 || input.valueAsNumber > Number(input.max));
-    inputs.forEach(input => input.setAttribute('aria-invalid', String(invalid.includes(input))));
-    submit.disabled = invalid.length > 0;
-    if (invalid.length && !wasInvalid) ccAudioCue('error');
-    wasInvalid = invalid.length > 0;
-    error.textContent = invalid.length
-      ? `${CUST[invalid[0].dataset.ok]} 발주량은 0~${fmt(Number(invalid[0].max))}톤 사이로 입력하십시오.` : '';
-  };
-  dialog.addEventListener('input', validate);
-  dialog.addEventListener('click', event => {
-    if (event.target.closest('[data-set]')) validate();
-  });
-  validate();
 };
 
 if (typeof showReport === 'function') {

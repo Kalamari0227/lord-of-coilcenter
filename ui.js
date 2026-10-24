@@ -2165,6 +2165,11 @@ function mergeReports(list) {
     return a;
   }, {});
   return { ...last,
+    ...(list.some(r => r.finance) ? { finance: {
+      operatingAdjustment: list.reduce((total, r) => total + (r.finance?.operatingAdjustment || 0), 0),
+      financeCost: list.reduce((total, r) => total + (r.finance?.financeCost || 0), 0),
+      transactions: list.flatMap(r => r.finance?.transactions || []),
+    } } : {}),
     revenue: sum('revenue'), gp: sum('gp'), op: sum('op'), np: sum('np'),
     hqMargin: sum('hqMargin'), consolidated: sum('consolidated'),
     fixedCost: sum('fixedCost'), varCost: sum('varCost'), depreciation: sum('depreciation'),
@@ -2257,21 +2262,24 @@ function ccSettlementComparison(R, s) {
   const period = full.slice(-months * 2);
   if (!Number.isInteger(R.turn) || period.some((r, i) => !r || r.turn !== R.turn - period.length + 1 + i))
     return unavailable('월별 원장이 연속되지 않아 같은 기간으로 비교할 수 없습니다.');
-  const fields = ['gp', 'fixedCost', 'varCost', 'depreciation', 'op'];
-  const valid = r => fields.every(key => Number.isFinite(r[key])) &&
-    Math.abs(r.op - (r.gp - r.fixedCost - r.varCost - r.depreciation)) < 0.01;
+  const fields = ['gp', 'fixedCost', 'varCost', 'depreciation', 'op', 'operatingAdjustment'];
+  const value = (r, key) => key === 'operatingAdjustment'
+    ? (r.finance === undefined ? 0 : r.finance?.operatingAdjustment) : r[key];
+  const valid = r => fields.every(key => Number.isFinite(value(r, key))) &&
+    Math.abs(r.op - (r.gp - r.fixedCost - r.varCost - r.depreciation + value(r, 'operatingAdjustment'))) < 0.01;
   if (!valid(R) || !period.every(valid))
     return unavailable('손익 원장에 누락되거나 맞지 않는 금액이 있어 비교할 수 없습니다.');
   const previous = period.slice(0, months), current = period.slice(months);
-  const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0);
-  if (fields.some(key => Math.abs(sum(current, key) - R[key]) >= 0.01))
+  const sum = (rows, key) => rows.reduce((total, row) => total + value(row, key), 0);
+  if (fields.some(key => Math.abs(sum(current, key) - value(R, key)) >= 0.01))
     return unavailable('이번 결산과 월별 원장 금액이 달라 비교할 수 없습니다.');
   const previousCents = Math.round(sum(previous, 'op') * 100), currentCents = Math.round(R.op * 100);
   const deltaCents = currentCents - previousCents;
   const contributions = [
     ['gp', '매출총이익 변화', 1], ['fixedCost', '고정비 변화', -1],
     ['varCost', '변동비 변화', -1], ['depreciation', '감가상각 변화', -1],
-  ].map(([key, label, sign]) => ({ key, label, cents: Math.round((R[key] - sum(previous, key)) * sign * 100) }))
+    ['operatingAdjustment', '결재·사건 영업 조정', 1],
+  ].map(([key, label, sign]) => ({ key, label, cents: Math.round((value(R, key) - sum(previous, key)) * sign * 100) }))
     .sort((a, b) => Math.abs(b.cents) - Math.abs(a.cents)).slice(0, 3);
   const remainingCents = deltaCents - contributions.reduce((total, row) => total + row.cents, 0);
   if (![previousCents, currentCents, deltaCents, remainingCents, ...contributions.map(row => row.cents)].every(Number.isSafeInteger))
@@ -2290,7 +2298,7 @@ function ccSettlementMarkup(comparison) {
     <p>직전 ${comparison.months}개월 ${dollars(comparison.previousCents)} → 이번 ${comparison.months}개월 ${dollars(comparison.currentCents)}</p>
     <dl>${rows.map(row => `<div data-contribution="${row.key}"><dt>${row.label}</dt><dd class="${row.cents < 0 ? 'bad' : row.cents > 0 ? 'good' : ''}">${signed(row.cents)}</dd></div>`).join('')}
     <div class="cc-settlement-total"><dt>영업이익 증감 합계</dt><dd>${signed(comparison.deltaCents)}</dd></div></dl>
-    <p class="cc-settlement-note">영업이익 = 매출총이익 − 고정비 − 변동비 − 감가상각. +는 이익 증가, −는 감소입니다. 장부 항목의 증감 대사이며 개별 결재의 효과 추정은 아닙니다. 이자·대손은 제외합니다.</p>
+    <p class="cc-settlement-note">영업이익 = 매출총이익 − 고정비 − 변동비 − 감가상각 + 결재·사건 영업 조정. +는 이익 증가, −는 감소입니다. 장부 항목의 증감 대사이며 개별 결재의 효과 추정은 아닙니다. 이자·대손·금융비용은 제외합니다.</p>
     </section>`;
 }
 

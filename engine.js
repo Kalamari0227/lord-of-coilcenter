@@ -675,6 +675,62 @@ function mergeDraw(a, b) {
    }
    ============================================================ */
 
+const FINANCE_KINDS = ['expense', 'income', 'asset', 'working-capital', 'financing'];
+
+function validFinanceTransaction(entry, turn) {
+  const keys = ['turn', 'source', 'kind', 'amount', 'operatingDelta', 'financialDelta'];
+  return entry !== null && typeof entry === 'object' && !Array.isArray(entry)
+    && Object.keys(entry).length === keys.length && keys.every(key => Object.hasOwn(entry, key))
+    && Number.isInteger(entry.turn) && entry.turn === turn
+    && typeof entry.source === 'string' && entry.source.trim().length > 0 && !/[<>]/.test(entry.source)
+    && FINANCE_KINDS.includes(entry.kind) && Number.isFinite(entry.amount) && entry.amount >= 0
+    && Number.isFinite(entry.operatingDelta) && Number.isFinite(entry.financialDelta);
+}
+
+function validFinanceState(finance, turn) {
+  return finance !== null && typeof finance === 'object' && !Array.isArray(finance)
+    && Object.keys(finance).length === 2 && finance.version === 1 && Array.isArray(finance.pending)
+    && finance.pending.every(entry => turn >= 1 && turn <= CFG.TOTAL_TURNS && validFinanceTransaction(entry, turn));
+}
+
+function summarizeFinance(transactions) {
+  return {
+    operatingAdjustment: transactions.reduce((sum, entry) => sum + entry.operatingDelta, 0),
+    financeCost: transactions.reduce((sum, entry) => sum - entry.financialDelta, 0),
+    transactions,
+  };
+}
+
+// Cash moves here; signed profit deltas wait for the current month's close.
+function recordFinance(s, { source, kind, amount, cashDelta = 0, operatingDelta = 0, financialDelta = 0 }, updateBalance) {
+  const entry = { turn: s.turn, source, kind, amount, operatingDelta, financialDelta };
+  if (!Number.isInteger(s.turn) || s.turn < 1 || s.turn > CFG.TOTAL_TURNS
+      || !validFinanceTransaction(entry, s.turn) || !Number.isFinite(cashDelta)
+      || !Number.isFinite(s.cash) || !Number.isFinite(s.cash + cashDelta)
+      || updateBalance !== undefined && typeof updateBalance !== 'function'
+      || s.finance !== undefined && !validFinanceState(s.finance, s.turn))
+    throw new TypeError('Invalid current-period finance transaction');
+  const pending = [...(s.finance?.pending || []), entry];
+  const summary = summarizeFinance(pending);
+  if (!Number.isFinite(summary.operatingAdjustment) || !Number.isFinite(summary.financeCost))
+    throw new RangeError('Finance totals must be finite');
+  const cash = s.cash + cashDelta;
+  if (updateBalance) updateBalance(s);
+  s.cash = cash;
+  s.finance = { version: 1, pending };
+  return { ...entry };
+}
+
+function consumeFinance(s) {
+  if (s.finance !== undefined && !validFinanceState(s.finance, s.turn))
+    throw new TypeError('Invalid pending finance transactions');
+  const finance = summarizeFinance(s.finance?.pending || []);
+  if (!Number.isFinite(finance.operatingAdjustment) || !Number.isFinite(finance.financeCost))
+    throw new RangeError('Finance totals must be finite');
+  if (s.finance !== undefined) s.finance.pending = [];
+  return finance;
+}
+
 function resolveTurn(state, decision) {
   const s = structuredClone(state);
   s.trust = clampIndicator(s.trust);
@@ -1214,9 +1270,10 @@ function resolveTurn(state, decision) {
 
   /* STEP 18. 재무제표 */
   const gp = revenue + scrapRevenue - cogs - valuationLoss - degradeLoss - dumpLoss;
-  const ebitda = gp - fixedCost - varCost;
+  const finance = consumeFinance(s);
+  const ebitda = gp - fixedCost - varCost + finance.operatingAdjustment;
   const op = ebitda - depreciation;
-  const np = op - interest - badDebt;
+  const np = op - interest - badDebt - finance.financeCost;
   s.fa.buildingNbv = Math.max(0, s.fa.buildingNbv - (s.buildings || 1) * CFG.BUILDING / CFG.BUILDING_LIFE_M);
   s.fa.machineAccDep += s.fa.machineCost / CFG.MACHINE_LIFE_M;
   s.equity += np;
@@ -1295,7 +1352,7 @@ function resolveTurn(state, decision) {
     // 실제로 돌린 양 ÷ 명목 캐파. world.js가 설비 마모와 과부하를 이걸로 계산한다
     util: (d.run.SLIT + d.run.LEVEL + d.run.TRAP + d.run.DIE) / Math.max(1, cap.SLIT + cap.LEVEL + cap.BLANK),
     shortRatio,
-    materialTons, fulfillment,
+    materialTons, fulfillment, finance,
     run: { ...d.run }, capNow: { ...cap },
     // 재고·재원 — 현물(창고)·해상 미착·본사 생산 중을 나눠 둔다. 다음 달 도착하면 지금 바다 위에 있다
     stock: {

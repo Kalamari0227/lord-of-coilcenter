@@ -116,9 +116,14 @@ function ccDeepSave(d) {
     && (v.demand === 0 ? v.ratio === null : v.ratio !== null && v.ratio >= 0 && v.ratio <= 1 && Math.abs(v.ratio - v.shipped / v.demand) <= 1e-9)
     && v.trustRecovery >= 0 && v.trustRecovery <= 2
     && (v.trustRecovery === 0 || v.eligible && v.demand > 0 && v.shipped / v.demand + 1e-9 >= 0.95);
+  const reportFinance = (v, turn) => fields(v, {operatingAdjustment:num, financeCost:num, transactions:list(x => validFinanceTransaction(x, turn))})
+    && Object.keys(v).length === 3
+    && v.operatingAdjustment === summarizeFinance(v.transactions).operatingAdjustment
+    && v.financeCost === summarizeFinance(v.transactions).financeCost;
   const report = v => fields(v, {
     ...numbers('turn pm hqPerTon revenue gp ebitda op np hqMargin consolidated fixedCost varCost depreciation interest valuationLoss badDebt scrapTon scrapRevenue yieldGain degradeLoss degradeTon dumpLoss dumpTon carryCost overTons hqSpotOffer hqSpotTon commonShareOfSales hqSpotCredit cashIn cashOut spotExposure util shortRatio materialTons invTons'),
     date:str, phase, sales, cum, custShare:customers, fulfillment:optional(fulfillment),
+    finance:optional(x => reportFinance(x, v.turn)),
     bs:x=>fields(x,numbers('invTons invValue longTons longValue ar arDelayed ap debt cash seaValue debtLimit debtRoom debtUse equity interest nwc')),
     stock:x=>fields(x,numbers('onhand sea prod nasi3 fg')),
     shipped:processes,produced:map(num,choice(PROC_LIST)),demand:processes,demandAuto:processes,demandCommon:processes,nasiPotential:processes,run:x=>fields(x,numbers('SLIT LEVEL TRAP DIE')),capNow:x=>fields(x,numbers('SLIT LEVEL BLANK')),
@@ -128,6 +133,7 @@ function ccDeepSave(d) {
   const s=d.s, W=d.W;
   if (!fields(s, {
     overReason:choice([null,'COMPLETE','INSOLVENT','CAPITAL_ERODED']),
+    finance:optional(x => validFinanceState(x, s.turn) && num(summarizeFinance(x.pending).operatingAdjustment) && num(summarizeFinance(x.pending).financeCost)),
     invRaw:list(x=>fields(x,{...lot,unitCost:num,arrivalTurn:optional(num),legacy:optional(bool)})),
     invFg:list(x=>fields(x,{...lot,unitCost:num,proc:choice(PROC_LIST),...numbers('ya ra yActual'),madeTurn:optional(num)})),
     poOpen:list(x=>fields(x,{...lot,...numbers('unitPriceFixed etaTurn')})),

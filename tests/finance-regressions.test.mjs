@@ -172,3 +172,191 @@ test('direct free yield input improves production without another cash payment',
   assert.ok(Math.abs(row.yieldBases[0]-row.worldYield-row.baseYields.SLIT-.0022)<1e-10);
   assert.equal(debit([row],55000),0);
 });
+
+function ledgerFixture(mode='normal') {
+  const f = funded(mode);
+  assert.equal(f.run('typeof recordFinance'), 'function', 'explicit-state transaction contract must exist');
+  return f;
+}
+const ledgerData = (f, expression) => JSON.parse(f.run(`JSON.stringify(${expression})`));
+function ledgerObservation(f, label) {
+  const value = ledgerData(f, `({before:ledgerInitial.cash,afterPayment:G.s.cash,
+    baseline:ledgerBaseline.report,actual:ledgerResult.report,pending:ledgerResult.state.finance.pending})`);
+  console.log(JSON.stringify({scenario:label,ledger:value}));
+  return value;
+}
+
+test('110k expense moves cash once and reaches OP, NP, equity and cumulative close once', () => {
+  const f = ledgerFixture();
+  f.run(`const ledgerInitial=structuredClone(G.s), ledgerBaseline=resolveTurn(ledgerInitial,{});
+    recordFinance(G.s,{source:'test.expense',kind:'expense',amount:110000,cashDelta:-110000,operatingDelta:-110000});
+    const ledgerResult=resolveTurn(G.s,{});`);
+  const x=ledgerObservation(f,'ledger-110k');
+  assert.equal(x.before-x.afterPayment,110000);
+  assert.equal(x.baseline.bs.cash-x.actual.bs.cash,110000,'close cannot debit paid cash again');
+  for (const key of ['ebitda','op','np','consolidated']) assert.equal(x.baseline[key]-x.actual[key],110000,key);
+  for (const key of ['op','np']) assert.equal(x.baseline.cum[key]-x.actual.cum[key],110000);
+  assert.equal(x.baseline.bs.equity-x.actual.bs.equity,110000);
+  assert.equal(f.run('ledgerResult.state.equity'),f.run('ledgerInitial.equity+ledgerResult.report.np'));
+  assert.equal(f.run('ledgerBaseline.state.hq.cumConsolidated-ledgerResult.state.hq.cumConsolidated'),110000);
+  assert.deepEqual(x.pending,[]);
+  assert.equal(f.run('G.s.finance.pending.length'),1,'resolveTurn preserves caller input');
+  assert.deepEqual(x.actual.finance,{operatingAdjustment:-110000,financeCost:0,transactions:[
+    {turn:1,source:'test.expense',kind:'expense',amount:110000,operatingDelta:-110000,financialDelta:0}]});
+  f.run(`const priorReport=JSON.stringify(ledgerResult.report), cleanNext=structuredClone(ledgerResult.state);delete cleanNext.finance;
+    const nextWith=resolveTurn(ledgerResult.state,{}),nextWithout=resolveTurn(cleanNext,{});`);
+  for (const key of ['op','np']) assert.equal(f.run(`nextWith.report.${key}`),f.run(`nextWithout.report.${key}`));
+  assert.equal(f.run('nextWith.state.cash'),f.run('nextWithout.state.cash'));
+  assert.equal(f.run('nextWith.report.finance.transactions.length'),0);
+  assert.equal(f.run('JSON.stringify(ledgerResult.report)'),f.run('priorReport'));
+});
+
+for (const [label,kind,amount,cashDelta,operatingDelta,financialDelta] of [
+  ['income','income',120000,120000,120000,0],
+  ['financial fee','expense',165,-165,0,-165],
+  ['financial recovery','income',165,165,0,165],
+]) test(`${label} uses signed deltas independently from gross cash`, () => {
+  const f=ledgerFixture();
+  f.run(`const ledgerInitial=structuredClone(G.s),ledgerBaseline=resolveTurn(ledgerInitial,{});
+    recordFinance(G.s,${JSON.stringify({source:'test.flow',kind,amount,cashDelta,operatingDelta,financialDelta})});
+    const ledgerResult=resolveTurn(G.s,{});`);
+  const x=ledgerObservation(f,`ledger-${label}`);
+  assert.equal(x.afterPayment-x.before,cashDelta);
+  assert.equal(x.actual.bs.cash-x.baseline.bs.cash,cashDelta);
+  assert.equal(x.actual.op-x.baseline.op,operatingDelta);
+  assert.equal(x.actual.np-x.baseline.np,operatingDelta+financialDelta);
+  assert.equal(x.actual.finance.financeCost,financialDelta === 0 ? 0 : -financialDelta);
+});
+
+for(const [kind,amount,mutation,expression] of [
+  ['asset',520000,'state.fa.land+=520000','G.s.fa.land-ledgerInitial.fa.land'],
+  ['working-capital',11000,'state.ar.push({amount:11000,dueTurn:99})','G.s.ar.at(-1).amount'],
+  ['financing',90000,'state.debt.principal+=90000','G.s.debt.principal-ledgerInitial.debt.principal'],
+]) test(`${kind} updates its actual balance with cash without booking principal as profit`,()=>{
+  const f=ledgerFixture();
+  const cashDelta=kind==='financing'?amount:-amount;
+  f.run(`const ledgerInitial=structuredClone(G.s);
+    recordFinance(G.s,${JSON.stringify({source:'test.balance',kind,amount,cashDelta})},state=>{${mutation}});
+    const balanceControl=structuredClone(G.s);delete balanceControl.finance;
+    const actualBalance=resolveTurn(G.s,{}),expectedBalance=resolveTurn(balanceControl,{});`);
+  assert.equal(f.run(expression),amount);
+  assert.equal(f.run('G.s.cash-ledgerInitial.cash'),cashDelta);
+  assert.equal(f.run('actualBalance.report.op'),f.run('expectedBalance.report.op'));
+  assert.equal(f.run('actualBalance.report.np'),f.run('expectedBalance.report.np'));
+  assert.deepEqual(ledgerData(f,'actualBalance.report.finance'),{operatingAdjustment:0,financeCost:0,transactions:[
+    {turn:1,source:'test.balance',kind,amount,operatingDelta:0,financialDelta:0}]});
+});
+
+test('independent same-source same-turn transactions both survive and close consumes only its clone',()=>{
+  const f=ledgerFixture();
+  f.run(`const ledgerInitial=structuredClone(G.s),ledgerBaseline=resolveTurn(ledgerInitial,{});
+    for(const amount of [15000,95000])recordFinance(G.s,{source:'test.repeat',kind:'expense',amount,cashDelta:-amount,operatingDelta:-amount});
+    const ledgerResult=resolveTurn(G.s,{});`);
+  const x=ledgerObservation(f,'ledger-independent-repeat');
+  assert.equal(x.actual.finance.operatingAdjustment,-110000);
+  assert.equal(x.actual.finance.transactions.length,2);
+  assert.equal(f.run('G.s.finance.pending.length'),2);
+  assert.deepEqual(x.pending,[]);
+});
+
+for(const change of ["amount:-1","amount:NaN","amount:Infinity","kind:'mystery'","source:''","cashDelta:NaN","operatingDelta:Infinity","financialDelta:NaN"])
+  test(`invalid transaction ${change} preserves all state and pending`,()=>{
+    const f=ledgerFixture();f.run("recordFinance(G.s,{source:'test.valid',kind:'income',amount:1,cashDelta:1,operatingDelta:1})");
+    const before=f.snapshot();
+    assert.throws(()=>f.run(`recordFinance(G.s,{source:'test.invalid',kind:'expense',amount:10,cashDelta:-10,operatingDelta:-10,${change}},s=>{s.fa.land+=100})`));
+    assert.deepEqual(f.snapshot(),before);
+  });
+
+test('new zero-transaction report is explicit while initial state and read-only comparison stay lazy',()=>{
+  const f=funded();
+  f.run('const zeroInitial=structuredClone(G.s),zero=resolveTurn(G.s,{})');
+  assert.equal(f.run('Object.hasOwn(zeroInitial,"finance")'),false);
+  assert.equal(f.run('Object.hasOwn(zero.state,"finance")'),false);
+  assert.deepEqual(ledgerData(f,'zero.report.finance ?? null'),{operatingAdjustment:0,financeCost:0,transactions:[]});
+  const before=f.snapshot();f.run('ccSettlementComparison(G.s.prelude.at(-1),G.s)');
+  assert.deepEqual(f.snapshot(),before);
+});
+
+test('quarter close sums finance from actual months and operating comparison includes its contribution',()=>{
+  const f=ledgerFixture('quick');
+  f.run("recordFinance(G.s,{source:'test.quarter',kind:'expense',amount:110000,cashDelta:-110000,operatingDelta:-110000})");
+  f.settle();
+  f.run('const quarter=mergeReports(G.s.history.slice(-3)), comparison=ccSettlementComparison(quarter,G.s)');
+  assert.equal(f.run('quarter.finance.operatingAdjustment'),-110000);
+  assert.equal(f.run('quarter.finance.transactions.length'),1);
+  assert.equal(f.run('comparison.available'),true);
+  assert.equal(f.run('comparison.contributions.reduce((sum,row)=>sum+row.cents,comparison.remainingCents)'),f.run('comparison.deltaCents'));
+  f.run(`const prev={turn:0,gp:10000,fixedCost:2000,varCost:3000,depreciation:1000,op:4000};
+    const now={...prev,turn:1,op:-106000,finance:{operatingAdjustment:-110000,financeCost:0,transactions:[]}};
+    const guide=ccSettlementComparison(now,{prelude:[prev],history:[now]});`);
+  assert.equal(f.run('guide.available'),true);
+  assert.equal(f.run('guide.contributions.find(x=>x.key==="operatingAdjustment").cents'),-11000000);
+  assert.match(f.run('ccSettlementMarkup(guide)'),/결재.*조정/);
+});
+
+const savedTransaction={turn:1,source:'test.save',kind:'expense',amount:110000,operatingDelta:-110000,financialDelta:0};
+for(const [label,mutation] of [
+  ['negative amount','saved.s.finance.pending[0].amount=-1'],
+  ['NaN amount','saved.s.finance.pending[0].amount=NaN'],
+  ['unknown kind',"saved.s.finance.pending[0].kind='unknown'"],
+  ['future pending','saved.s.finance.pending[0].turn=saved.s.turn+1'],
+  ['past pending','saved.s.finance.pending[0].turn=0'],
+  ['invalid version','saved.s.finance.version=2'],
+  ['non-array pending','saved.s.finance.pending={}'],
+  ['unknown transaction field','saved.s.finance.pending[0].extra=1'],
+  ['invalid operating delta',"saved.s.finance.pending[0].operatingDelta='bad'"],
+]) test(`saved finance rejects ${label}`,()=>{
+  const f=saveSession(savedRaw);
+  assert.equal(f.run(`const saved=JSON.parse(localStorage.getItem('coilcenter:foundation:v1'));
+    saved.s.finance={version:1,pending:[${JSON.stringify(savedTransaction)}]};${mutation};ccValidSave(saved)`),false);
+});
+for(const [label,mutation] of [
+  ['negative transaction amount','row.finance.transactions[0].amount=-1'],
+  ['wrong period','row.finance.transactions[0].turn=row.turn+1'],
+  ['invalid financial delta','row.finance.transactions[0].financialDelta=Infinity'],
+  ['inconsistent operating sum','row.finance.operatingAdjustment=0'],
+  ['inconsistent finance cost','row.finance.financeCost=1'],
+]) test(`saved report finance rejects ${label}`,()=>{
+  const f=saveSession(savedRaw);
+  assert.equal(f.run(`const saved=JSON.parse(localStorage.getItem('coilcenter:foundation:v1')), row=saved.s.prelude[0];
+    row.finance={operatingAdjustment:-110000,financeCost:0,transactions:[{...${JSON.stringify(savedTransaction)},turn:row.turn}]};
+    ${mutation};ccValidSave(saved)`),false);
+});
+
+test('valid pending and historical finance round-trip without rewriting old history',async()=>{
+  const data=JSON.parse(savedRaw);
+  data.s.finance={version:1,pending:[savedTransaction]};
+  const row=data.s.prelude[0];
+  row.finance={operatingAdjustment:-110000,financeCost:0,transactions:[{...savedTransaction,turn:row.turn}]};
+  const f=saveSession(JSON.stringify(data));
+  assert.equal(await f.run('resumeGame()'),true);assert.equal(await f.run('saveGame(true)'),true);
+  const actual=JSON.parse(f.raw());delete actual.at;delete data.at;
+  assert.deepEqual(actual,data);
+});
+
+test('new prelude rebases nested transaction dates to each retained historical report',async()=>{
+  const f=saveSession();
+  assert.equal(f.run('typeof recordFinance'),'function');
+  f.run(`const preludeResolve=resolveTurn;
+    resolveTurn=(state,decision)=>{recordFinance(state,{source:'test.prelude',kind:'expense',amount:1,cashDelta:-1,operatingDelta:-1});return preludeResolve(state,decision)};`);
+  await f.run("newGame({mode:'normal',diff:'normal',country:'NV',name:'Ledger prelude'})");
+  const rows=ledgerData(f,'G.s.prelude');
+  assert.equal(rows.length,12);
+  assert.ok(rows.every(row=>row.turn<=0&&row.finance.transactions.length===1&&row.finance.transactions[0].turn===row.turn));
+  assert.equal(await f.run('saveGame(true)'),true);
+  assert.equal(f.run('ccValidSave(JSON.parse(localStorage.getItem("coilcenter:foundation:v1")))'),true);
+});
+
+test('invalid first transaction cannot initialize the lazy ledger or invoke its balance update',()=>{
+  const f=ledgerFixture(), before=f.snapshot();
+  assert.throws(()=>f.run("recordFinance(G.s,{source:'test.invalid',kind:'unknown',amount:1},s=>{s.fa.land=0})"));
+  assert.deepEqual(f.snapshot(),before);
+  assert.equal(f.run('Object.hasOwn(G.s,"finance")'),false);
+});
+test('transaction helper changes only its explicitly supplied state',()=>{
+  const f=ledgerFixture(), before=f.snapshot();
+  f.run("const detached=structuredClone(G.s);recordFinance(detached,{source:'test.detached',kind:'expense',amount:10,cashDelta:-10,operatingDelta:-10})");
+  assert.deepEqual(f.snapshot(),before);
+  assert.equal(f.run('G.s.cash-detached.cash'),10);
+  assert.equal(f.run('detached.finance.pending.length'),1);
+});

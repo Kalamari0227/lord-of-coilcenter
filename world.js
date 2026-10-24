@@ -642,7 +642,9 @@ function runPrelude(s, months = 16) {
   for (const n of s.nasi) n.turn = sh(n.turn);
   for (const b of (s.buildQueue || [])) b.readyTurn = sh(b.readyTurn);
   for (const q of (s.custQueue || [])) q.turn = sh(q.turn);
-  s.prelude = reps.slice(-12).map(r => ({ ...r, turn: sh(r.turn), date: dateLabel(sh(r.turn)) }));
+  s.prelude = reps.slice(-12).map(r => ({ ...r, turn: sh(r.turn), date: dateLabel(sh(r.turn)),
+    ...(r.finance ? { finance: { ...r.finance, transactions: r.finance.transactions.map(entry => ({ ...entry, turn: sh(entry.turn) })) } } : {}),
+  }));
   // 성적표는 부임한 날부터 센다
   s.turn = 1; s.over = false; s.overReason = null; s.running = true;
   s.scenario = gameScenario; s.market.phase = gamePhase;

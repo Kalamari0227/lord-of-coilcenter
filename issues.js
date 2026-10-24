@@ -1207,21 +1207,21 @@ function qualityCard(s, W) {
   return {
     id: 'w-qual', who: 'oh', topic: 'quality',
     title: '품질 지표가 내려가고 있습니다',
-    text: `가공한 제품 중 불량 없이 쓸 수 있는 비율이 ${qualityPct(W.quality).toFixed(1)}%입니다. `
+    text: `품질 상태를 환산한 참고 양품률은 ${qualityPct(W.quality).toFixed(1)}%입니다. 실제 가공 수율은 월별 결산에서 확인합니다. `
         + `석 달 전보다 낮아졌고, 표면에 흠집이 난 제품이 늘었습니다. `
         + `${why ? `관련 결정 기록으로 ${why}이 있습니다. 품질 저하의 원인은 별도로 확인해야 합니다. ` : ''}`
         + `아직 고객이 문제를 제기하지는 않았습니다. 하지만 불량품이 납품되면 고객이 반품이나 보상을 요구할 수 있습니다.`,
     opts: [
-      { displayId: "w-qual.root-cause", label: '불량 원인을 찾아 고친다', hint: '오 과장이 작업 기록을 분석하고 가공 방식을 개선한다', fx: ['−통장 $55,000', '+품질 크게 개선 (두세 달)', '+고객의 반품·보상 요구 위험 ↓'],
+      { displayId: "w-qual.root-cause", label: '불량 원인을 찾아 고친다', hint: '이번 결재 기간의 수율을 보정하고, 품질 상태는 월말에 점진적으로 반영한다', fx: ['−통장 $55,000', '+이번 결재 기간 가공 수율 보정 0.22%p', '+품질 개선 요인 추가 · 월말 종합 반영', '?품질 개선에 따라 고객 반품·보상 위험 완화'],
         apply: (s, G) => { recordFinance(s, { source: 'w-qual.root-cause', kind: 'expense', amount: 55_000, cashDelta: -55_000, operatingDelta: -55_000 }); W.qBoost += 14; G.ui.yieldBonus = 0.0022; styleAdd(W, 'craft', 2);
           remember(W, s, 'qual', '품질 원인 분석');
           lever(G, '품질 원인 분석', { cash: -55_000, quality: 1 });
           return '6개월치 데이터를 전부 돌렸습니다. 원인은 나이프 교체 주기였습니다. 기준을 다시 썼습니다.'; } },
-      { displayId: "w-qual.inspect", label: '납품 전 검사만 강화한다', hint: '불량품이 고객에게 나가지 않도록 검사한다', fx: ['−통장 $30,000', '+고객의 반품·보상 요구 위험 조금 ↓', '=불량이 생기는 원인은 그대로'],
+      { displayId: "w-qual.inspect", label: '납품 전 검사만 강화한다', hint: '검사를 강화하고 품질 개선 요인을 더한다. 즉시 가공 수율 보정은 없다', fx: ['−통장 $30,000', '+품질 개선 요인 추가 · 월말 종합 반영', '?품질 개선에 따라 고객 반품·보상 위험 완화'],
         apply: (s, G) => { recordFinance(s, { source: 'w-qual.inspect', kind: 'expense', amount: 30_000, cashDelta: -30_000, operatingDelta: -30_000 }); W.qBoost += 5; styleAdd(W, 'craft');
           remember(W, s, 'inspect', '출하 검사 강화');
           lever(G, '출하 검사 강화', { cash: -30_000 });
-          return '출하 검사원을 한 명 더 붙였습니다. 말씀드립니다 — 새는 곳은 그대로입니다.'; } },
+          return '출하 검사원을 한 명 더 붙였습니다. 품질 상태에는 월말부터 점진적으로 반영되며, 실제 가공 수율은 다음 결산에서 확인하겠습니다.'; } },
       { displayId: "w-qual.defer", label: '지금은 조치하지 않는다', hint: '생산을 유지하지만 불량 위험은 남는다', fx: ['+비용 없음', '?고객의 반품·보상 요구 위험 ↑'],
         apply: (s, G) => { styleAdd(W, 'grow'); remember(W, s, 'skipqual', '품질 문제 보류');
           lever(G, '품질 문제 보류', { risk: '클레임 확률 상승' });
@@ -1239,7 +1239,7 @@ function peopleCard(s, W) {
         + `${why ? `관련 결정 기록으로 ${why}이 있어요. 현재 피로도 함께 봐주세요. ` : ''}`
         + `옆 공단에서 우리 직원들에게 이직을 권하고 있다는 얘기도 있어요. 반장님이 나가면 같이 일하던 직원들까지 따라갈까 봐 걱정이에요. 쉬게 해드리거나 처우를 개선해야 할 것 같아요.`,
     opts: [
-      { displayId: "w-people.rest", label: '특별휴가와 보너스를 준다', hint: '직원들이 쉬고 다시 일할 힘을 얻는다', fx: ['−통장 $42,000', '−이번 달 가공 가능량 5% 감소', '+피로 ↓↓ · 직원 사기 ↑'],
+      { displayId: "w-people.rest", label: '특별휴가와 보너스를 준다', hint: '피로와 사기는 즉시 바뀌고 월말에는 가동 상황에 따라 다시 변한다', fx: ['−통장 $42,000', '−이번 달 가공 가능량 5% 감소', '+피로 25 감소 · 직원 사기 10 증가 · 0~100 범위'],
         apply: (s, G) => { recordFinance(s, { source: 'w-people.rest', kind: 'expense', amount: 42_000, cashDelta: -42_000, operatingDelta: -42_000 }); W.capHit *= 0.95; W.fatigue = wClamp(W.fatigue - 25); s.morale = wClamp(s.morale + 10);
           styleAdd(W, 'craft', 2); remember(W, s, 'rest', '특별휴가');
           lever(G, '특별휴가·보너스', { cash: -42_000, fatigue: -25 });
@@ -1590,20 +1590,20 @@ function safetyCard(s, W) {
         `어제 보니 쇠줄을 이루는 가는 철사 몇 가닥이 끊어져 튀어나와 있었어요. 안전화와 보호 장갑도 많이 낡았습니다. `
         + `${W.fatigue > 35 ? '요즘 특근이 많아 장비도 더 자주 쓰고 있어요. ' : ''}교체를 계속 미루면 코일이 떨어지거나 직원이 다칠 수 있습니다. 이번에는 교체해 주셨으면 합니다.`,
     opts: [
-      { displayId: "m-safety.replace-all", label: '전부 교체한다', hint: '안전 장비 교체·직원 사기 개선. 이미 예약된 사고 위험은 남는다', fx: ['−통장 $29,000', '+사고 위험 ↓', '+직원 사기 ↑'],
+      { displayId: "m-safety.replace-all", label: '전부 교체한다', hint: '예약된 사고 판정은 남지만 현재 피로에 따른 기본 위험을 절반으로 낮춘다', fx: ['−통장 $29,000', '+예약 사고의 발동 확률: 기본 위험의 50% · 무사고 보장 아님', '+직원 사기 3 · 상한 100'],
         apply: (s, G) => { recordFinance(s, { source: 'm-safety.replace-all', kind: 'expense', amount: 29_000, cashDelta: -29_000, operatingDelta: -29_000 }); W.safety = 0; s.morale = wClamp(s.morale + 3); styleAdd(W, 'craft');
           remember(W, s, 'safety', '안전 설비 교체');
           lever(G, '크레인 와이어·보호구 교체', { cash: -29_000 });
           return '전부 새것으로 바꿨습니다. 현장 반장님들이 고맙다고 하셨어요. 저는 한 것도 없는데…'; } },
-      { displayId: "m-safety.wire-only", label: '크레인 쇠줄만 교체한다', hint: '가장 위험한 장비부터 바꾸고 보호구는 그대로 쓴다', fx: ['−통장 $25,000', '=사고 위험 조금 ↓'],
-        apply: (s, G) => { recordFinance(s, { source: 'm-safety.wire-only', kind: 'expense', amount: 25_000, cashDelta: -25_000, operatingDelta: -25_000 }); W.safety = Math.max(0, (W.safety || 0) - 1);
+      { displayId: "m-safety.wire-only", label: '크레인 쇠줄만 교체한다', hint: '가장 위험한 장비부터 바꾼다. 이미 전부 교체한 상태는 악화시키지 않는다', fx: ['−통장 $25,000', '+예약 사고의 발동 확률: 기본 위험의 최대 75% · 판정은 남음'],
+        apply: (s, G) => { recordFinance(s, { source: 'm-safety.wire-only', kind: 'expense', amount: 25_000, cashDelta: -25_000, operatingDelta: -25_000 }); W.safety = Math.min(1, Math.max(0, W.safety ?? 2));
           lever(G, '크레인 와이어만 교체', { cash: -25_000 });
           return '와이어만 갈았습니다. 그게 제일 위험한 거라서요. 보호구는… 다음에 다시 말씀드리겠습니다.'; } },
       { displayId: "m-safety.defer", label: '다음 분기로 미룬다', hint: '돈을 아낀다', fx: ['+비용 없음', '?산업재해 위험 ↑'],
         apply: (s, G) => { W.safety = (W.safety || 0) + 2; styleAdd(W, 'cash');
           remember(W, s, 'safety-skip', '안전 설비 교체 연기');
           G.pending.push({ turn: s.turn + 2 + Math.floor(Math.random() * 4), run: s2 => {
-            if (Math.random() < 0.3 + W.fatigue / 250) {
+            if (Math.random() < safetyAccidentProbability(W)) {
               recordFinance(s2, { source: 'm-safety.defer', kind: 'expense', amount: 260_000, cashDelta: -260_000, operatingDelta: -260_000 }); s2.morale = wClamp(s2.morale - 12); W.capHit *= 0.9; W.stats.accidents = (W.stats.accidents || 0) + 1;
               fire(W, s2, 'accident', '야드에서 코일이 떨어져 작업자가 다쳤습니다. 노동청 조사로 라인이 며칠 섰습니다.', '안전 설비 교체를 미룬 일');
               return '산업재해가 났습니다. 보상과 조업 중단으로 $260k.'; }

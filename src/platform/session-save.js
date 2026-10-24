@@ -41,7 +41,7 @@ function ccRestoreEffect(event, W) {
       fire(W, s, 'audit', '본사 감사에서 스키드 공급업체 거래가 문제 됐습니다. 법인이 윤리 점검 대상에 올랐습니다.', '공급업체 제안을 묵인한 일');
       return '본사 감사에서 공급업체 거래가 적발됐습니다.';
     }
-    if (Math.random() >= 0.3 + W.fatigue / 250) return null;
+    if (Math.random() >= safetyAccidentProbability(W)) return null;
     recordFinance(s, {source:'m-safety.defer',kind:'expense',amount:260_000,cashDelta:-260_000,operatingDelta:-260_000}); s.morale = wClamp(s.morale - 12); W.capHit *= 0.9;
     W.stats.accidents = (W.stats.accidents || 0) + 1;
     fire(W, s, 'accident', '야드에서 코일이 떨어져 작업자가 다쳤습니다. 노동청 조사로 라인이 며칠 섰습니다.', '안전 설비 교체를 미룬 일');

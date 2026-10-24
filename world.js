@@ -15,6 +15,11 @@ const cname = k => `${CUST[k]}(${CFG.CUSTOMERS[k].name})`;
 const wClamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
 const wPick = a => a[Math.floor(Math.random() * a.length)];
 const wChance = p => Math.random() < p;
+function safetyAccidentProbability(W) {
+  const base = wClamp(0.3 + W.fatigue / 250, 0, 1);
+  const factor = 0.5 + 0.25 * wClamp(W.safety ?? 2, 0, 2);
+  return base * factor;
+}
 const AGO = ['이번 달', '지난달', '두 달 전', '석 달 전', '넉 달 전', '다섯 달 전', '여섯 달 전'];
 const ago = n => AGO[n] || `${n}개월 전`;
 

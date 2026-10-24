@@ -308,6 +308,10 @@ function yieldGainPerTon(pm, scrapRate, assumedYield, actualYield) {
    재고를 깔고 앉아 있으면 그 재고가 상품성을 잃는 바로 그때 한도까지 같이 빠진다.
    땅·건물 담보는 안 흔들리는 바닥이고, 본사 지급보증은 신뢰도를 따라 움직인다.
    본사에 미운털이 박히면 은행 한도가 먼저 줄어든다. */
+function clampIndicator(value) {
+  return Math.max(0, Math.min(100, value));
+}
+
 function creditLimit(s, pm) {
   let goodTons = 0;
   for (const pool of [s.invRaw, s.invFg])
@@ -318,7 +322,7 @@ function creditLimit(s, pm) {
   const wc = (goodTons * pm + s.ar.reduce((a, x) => a + x.amount, 0)) * CFG.BORROW_BASE_RATE;
   const mortgage = (s.fa.land + s.fa.buildingNbv) * CFG.MORTGAGE_RATE;
   const guarantee = s.paidIn * CFG.HQ_GUARANTEE_RATE
-                  + CFG.HQ_GUARANTEE_TRUST * Math.max(0, s.trust) / 100;
+                  + CFG.HQ_GUARANTEE_TRUST * clampIndicator(s.trust) / 100;
   // 본사 재무와 협의해서 따로 받아낸 증액분. 받아낸 뒤에도 신뢰가 떨어지면 위의 보증분이 줄어든다.
   return wc + mortgage + guarantee + (s.debt.extra || 0);
 }
@@ -360,7 +364,7 @@ function createInitialState(opt = {}) {
     equity,
     paidIn: equity,
 
-    morale: 70, trust: opt.trust ?? 65, lossStreak: 0,
+    morale: 70, trust: clampIndicator(opt.trust ?? 65), lossStreak: 0,
     myShare: opt.myShare ?? 0.10,
     effortQueue: [],     // 영업 투자 지연 큐
 
@@ -673,6 +677,8 @@ function mergeDraw(a, b) {
 
 function resolveTurn(state, decision) {
   const s = structuredClone(state);
+  s.trust = clampIndicator(s.trust);
+  s.morale = clampIndicator(s.morale);
   const rng = makeRng(s.rng + s.turn * 7919);
   s.rng = Math.floor(rng() * 1e9);
 
@@ -861,11 +867,11 @@ function resolveTurn(state, decision) {
       s.poOpen.push({ qty: hqSpotTon, unitPriceFixed: price, dt: 'SPOT', gr: 'COMMON',
                       src: 'HQ', etaTurn: s.turn + CFG.LEAD_TURNS });
       lcFee += hqSpotTon * price * CFG.LC_FEE_RATE;
-      s.trust += 1;
+      s.trust = clampIndicator(s.trust + 1);
       s.hqSpotCredit = (s.hqSpotCredit || 0) + hqSpotTon;   // 본사가 민 물량은 팔 권한도 같이 준다
       log.push(`본사 지시 유통향 스팟 ${Math.round(hqSpotTon).toLocaleString()}톤을 시세보다 ${(CFG.HQ_SPOT.discount * 100).toFixed(0)}% 싸게 받았습니다.`);
     } else if (hqSpotOffer > 0) {
-      s.trust -= CFG.HQ_SPOT.refuseTrustCost;
+      s.trust = clampIndicator(s.trust - CFG.HQ_SPOT.refuseTrustCost);
       flags.push('본사 가동 물량 지시를 받지 않았습니다. 본사와의 관계가 상합니다.');
     }
   }
@@ -895,7 +901,7 @@ function resolveTurn(state, decision) {
       flags.push(`${CFG.LINE[k].label} 캐파를 넘겨 가동을 ${Math.round((1 - ratio) * 100)}% 줄였습니다.`);
     }
   }
-  if (d.options.overtime) s.morale -= 5;
+  if (d.options.overtime) s.morale = clampIndicator(s.morale - 5);
 
   /* STEP 7. 소재 출고 (FIFO, FIRM/SPOT 태그 승계) */
   const needTon = d.run.SLIT + d.run.LEVEL + d.run.TRAP + d.run.DIE + d.sell.C2C;
@@ -1053,7 +1059,7 @@ function resolveTurn(state, decision) {
       const lost = CFG.SHORTAGE_SHARE_LOSS * Math.min(1, shortRate * 2);
       s.myShare *= 1 - lost;
       // 잃은 고객은 점유율에서 이미 영구히 뺐다. 평판 타격까지 영구로 두면 이중 계산이다.
-      s.trust -= Math.min(3, shortRate * 8);
+      s.trust = clampIndicator(s.trust - Math.min(3, shortRate * 8));
       shortageEvents.push(proc);
       flags.push(`${proc} 납품 부족 ${Math.round(want - ship)}톤. 이 결품으로 시장 점유율이 이전 값 대비 ${(lost * 100).toFixed(1)}% 줄었습니다.`);
     }
@@ -1167,7 +1173,7 @@ function resolveTurn(state, decision) {
        그래서 사고 난 채권의 LOSS_GIVEN_DEFAULT만 손실로 확정하고 나머지는 들어온다. */
     if (r < pfNow.bad) {
       const lost = a.amount * CFG.LOSS_GIVEN_DEFAULT;
-      badDebt += lost; cashIn += a.amount - lost; s.trust -= 2;
+      badDebt += lost; cashIn += a.amount - lost; s.trust = clampIndicator(s.trust - 2);
     }
     else if (r < pfNow.bad + CFG.DELAY_RATE) { a.dueTurn += 1; a.delayed = true; arKeep.push(a); }
     else cashIn += a.amount;
@@ -1233,15 +1239,15 @@ function resolveTurn(state, decision) {
 
   /* 비재무 갱신 — 설계서는 "3턴 연속 적자"일 때만 사기를 깎는다. 회복 경로도 둔다. */
   s.lossStreak = op < 0 ? (s.lossStreak || 0) + 1 : 0;
-  if (s.lossStreak >= 3) s.morale -= 3;
-  else if (op > 0) s.morale += 1;
+  if (s.lossStreak >= 3) s.morale = clampIndicator(s.morale - 3);
+  else if (op > 0) s.morale = clampIndicator(s.morale + 1);
   /* 평균 회귀. 이게 없으면 사기가 한 방향으로만 굴러떨어진다 —
      적자 → 사기 하락 → 수율 하락 → 더 큰 적자. 회복 경로가 "흑자를 내면"뿐인데
      흑자를 내려면 사기가 필요하니, 한 번 빠지면 바닥까지 간다.
      실제로는 나쁜 일이 안 생기면 사람은 원래 기분으로 돌아온다. */
-  s.morale += (CFG.MORALE_BASE - s.morale) * CFG.MORALE_REVERT;
+  s.morale = clampIndicator(s.morale + (CFG.MORALE_BASE - s.morale) * CFG.MORALE_REVERT);
   // 약속을 지킨 달은 평판이 회복된다. 바닥에 있을수록 빨리 올라온다 (평균 회귀).
-  if (shippedTotal > 0 && shortageEvents.length === 0) s.trust += s.trust < 60 ? 2 : 1;
+  if (shippedTotal > 0 && shortageEvents.length === 0) s.trust = clampIndicator(s.trust + (s.trust < 60 ? 2 : 1));
   s.morale = Math.max(0, Math.min(100, s.morale));
   s.trust = Math.max(0, Math.min(100, s.trust));
   if (s.morale < 30) { flags.push('직원 사기가 낮습니다. 현장 상태와 인력 관련 보고를 확인하십시오.'); }

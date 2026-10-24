@@ -1776,7 +1776,7 @@ function hqCard(L, s) {
   const mk = (displayId, ton, label, hint, fx) => ({
     displayId, label, hint, fx,
     apply: (st, g) => { g.ui.hqTake = ton;
-      if (ton === 0) { st.trust -= CFG.HQ_SPOT.refuseTrustCost;
+      if (ton === 0) { st.trust = clampIndicator(st.trust - CFG.HQ_SPOT.refuseTrustCost);
         return '거절했습니다. 본사 영업팀 반응이 싸늘했습니다. 이런 건 연말 평가 때 꼭 나옵니다.'; }
       return `${fmt(ton)}톤 받기로 했습니다. 이제 이걸 우리가 알아서 팔아야 합니다. `
            + `못 팔면 창고에서 늙다가 반값에 나갑니다.`; },

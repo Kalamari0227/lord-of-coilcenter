@@ -36,7 +36,7 @@ const DECK = {
             s.effortQueue.push({ amount: 130_000, turnsLeft: CFG.SALES_EFFORT_LAG });
             return '영업을 전면에 돌렸습니다.'; } },
         { displayId: "g-fire.assist", label: '복구를 돕는다', hint: '정비 인력을 보내 고객과의 관계를 지킨다', fx: ['−통장 $80,000', '+본사 신뢰 12'],
-          apply: s => { s.cash -= 80_000; s.trust += 12;
+          apply: s => { s.cash -= 80_000; s.trust = clampIndicator(s.trust + 12);
             return '우리 정비 인력을 보냈습니다. A자동차가 이걸 아주 오래 기억할 겁니다.'; } },
         { displayId: "g-fire.wait", label: '기다린다', hint: '추가 지원 없이 기다린다', fx: ['+비용 없음', '−시장 점유율(상대 변화) 8%'],
           apply: s => { s.myShare *= 0.92; return '추가 지원 없이 기다리기로 했습니다. 시장 점유율이 이전 값보다 8% 줄었습니다.'; } },
@@ -46,11 +46,11 @@ const DECK = {
       text: '현지 돈의 가치가 한 달 만에 12% 떨어졌습니다. 소재는 달러로 사는데, 고객에게는 현지 돈으로 받습니다. 같은 가격에 팔아도 달러로 바꾸면 받는 돈이 줄어듭니다. 판매가격을 얼마나 올릴지 정해야 합니다.',
       opts: [
         { displayId: "g-fx.pass-all", label: '판매가격에 전부 반영한다', hint: '환율 때문에 줄어든 수입을 가격 인상으로 메운다', fx: ['+이익을 지킴', '−본사 신뢰 8'],
-          apply: s => { s.trust -= 8; return '가격을 올렸습니다. 고객 구매팀과 크게 붙었습니다.'; } },
+          apply: s => { s.trust = clampIndicator(s.trust - 8); return '가격을 올렸습니다. 고객 구매팀과 크게 붙었습니다.'; } },
         { displayId: "g-fx.pass-half", label: '판매가격에 절반만 반영한다', hint: '고객과 우리가 부담을 나눠 진다', fx: ['−톤당 $8', '−본사 신뢰 2'],
-          apply: (s, g) => { g.turnDiscount = 8; s.trust -= 2; return '절반씩 나눠 지기로 했습니다.'; } },
+          apply: (s, g) => { g.turnDiscount = 8; s.trust = clampIndicator(s.trust - 2); return '절반씩 나눠 지기로 했습니다.'; } },
         { displayId: "g-fx.absorb", label: '판매가격을 그대로 둔다', hint: '줄어든 수입을 감수하고 고객과의 관계를 지킨다', fx: ['−톤당 $18', '+본사 신뢰 8'],
-          apply: (s, g) => { g.turnDiscount = 18; s.trust += 8;
+          apply: (s, g) => { g.turnDiscount = 18; s.trust = clampIndicator(s.trust + 8);
             return '이번엔 우리가 다 먹었습니다. 고객이 고마워합니다. 이번 달 손익은 아픕니다.'; } },
       ] },
 
@@ -83,13 +83,13 @@ const DECK = {
       text: '본사가 앞으로 우리에게도 시장가격 그대로 소재를 팔겠답니다. 우리가 소재를 사오는 가격이 올라갑니다. 본사에 예외를 요청할지, 고객 판매가격을 올릴지, 이익이 줄어드는 걸 감수할지 정해야 합니다.',
       opts: [
         { displayId: "g-policy.negotiate", label: '본사와 협상한다', hint: '쌓아둔 신뢰를 바탕으로 가격 인상을 미뤄 달라고 한다', fx: ['−본사 신뢰 소모', '?신뢰가 높아야 협상 성공'],
-          apply: s => { if (s.trust > 65) { s.trust -= 5;
+          apply: s => { if (s.trust > 65) { s.trust = clampIndicator(s.trust - 5);
               return '그동안 쌓은 게 있어 유예를 받았습니다. 평소가 중요한 이유입니다.'; }
-            s.trust -= 8; return '협상이 안 됐습니다. 쌓아둔 게 없었습니다.'; } },
+            s.trust = clampIndicator(s.trust - 8); return '협상이 안 됐습니다. 쌓아둔 게 없었습니다.'; } },
         { displayId: "g-policy.raise", label: '고객 판매가격을 올린다', hint: '소재값이 오른 만큼 고객에게 더 받는다', fx: ['+이익을 지킴', '−판매 물량 6%'],
           apply: s => { s.myShare *= 0.94; return '가격을 올렸습니다. 몇 곳이 이탈했습니다.'; } },
         { displayId: "g-policy.absorb", label: '판매가격을 그대로 둔다', hint: '이익이 줄어드는 걸 감수하고 고객을 지킨다', fx: ['−톤당 $15', '+본사 신뢰 4'],
-          apply: (s, g) => { g.turnDiscount = 15; s.trust += 4;
+          apply: (s, g) => { g.turnDiscount = 15; s.trust = clampIndicator(s.trust + 4);
             return '마진을 깎아 고객을 지켰습니다.'; } },
       ] },
   ],
@@ -108,24 +108,24 @@ DECK.life = [
     opts: [
       { displayId: "l-visit.entertain", label: '골프에 저녁까지 풀코스', hint: '정석대로 간다',
         fx: ['−통장 $18,000', '+본사 신뢰 7'],
-        apply: s => { s.cash -= 18_000; s.trust += 7;
+        apply: s => { s.cash -= 18_000; s.trust = clampIndicator(s.trust + 7);
           return '18홀 돌고 저녁에 2차까지 갔습니다. 김 부장님이 공항에서 "자네 고생이 많아"라고 하셨습니다. '
                + '그 한마디가 본사 회의에서 어떻게 퍼질지는 아무도 모릅니다.'; } },
       { displayId: "l-visit.improve", label: '현장 개선활동에 같이 투입', hint: '일로 승부한다',
         fx: ['−통장 $3,000', '?본사 신뢰가 높아야 좋은 평가를 받음', '+직원 사기 4'],
-        apply: s => { s.cash -= 3_000; s.morale += 4;
-          if (s.trust > 60) { s.trust += 9;
+        apply: s => { s.cash -= 3_000; s.morale = clampIndicator(s.morale + 4);
+          if (s.trust > 60) { s.trust = clampIndicator(s.trust + 9);
             return '작업복 입혀서 야드에 세워뒀습니다. 사흘째엔 지게차까지 타보셨습니다. '
                  + '돌아가서 "그 법인은 진짜로 일한다"고 하셨답니다. 골프보다 크게 먹혔습니다.'; }
-          s.trust -= 3;
+          s.trust = clampIndicator(s.trust - 3);
           return '작업복 입혀서 야드에 세워뒀습니다. 표정이 끝까지 안 풀렸습니다. '
                + '"나를 뭘로 보고"라는 말이 들렸다고 합니다.'; } },
       { displayId: "l-visit.delegate", label: '린 매니저에게 통째로 맡긴다', hint: '나는 바쁘다',
         fx: ['−통장 $6,000', '?출장자가 만족할지는 불확실', '−직원 사기 2'],
-        apply: s => { s.cash -= 6_000; s.morale -= 2;
-          if (Math.random() < 0.55) { s.trust += 4;
+        apply: s => { s.cash -= 6_000; s.morale = clampIndicator(s.morale - 2);
+          if (Math.random() < 0.55) { s.trust = clampIndicator(s.trust + 4);
             return '린 매니저가 알아서 다 했습니다. 현지 시장이며 맛집이며 다 도셨습니다. 평은 좋았습니다.'; }
-          s.trust -= 5;
+          s.trust = clampIndicator(s.trust - 5);
           return '김 부장님이 "사장은 어디 갔냐"고 세 번 물으셨답니다. 린 매니저가 난처했습니다.'; } },
     ] },
 
@@ -137,18 +137,18 @@ DECK.life = [
     opts: [
       { displayId: "l-audit.reconcile-all", label: '재고를 전부 세고 장부를 맞춘다', hint: '직원들이 밤을 새워야 한다',
         fx: ['−통장 $30,000', '+본사 신뢰 5', '−직원 사기 4'],
-        apply: s => { s.cash -= 30_000; s.trust += 5; s.morale -= 4;
+        apply: s => { s.cash -= 30_000; s.trust = clampIndicator(s.trust + 5); s.morale = clampIndicator(s.morale - 4);
           return '사흘 밤새워 전부 맞췄습니다. 감사팀장이 "여긴 볼 게 없네" 하고 갔습니다. '
                + '그게 이 바닥 최고의 칭찬입니다. 대가로 경리팀 셋이 사람 구실을 못 합니다.'; } },
       { displayId: "l-audit.reconcile-major", label: '금액이 큰 차이부터 바로잡고 나머지는 알린다', hint: '남은 오류는 감사팀에 솔직히 설명한다',
         fx: ['−통장 $8,000', '+본사 신뢰 2'],
-        apply: s => { s.cash -= 8_000; s.trust += 2;
+        apply: s => { s.cash -= 8_000; s.trust = clampIndicator(s.trust + 2);
           return '"이건 저희가 못 잡았습니다"라고 제가 먼저 말했습니다. 감사팀장이 고개를 끄덕이더군요. '
                + '먼저 말하면 지적사항이고, 걸리면 징계입니다. 같은 사실인데 값이 다릅니다.'; } },
       { displayId: "l-audit.accept-audit", label: '정리하지 않고 감사를 받는다', hint: '재고 차이를 발견하지 않길 기대한다',
         fx: ['+비용 없음', '?들키면 본사 신뢰가 크게 하락'],
         apply: s => {
-          if (Math.random() < 0.5) { s.trust -= 9;
+          if (Math.random() < 0.5) { s.trust = clampIndicator(s.trust - 9);
             return '하필 그 창고 그 열을 뽑더군요. 지적 네 건. 본사 감사보고서에 우리 법인 이름이 박혔습니다. '
                  + '그 보고서는 삼 년쯤 돌아다닙니다.'; }
           return '아무도 창고에 안 갔습니다. 회의실에서 서류만 보고 갔습니다. 운이 좋았다는 건, 실력은 아니었다는 뜻입니다.'; } },
@@ -162,16 +162,16 @@ DECK.life = [
     opts: [
       { displayId: "l-kick.uniforms", label: '유니폼 전부 맞춰준다', hint: '이름을 박는다',
         fx: ['−통장 $12,000', '+직원 사기 9'],
-        apply: s => { s.cash -= 12_000; s.morale += 9;
+        apply: s => { s.cash -= 12_000; s.morale = clampIndicator(s.morale + 9);
           return '우리 이름 박힌 유니폼 22벌 나갔어요! 그 반장님이 조회 때 우셨어요. 진짜로요. '
                + '그 뒤로 한 달 내내 현장 분위기가 너무 좋아요.'; } },
       { displayId: "l-kick.balls", label: '공만 몇 개 사준다', hint: '적당히',
         fx: ['−통장 $1,500', '+직원 사기 3'],
-        apply: s => { s.cash -= 1_500; s.morale += 3;
+        apply: s => { s.cash -= 1_500; s.morale = clampIndicator(s.morale + 3);
           return '공 열 개 보냈어요. 애들이 좋아하긴 했는데… 유니폼 얘기는 다시 안 나왔어요.'; } },
       { displayId: "l-kick.decline", label: '정중히 거절한다', hint: '회사 돈이다',
         fx: ['+통장 지킴', '−직원 사기 3'],
-        apply: s => { s.morale -= 3;
+        apply: s => { s.morale = clampIndicator(s.morale - 3);
           return '네, 알겠습니다. 회사 돈이니까요. 맞는 말씀이에요. '
                + '제가 반장님한테는… 잘 말씀드릴게요.'; } },
     ] },
@@ -184,17 +184,17 @@ DECK.life = [
     opts: [
       { displayId: "l-cat.build-house", label: '사무동 옆에 집을 지어준다', hint: '옮겨준다',
         fx: ['−통장 $2,000', '+직원 사기 7'],
-        apply: (s, g) => { s.cash -= 2_000; s.morale += 7; if (g && g.W) g.W.cat = true;
+        apply: (s, g) => { s.cash -= 2_000; s.morale = clampIndicator(s.morale + 7); if (g && g.W) g.W.cat = true;
           return '단열재로 집을 지어가 옮겼심더. 인자 점심시간마다 거기 다 모입니더. '
                + '지도… 사료 한 포대 사다 놨심더. 아무도 못 본 걸로 합시더.'; } },
       { displayId: "l-cat.leave-row", label: '고양이가 있는 줄의 코일은 옮기지 않는다', hint: '고양이가 알아서 나갈 때까지 기다린다',
         fx: ['=고양이가 있는 구역 주의', '+직원 사기 4'],
-        apply: s => { s.morale += 4;
+        apply: s => { s.morale = clampIndicator(s.morale + 4);
           return '고양이가 있는 구역을 조심해서 쓰기로 했심더. 직원 사기는 올랐고예. '
                + '이상하게 아무도 불평을 안 합니더.'; } },
       { displayId: "l-cat.relocate", label: '업체를 불러 내보낸다', hint: '원칙대로',
         fx: ['−통장 $800', '−직원 사기 8'],
-        apply: s => { s.cash -= 800; s.morale -= 8;
+        apply: s => { s.cash -= 800; s.morale = clampIndicator(s.morale - 8);
           return '업체 불러가 보호소로 보냈심더. 규정대로는 맞는 처립니더. '
                + '그날 점심시간에 식당이 조용하데예. 지한테 말 거는 사람도 없었고예.'; } },
     ] },
@@ -208,19 +208,19 @@ DECK.life = [
       { displayId: "l-name.correct-mail", label: '정중하게 메일로 정정한다', hint: '기록을 바로잡는다',
         fx: ['+본사 신뢰 3', '?껄끄러워질 수 있다'],
         apply: s => {
-          if (Math.random() < 0.7) { s.trust += 3;
+          if (Math.random() < 0.7) { s.trust = clampIndicator(s.trust + 3);
             return '정중하게 "확인 부탁드립니다" 한 줄 보냈습니다. 비서실에서 바로 정정해줬고요. '
                  + '그 뒤로는 우리 이름을 또박또박 부르십니다. 이런 건 말해야 바뀝니다.'; }
-          s.trust -= 2;
+          s.trust = clampIndicator(s.trust - 2);
           return '부사장님이 "그게 그렇게 중요한가"라고 하셨답니다. 그 뒤로도 저희는 베트남입니다. 제가 괜히 건드렸습니다.'; } },
       { displayId: "l-name.make-video", label: '법인 소개 영상을 만들어 보낸다', hint: '기억에 남게',
         fx: ['−통장 $22,000', '+본사 신뢰 6'],
-        apply: s => { s.cash -= 22_000; s.trust += 6;
+        apply: s => { s.cash -= 22_000; s.trust = clampIndicator(s.trust + 6);
           return '3분짜리 영상 만들어서 본사 월례회의에 틀었습니다. 제가 직접 나레이션까지 넣었습니다. '
                + '이제 이름을 기억하겠지요. 영상 제작에 $22,000을 썼습니다.'; } },
       { displayId: "l-name.accept-name", label: '그냥 베트남 법인 한다', hint: '싸우지 않는다',
         fx: ['=변화 없음', '−직원 사기 2'],
-        apply: s => { s.morale -= 2;
+        apply: s => { s.morale = clampIndicator(s.morale - 2);
           return '알겠습니다. 이제 제가 먼저 "베트남 법인 정 부장입니다" 하고 전화받습니다. '
                + '다들 웃습니다. 웃는데 좀 서럽긴 합니다.'; } },
     ] },
@@ -233,20 +233,20 @@ DECK.life = [
     opts: [
       { displayId: "l-menu.both", label: '현지 음식과 한식을 매일 함께 준비한다', hint: '직원들이 원하는 쪽을 고르게 한다',
         fx: ['−고정비 월 $5,000', '+직원 사기 8'],
-        apply: (s, g) => { g.extraFixed = (g.extraFixed || 0) + 5_000; s.morale += 8;
+        apply: (s, g) => { g.extraFixed = (g.extraFixed || 0) + 5_000; s.morale = clampIndicator(s.morale + 8);
           return '매일 두 가지가 나옵니다. 민원이 그날로 끊겼습니다. '
                + '고정비에 매달 조금씩 물리지만, 이만한 값어치는 합니다.'; } },
       { displayId: "l-menu.vote", label: '직원 투표로 정한다', hint: '민주적으로',
         fx: ['+직원 사기 3', '?진 쪽이 삐친다'],
         apply: s => {
-          if (Math.random() < 0.5) { s.morale += 3;
+          if (Math.random() < 0.5) { s.morale = clampIndicator(s.morale + 3);
             return '투표로 정했습니다. 진 쪽도 깨끗하게 승복했습니다. 다들 어른이었습니다.'; }
-          s.morale -= 4;
+          s.morale = clampIndicator(s.morale - 4);
           return '투표로 정했습니다. 진 쪽이 도시락을 싸 오기 시작했습니다. '
                + '식당이 반으로 갈렸습니다.'; } },
       { displayId: "l-menu.hold", label: '지금대로 간다', hint: '건드리지 않는다',
         fx: ['=변화 없음', '−직원 사기 2'],
-        apply: s => { s.morale -= 2; return '그대로 갑니다. 민원은 계속 올라옵니다.'; } },
+        apply: s => { s.morale = clampIndicator(s.morale - 2); return '그대로 갑니다. 민원은 계속 올라옵니다.'; } },
     ] },
 
   { id: 'l-gosa', who: 'gu', topic: 'life', when: (s) => (s.buildQueue || []).length > 0,
@@ -257,16 +257,16 @@ DECK.life = [
     opts: [
       { displayId: "l-gosa.full", label: '제대로 차린다', hint: '돼지머리까지',
         fx: ['−통장 $4,000', '+직원 사기 6'],
-        apply: s => { s.cash -= 4_000; s.morale += 6;
+        apply: s => { s.cash -= 4_000; s.morale = clampIndicator(s.morale + 6);
           return '돼지머리에 막걸리까지 제대로 차렸심더. 현지 직원들이 더 좋아하데예. '
                + '지가 제일 먼저 절했심더. 안 믿는다 캤는데예, 그래도 두 번 했심더.'; } },
       { displayId: "l-gosa.simple", label: '간단히 떡만 돌린다', hint: '성의만',
         fx: ['−통장 $900', '+직원 사기 3'],
-        apply: s => { s.cash -= 900; s.morale += 3;
+        apply: s => { s.cash -= 900; s.morale = clampIndicator(s.morale + 3);
           return '떡만 한 판 돌렸심더. 다들 좋아하데예. 그 정도면 됐지예.'; } },
       { displayId: "l-gosa.skip", label: '안 한다', hint: '그런 거 안 믿는다',
         fx: ['+비용 없음', '−직원 사기 3'],
-        apply: s => { s.morale -= 3;
+        apply: s => { s.morale = clampIndicator(s.morale - 3);
           return '안 했심더. 아무 일도 없을 깁니더. …아마예.'; } },
     ] },
 
@@ -278,7 +278,7 @@ DECK.life = [
     opts: [
       { displayId: "l-photo.write-full", label: '제대로 써서 보낸다', hint: '데이터까지 붙여서',
         fx: ['−직원 사기 2', '+본사 신뢰 6'],
-        apply: s => { s.morale -= 2; s.trust += 6;
+        apply: s => { s.morale = clampIndicator(s.morale - 2); s.trust = clampIndicator(s.trust + 6);
           return '두 장으로는 안 돼서 여덟 장 썼습니다. 관리도와 공정능력지수까지 다 붙였습니다. '
                + '사보 표지에 우리 공장이 실렸고 본사 품질본부에서 전화가 왔습니다. 쓸 만한 자료였다고 합니다.'; } },
       { displayId: "l-photo.write-brief", label: '대충 채워서 보낸다', hint: '분량만 맞춘다',
@@ -286,7 +286,7 @@ DECK.life = [
         apply: () => '요구하신 두 장을 채워 보냈습니다. 실렸습니다. 읽은 사람은 없을 겁니다. 저도 안 읽었습니다.' },
       { displayId: "l-photo.decline", label: '바빠서 못 쓴다고 한다', hint: '솔직하게',
         fx: ['+시간 확보', '−본사 신뢰 4'],
-        apply: s => { s.trust -= 4;
+        apply: s => { s.trust = clampIndicator(s.trust - 4);
           return '"현장 일정상 어렵습니다"라고 회신했습니다. 사실 그대로입니다. '
                + '본사에는 사실이 아니라 태도로 전달됐을 겁니다. 그것도 감수하겠습니다.'; } },
     ] },

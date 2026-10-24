@@ -846,7 +846,7 @@ function spotBetCard(s, W, L) {
          `?전부 팔릴 확률 ${Math.round(pAdj * 100)}%`],
     apply: (st, G) => {
       if (take === 0) {
-        st.trust = Math.max(0, st.trust - 1);
+        st.trust = clampIndicator(st.trust - 1);
         remember(W, st, 'spot-pass', '유통 스팟 거절');
         lever(G, '유통향 스팟 거절', { trust: -1 });
         return '안 받았습니다. 본사 쪽에서 "그래요…" 하고 전화를 끊더군요. 뭐, 창고에 안 눕는 게 어딥니까.';

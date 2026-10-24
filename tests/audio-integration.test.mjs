@@ -105,7 +105,7 @@ async function campaign(mode, audioMode, mutation = '') {
   const result = { snapshots, reports, mergedReports, saved, randomCalls };
   await run('CCAudio.dispose()'); return result;
 }
-const baselineHashes = { normal: 'eefae5bb212121b09a53052e21fadb834223cd3db7505107e45d79d1004dbb23', quick: '1c0d836d91124f0c70b42a74f296e88b7f6e79d293a97b4ba6894c18fa07aa3c' };
+const baselineHashes = { normal: 'c95af0fa01c998fd3c7e2bf56122c952a14b6399b4a9a585632dae4d350b0108', quick: 'c677e363d76018e5df033311a70eeb2c9cf333697a0c1c2ceb8c5a7a1f574624' };
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 for (const mode of ['normal', 'quick']) test(`${mode} real decisions, settlements and checkpoints are invariant across audio modes`, async () => {
   const baseline = await campaign(mode, 'muted'); // Given

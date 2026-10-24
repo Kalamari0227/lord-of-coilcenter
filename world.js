@@ -246,6 +246,10 @@ function worldPre(s, W) {
    매달 결산 직후 — 인과가 한 칸씩 굴러간다
    ============================================================ */
 function worldPost(s, W, R, G) {
+  if (G?.W === W && !G.s.over && R.turn >= 1 && R.turn <= CFG.TOTAL_TURNS && W.managementRulesVersion !== 1) {
+    R.flags.push('이번 결산부터 수정된 경영 규칙을 적용합니다. 이전 실적은 재계산하지 않습니다.');
+    W.managementRulesVersion = 1;
+  }
   const settledTurn = R.turn; // s.turn은 이미 다음 의사결정 월이다.
   const u = R.util || 0;
   W.utilHist.push(u);

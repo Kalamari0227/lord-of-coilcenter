@@ -97,6 +97,7 @@ function ccValidSave(d) {
 // Strings remain unchanged; markup-bearing input is rejected before any renderer sees it.
 function ccDeepSave(d) {
   const num = Number.isFinite, str = v => typeof v === 'string', bool = v => typeof v === 'boolean';
+  const nonnegative = v => Number.isFinite(v) && v >= 0;
   const optional = check => v => v === undefined || check(v);
   const nullable = check => v => v === null || check(v);
   const list = check => v => Array.isArray(v) && v.every(check);
@@ -166,6 +167,7 @@ function ccDeepSave(d) {
   const pair = (a,b) => x=>Array.isArray(x) && x.length===2 && a(x[0]) && b(x[1]);
   const commitment = choice([null,'full','mid','low']);
   if (!fields(W, {
+    managementRulesVersion:optional(v=>v===1),
     stats:x=>fields(x,{accidents:optional(num)}),
     policy:choice(['tight','normal','ample']),priceRumor:nullable(num),project:nullable(project),
     projectLog:list(x=>fields(x,{key:ref(PROJECTS),name:str,...numbers('start end pct'),grade:choice(['win','half','lose'])})),
@@ -182,8 +184,8 @@ function ccDeepSave(d) {
     churnAt:optional(map(num,customer)),needHist:optional(list(num)),solar:optional(choice(['own','lease'])),
   })) return false;
   return fields(d,{seen:map(num),lastCust:optional(num),ui:x=>fields(x,{
-    expandPick:nullable(line),orderTon:optional(nullable(num)),orderBy:optional(nullable(map(num,customer))),
-    orderPlan:optional(nullable(list(num))),custFocus:optional(nullable(customer)),salesMix:optional(nullable(customers)),
+    expandPick:nullable(line),orderTon:optional(nullable(nonnegative)),orderBy:optional(nullable(map(nonnegative,customer))),
+    orderPlan:optional(nullable(list(nonnegative))),custFocus:optional(nullable(customer)),salesMix:optional(nullable(customers)),
   })});
 }
 

@@ -1234,7 +1234,8 @@ function resolveTurn(state, decision) {
   s.hq.cumConsolidated += consolidated;
   // 램프업 구간은 분모에서 뺀다. 배가 아직 안 왔는데 못 쳤다고 탓할 수는 없다.
   // 이미 돌던 회사를 넘겨받았으면(s.running) 램프업 구간이 없다
-  if (s.running || s.turn > CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd) s.hq.cumAutoDemand = (s.hq.cumAutoDemand || 0) + autoDemandTurn;
+  const fulfillmentEligible = s.running || s.turn > CFG.LEAD_TURNS + CFG.GRADE.PREMIUM.leadAdd;
+  if (fulfillmentEligible) s.hq.cumAutoDemand = (s.hq.cumAutoDemand || 0) + autoDemandTurn;
   s.hq.cumAutoShipped = (s.hq.cumAutoShipped || 0) + autoShippedTurn;
 
   /* 비재무 갱신 — 설계서는 "3턴 연속 적자"일 때만 사기를 깎는다. 회복 경로도 둔다. */
@@ -1246,8 +1247,15 @@ function resolveTurn(state, decision) {
      흑자를 내려면 사기가 필요하니, 한 번 빠지면 바닥까지 간다.
      실제로는 나쁜 일이 안 생기면 사람은 원래 기분으로 돌아온다. */
   s.morale = clampIndicator(s.morale + (CFG.MORALE_BASE - s.morale) * CFG.MORALE_REVERT);
-  // 약속을 지킨 달은 평판이 회복된다. 바닥에 있을수록 빨리 올라온다 (평균 회귀).
-  if (shippedTotal > 0 && shortageEvents.length === 0) s.trust = clampIndicator(s.trust + (s.trust < 60 ? 2 : 1));
+  const fulfillment = { demand: autoDemandTurn, shipped: autoShippedTurn,
+    ratio: autoDemandTurn > 0 ? autoShippedTurn / autoDemandTurn : null,
+    eligible: !!fulfillmentEligible, trustRecovery: 0 };
+  // 공급이나 판매 희망으로 줄이기 전 자동차 내시의 95%를 이행한 달에 회복한다.
+  if (fulfillment.eligible && fulfillment.ratio !== null && fulfillment.ratio + 1e-9 >= 0.95) {
+    const before = s.trust;
+    s.trust = clampIndicator(s.trust + (s.trust < 60 ? 2 : 1));
+    fulfillment.trustRecovery = s.trust - before;
+  }
   s.morale = Math.max(0, Math.min(100, s.morale));
   s.trust = Math.max(0, Math.min(100, s.trust));
   if (s.morale < 30) { flags.push('직원 사기가 낮습니다. 현장 상태와 인력 관련 보고를 확인하십시오.'); }
@@ -1287,7 +1295,7 @@ function resolveTurn(state, decision) {
     // 실제로 돌린 양 ÷ 명목 캐파. world.js가 설비 마모와 과부하를 이걸로 계산한다
     util: (d.run.SLIT + d.run.LEVEL + d.run.TRAP + d.run.DIE) / Math.max(1, cap.SLIT + cap.LEVEL + cap.BLANK),
     shortRatio,
-    materialTons,
+    materialTons, fulfillment,
     run: { ...d.run }, capNow: { ...cap },
     // 재고·재원 — 현물(창고)·해상 미착·본사 생산 중을 나눠 둔다. 다음 달 도착하면 지금 바다 위에 있다
     stock: {

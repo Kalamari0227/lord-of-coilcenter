@@ -110,9 +110,14 @@ function ccDeepSave(d) {
   const nasi = v => fields(v, {turn:num, tons:processes, potential:optional(processes)});
   const sales = v => fields(v, numbers('C2C SLIT LEVEL BLANK'));
   const cum = v => fields(v, {sales, ...numbers('revenue op np')});
+  const fulfillment = v => fields(v, {demand:num,shipped:num,ratio:nullable(num),eligible:bool,trustRecovery:num})
+    && v.demand >= 0 && v.shipped >= 0 && v.shipped <= v.demand
+    && (v.demand === 0 ? v.ratio === null : v.ratio !== null && v.ratio >= 0 && v.ratio <= 1 && Math.abs(v.ratio - v.shipped / v.demand) <= 1e-9)
+    && v.trustRecovery >= 0 && v.trustRecovery <= 2
+    && (v.trustRecovery === 0 || v.eligible && v.demand > 0 && v.shipped / v.demand + 1e-9 >= 0.95);
   const report = v => fields(v, {
     ...numbers('turn pm hqPerTon revenue gp ebitda op np hqMargin consolidated fixedCost varCost depreciation interest valuationLoss badDebt scrapTon scrapRevenue yieldGain degradeLoss degradeTon dumpLoss dumpTon carryCost overTons hqSpotOffer hqSpotTon commonShareOfSales hqSpotCredit cashIn cashOut spotExposure util shortRatio materialTons invTons'),
-    date:str, phase, sales, cum, custShare:customers,
+    date:str, phase, sales, cum, custShare:customers, fulfillment:optional(fulfillment),
     bs:x=>fields(x,numbers('invTons invValue longTons longValue ar arDelayed ap debt cash seaValue debtLimit debtRoom debtUse equity interest nwc')),
     stock:x=>fields(x,numbers('onhand sea prod nasi3 fg')),
     shipped:processes,produced:map(num,choice(PROC_LIST)),demand:processes,demandAuto:processes,demandCommon:processes,nasiPotential:processes,run:x=>fields(x,numbers('SLIT LEVEL TRAP DIE')),capNow:x=>fields(x,numbers('SLIT LEVEL BLANK')),

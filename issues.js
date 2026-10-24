@@ -1624,7 +1624,8 @@ function wageCard(s, W) {
 }
 
 function bonusCard(s, W) {
-  const ytd = s.history.slice(-(((s.turn - 1) % 12) + 1)).reduce((a, r) => a + r.op, 0);
+  const yearStart = s.turn - ((s.turn - 1) % 12);
+  const ytd = s.history.filter(r => r.turn >= yearStart && r.turn < s.turn).reduce((a, r) => a + r.op, 0);
   const pool = Math.max(60_000, Math.round(Math.max(0, ytd) * 0.08 / 1000) * 1000);
   return {
     id: 'h-bonus', who: 'han', topic: 'hr',

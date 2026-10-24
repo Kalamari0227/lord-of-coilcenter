@@ -241,6 +241,7 @@ function worldPre(s, W) {
    매달 결산 직후 — 인과가 한 칸씩 굴러간다
    ============================================================ */
 function worldPost(s, W, R, G) {
+  const settledTurn = R.turn; // s.turn은 이미 다음 의사결정 월이다.
   const u = R.util || 0;
   W.utilHist.push(u);
   W.coverHist.push(coverOf(s));
@@ -325,7 +326,7 @@ function worldPost(s, W, R, G) {
 
   // 9. 본사 연간 목표
   W.hq.ytd += R.materialTons || 0;
-  if (s.turn % 12 === 0 && W.hq.target > 0) hqYearEnd(s, W);
+  if (settledTurn % 12 === 0) hqYearEnd(s, W, settledTurn);
 
   // 10. 한 번 깎아준 기억은 천천히 옅어진다
   if (s.turn % 8 === 0) for (const k in CUST) W.concede[k] = Math.max(0, W.concede[k] - 1);
@@ -371,9 +372,14 @@ function rollIncidents(s, W, k = 1) {
   }
 }
 
-function hqYearEnd(s, W) {
+function hqYearEnd(s, W, settledTurn) {
+  if (settledTurn % 12 !== 0) return;
+  const yr = Math.floor((settledTurn - 1) / 12) + 1;
+  if (W.hq.target <= 0 || W.hq.log.some(entry => entry.year === yr)) {
+    W.hq.ytd = 0; W.hq.target = 0;
+    return;
+  }
   const r = W.hq.ytd / W.hq.target;
-  const yr = Math.floor((s.turn - 1) / 12) + 1;
   const promised = W.hq.commit === 'full' ? '약속한 목표' : W.hq.commit === 'low' ? '깎아서 받은 목표' : '목표';
   let text;
   if (r >= 1) { s.trust = wClamp(s.trust + 8); W.stats.hqHit++;
@@ -385,7 +391,7 @@ function hqYearEnd(s, W) {
   else { s.trust = wClamp(s.trust - 10); s.myShare *= 0.97; W.stats.hqMiss++;
     text = `${yr}년차 본사 소재 판매 ${Math.round(r * 100)}% — ${promised}에 크게 못 미쳤습니다. 본사 신뢰와 현재 시장 점유율이 낮아졌습니다.`; }
   W.hq.log.push({ year: yr, target: W.hq.target, ytd: W.hq.ytd, r, commit: W.hq.commit });
-  fire(W, s, 'hq', text, W.hq.commit === 'full' ? '연초에 본사 요구를 그대로 받았습니다' : null);
+  fire(W, { ...s, turn: settledTurn }, 'hq', text, W.hq.commit === 'full' ? '연초에 본사 요구를 그대로 받았습니다' : null);
   W.hq.ytd = 0; W.hq.target = 0;
 }
 
@@ -436,7 +442,8 @@ function snapshot(s, W, R) {
     turn: s.turn, sales: T, op: R ? R.op : 0, cash: s.cash,
     raw: s.invRaw.reduce((a, l) => a + l.qty, 0), util: R ? R.util : 0,
     quality: qualityPct(W.quality), equip: W.equip, rel: relAvg, trust: s.trust,
-    morale: s.morale, hqPace: W.hq.target > 0 ? W.hq.ytd / (W.hq.target * (((s.turn - 1) % 12) + 1) / 12) : null,
+    morale: s.morale, hqPace: W.hq.target > 0 && (s.turn - 1) % 12 > 0
+      ? W.hq.ytd / (W.hq.target * ((s.turn - 1) % 12) / 12) : null,
   };
 }
 

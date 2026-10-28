@@ -26,12 +26,12 @@ class Element {
 function fixture(options={}) {
  const content=endingFixture({content:true});if(options.early)content.run("G.s.overReason='INSOLVENT'");
  const game=content.json('G'),model=content.json('ccEndingModel(G)'),script=content.json('ccEndingScript(ccEndingModel(G))');
- let now=0,serial=0;const timers=new Map(),frames=new Map(),sources=[],requests=[],gates=new Map(),starts=[],finishes=[];
+ let now=0,serial=0;const timers=new Map(),frames=new Map(),sources=[],requests=[],gates=new Map(),starts=[],finishes=[],resumeCalls=[];
  const document=new Element('document'),window=new Element('window'),app=new Element();document.append(app);document.createElement=t=>new Element(t);document.hidden=false;
  const param=()=>({setValueAtTime(){},cancelScheduledValues(){},linearRampToValueAtTime(){}});
  const audioNode=()=>({gain:param(),connect(){},disconnect(){this.disconnected=true;}});
  const backend={state:'suspended',get currentTime(){return now/1000;},destination:{},createGain:audioNode,
-  async resume(){if(options.blocked)throw Error('activation');this.state='running';},async suspend(){this.state='suspended';},async close(){this.state='closed';},
+  async resume(){resumeCalls.push(!!options.gesture);if(options.pendingResume&&!options.gesture)await options.pendingResume.promise;if(options.blocked)throw Error('activation');this.state='running';},async suspend(){this.state='suspended';},async close(){this.state='closed';},
   async decodeAudioData(bytes){return {duration:bytes.id.includes('journey')?120:60};},
   createBufferSource(){const source={...audioNode(),active:false,start(at,offset){this.active=true;this.offset=offset;},stop(){this.active=false;}};sources.push(source);return source;}};
  const schedule=(fn,delay)=>{const id=++serial;timers.set(id,{fn,at:now+delay});return id;};
@@ -45,7 +45,7 @@ function fixture(options={}) {
   const start=context.CCAudio.startCinematic;context.CCAudio.startCinematic=(...args)=>{starts.push(args);return start(...args);};}
  const path=new URL('../src/ui/ending-player.js',import.meta.url);if(existsSync(path))vm.runInContext(readFileSync(path,'utf8'),context);
  const run=code=>vm.runInContext(code,context);
- return {run,context,game,model,script,app,document,window,timers,frames,sources,requests,gates,starts,finishes,
+ return {run,context,game,model,script,app,document,window,timers,frames,sources,requests,gates,starts,finishes,resumeCalls,
   start(){run('var state=ccEndingState(G,model,script);state.onFinish=finish;ccEndingPlay(state)');},
   active:()=>sources.filter(s=>s.active),
   advance(ms){now+=ms;for(const [id,timer]of [...timers])if(timer.at<=now){timers.delete(id);timer.fn();}for(const [id,fn]of [...frames]){frames.delete(id);fn();}evidence.push({operation:'advance',milliseconds:ms,phase:run('state.phase'),position:run('state.phase==="done"?state.script.duration:ccEndingStatus(state).position'),frames:frames.size,voices:sources.filter(s=>s.active).length});},
@@ -101,6 +101,30 @@ test('audible visibility interruption keeps position and one voice; manual pause
 test('activation wait stays readable and Continue resumes inside the gesture',async()=>{
  const options={blocked:true},f=fixture(options);f.start();await flush();f.advance(6000);assert.equal(f.starts.length,1);assert.equal(f.run('ccEndingStatus(state).position'),0);
  assert.equal(f.app.querySelector('.cc-ending-toggle').textContent,'계속 보기');options.blocked=false;f.run('ccEndingToggle()');await flush();assert.equal(f.active().length,1);await f.clean();
+});
+test('suspended pending resume offers Continue past timeout and resumes synchronously in the click',async()=>{
+ const gate=deferred(),options={pendingResume:gate},f=fixture(options);f.start();await flush();
+ assert.equal(f.context.CCAudio.status().needsResume,true);assert.equal(f.context.CCAudio.cinematicStatus().activationRequired,false);
+ assert.equal(f.app.querySelector('.cc-ending-toggle').textContent,'계속 보기');
+ assert.match(f.app.querySelector('.cc-ending-notice').textContent,/계속 보기를 누르면 음악/);
+ f.advance(6000);await flush();assert.equal(f.starts.length,1);assert.equal(f.run('ccEndingStatus(state).position'),0);assert.equal(f.active().length,0);
+ options.gesture=true;f.app.querySelector('.cc-ending-toggle').onclick();assert.deepEqual(f.resumeCalls,[false,true]);options.gesture=false;
+ await flush();assert.equal(f.run('state.phase'),'playing');assert.equal(f.active().length,1);assert.equal(f.active()[0].offset,0);
+ gate.resolve();await flush();assert.equal(f.active().length,1);assert.equal(f.starts.length,1);await f.clean();
+});
+for(const boundary of ['next','pause-next','finish','dispose','replace'])test(`suspended pending resume preserves ${boundary} after late resolution`,async()=>{
+ const gate=deferred(),options={pendingResume:gate},f=fixture(options);f.start();await flush();
+ assert.equal(f.app.querySelector('.cc-ending-toggle').textContent,'계속 보기');
+ if(boundary==='next')f.run('ccEndingNext();ccEndingNext()');
+ if(boundary==='pause-next'){options.gesture=true;f.run('ccEndingToggle()');await flush();options.gesture=false;f.run('ccEndingToggle();ccEndingNext();ccEndingNext()');}
+ if(boundary==='finish')f.run('ccEndingFinish()');
+ if(boundary==='dispose')f.run('ccEndingDispose()');
+ if(boundary==='replace'){f.run('G={s:{over:false}}');f.advance(1);}
+ gate.resolve();await flush();
+ assert.equal(f.active().length,boundary==='next'?1:0);
+ if(boundary==='next')assert.equal(f.active()[0].offset,16);
+ if(boundary==='pause-next'){assert.equal(f.run('state.phase'),'paused');assert.equal(f.run('ccEndingStatus(state).position'),16);}
+ await f.clean();
 });
 test('keyboard honors native buttons, repeated keys, fullscreen and result Escape',async()=>{
  const options={fullscreen:true},f=fixture(options);f.start();await flush();const key=(key,target,repeat=false)=>f.document.emit('keydown',{key,target,repeat,preventDefault(){},stopPropagation(){}});

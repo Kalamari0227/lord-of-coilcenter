@@ -32,7 +32,8 @@ class Element {
  emit(k,e={}){for(const fn of [...(this.events.get(k)||[])])fn(e);}
  showModal(){this.open=true;}
  close(){this.open=false;this.emit('close');}
- focus(){this.doc.activeElement=this;}
+ contains(node){return node===this||this.children.some(child=>child.contains(node));}
+ focus(){this.doc.activeElement=this;this.doc.emit('focusin',{target:this});}
  scrollIntoView(){}
 }
 const counts=[];
@@ -105,5 +106,34 @@ test('result details retain two candidate facts, both risks and full selected me
  const f=await fixture(),raw=read('tests/fixtures/save-v1/normal-completed.json');f.run(`ccApplyCheckpoint(${raw});G.s.history.forEach(r=>{r.op=10;r.np=5;r.bs={...r.bs,debt:99,debtLimit:100,equity:100};});G.W.stats.cashTight=0;G.W.equip=80;G.W.stats.qualSum=G.s.history.length*90;G.W.stats.months=G.s.history.length;G.W.stats.breakdowns=0;G.W.stats.claims=0;G.W.stats.shortages=10;G.W.miles=Array.from({length:7},(_,i)=>({turn:i+1,date:dateLabel(i+1),key:i?'ordinary':'qual-high',title:'FULL MEMORY '+i,who:'oh',msg:i?'later quote':'<img src=x onerror=evil()> '+ 'long original '.repeat(30)}));render();`);
  const details=f.app.querySelector('.cc-ending-details');assert.ok(details);assert.equal(details.querySelectorAll('.cc-ending-candidate').length,2);assert.equal(details.querySelectorAll('.cc-ending-risk').length,2);
  const lines=details.querySelectorAll('.cc-ending-detail-line').map(n=>n.textContent);assert.ok(lines.some(t=>t.includes('FULL MEMORY 0')));assert.ok(lines.some(t=>t.includes('long original '.repeat(30))));assert.ok(lines.some(t=>t.includes('<img src=x onerror=evil()>')));assert.equal(details.querySelector('img'),null);assert.equal(f.run('globalThis.evil'),undefined);assert.ok(details.querySelectorAll('.cc-ending-fact').length>0);f.clean();
+});
+function tabInDocument(document, {shiftKey=false,repeat=false}={}) {
+ const event={key:'Tab',target:document.activeElement,shiftKey,repeat,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;},stopPropagation(){}};
+ document.emit('keydown',event);
+ if(!event.defaultPrevented){
+  const blocked=node=>!!node&&(node.hidden||node.inert||blocked(node.parentNode));
+  const available=document.body.querySelectorAll('button,a').filter(node=>!blocked(node)&&!node.disabled&&node.getAttribute('tabindex')!=='-1');
+  const index=available.indexOf(document.activeElement),step=shiftKey?-1:1;
+  available[(index+step+available.length)%available.length]?.focus();
+ }
+ return document.activeElement;
+}
+for(const exit of ['finish','dispose','new-game','title','pagehide'])test(`cinematic focus boundary excludes body siblings and releases on ${exit}`,async()=>{
+ const f=await fixture({adapters:true}),skip=f.document.createElement('a'),settings=f.document.createElement('button'),protectedPanel=f.document.createElement('aside');
+ skip.className='cc-skip';skip.setAttribute('href','#app');skip.textContent='경영 화면으로 이동';
+ settings.textContent='외부 화면 설정';settings.setAttribute('aria-hidden','false');protectedPanel.inert=true;protectedPanel.setAttribute('aria-hidden','true');
+ f.document.body.prepend(skip);f.document.body.append(settings,protectedPanel);
+ const siblings=[skip,settings,protectedPanel],before=siblings.map(node=>({inert:node.inert,ariaHidden:node.getAttribute('aria-hidden')}));
+ await f.settle();f.closeReport();await flush();f.run('ccEndingFinish()');f.app.querySelector('.cc-ending-replay').onclick();await flush();
+ let fullscreen=true;f.context.ccFullscreenExitForEscape=()=>{const previous=fullscreen;fullscreen=false;return previous;};
+ f.document.emit('keydown',{key:'Escape',target:f.document.activeElement,preventDefault(){},stopPropagation(){}});
+ const root=f.document.querySelector('.cc-ending'),buttons=root.querySelectorAll('button');assert.equal(fullscreen,false);assert.equal(f.run('ccEndingActive()'),true);assert.equal(root.inert,false);
+ assert.equal(tabInDocument(f.document)===buttons[1],true);assert.equal(tabInDocument(f.document)===buttons[2],true);assert.equal(tabInDocument(f.document)===buttons[0],true);
+ assert.equal(tabInDocument(f.document,{shiftKey:true,repeat:true})===buttons[2],true);assert.equal(tabInDocument(f.document,{repeat:true})===buttons[0],true);
+ const late=f.document.createElement('button');late.textContent='늦게 붙은 설정';f.document.body.append(late);late.focus();assert.equal(f.document.activeElement===buttons[0],true);skip.focus();assert.equal(f.document.activeElement===buttons[0],true);
+ assert.deepEqual(siblings.map(node=>({inert:node.inert,ariaHidden:node.getAttribute('aria-hidden')})),before);
+ if(exit==='finish')f.run('ccEndingFinish()');else if(exit==='dispose')f.run('ccEndingDispose()');else if(exit==='new-game')await f.run("newGame({mode:'normal',diff:'normal',country:'NV',name:'QA focus replacement'})");else if(exit==='title')f.run('G=null;render()');else f.window.emit('pagehide');
+ assert.equal(f.document.events.get('focusin')?.size||0,0);assert.deepEqual(siblings.map(node=>({inert:node.inert,ariaHidden:node.getAttribute('aria-hidden')})),before);
+ skip.focus();assert.equal(f.document.activeElement===skip,true);settings.focus();assert.equal(f.document.activeElement===settings,true);late.focus();assert.equal(f.document.activeElement===late,true);assert.equal(f.document.querySelector('.cc-ending'),null);f.clean();
 });
 test.after(()=>{if(process.env.ENDING_INTEGRATION_EVIDENCE)writeFileSync(process.env.ENDING_INTEGRATION_EVIDENCE,JSON.stringify({surface:'VM DOM integration with real engine, save, report and result chain; not real browser',counts},null,2)+'\n');});

@@ -12,7 +12,15 @@ function ccEndingActive() { return !!ccEndingCurrent && ccEndingCurrent.phase !=
 function ccEndingAudio() { return typeof CCAudio === 'undefined' ? null : CCAudio; }
 function ccEndingLive(state) { return ccEndingCurrent === state && state.phase !== 'done' && G === state.game; }
 function ccEndingStatus(state) {
-  if (!state.localClock && state.pendingOffset === null) return ccEndingAudio().cinematicStatus();
+  if (!state.localClock && state.pendingOffset === null) {
+    const audio = ccEndingAudio(), status = audio.cinematicStatus();
+    if (status.state === 'loading' && !status.muted && !document.hidden) {
+      const { supported, needsResume, settings } = audio.status();
+      if (supported && needsResume && !settings.muted && settings.masterVolume > 0 && settings.bgmVolume > 0)
+        return { ...status, activationRequired: true };
+    }
+    return status;
+  }
   const elapsed = state.phase === 'playing' && !document.hidden ? (performance.now() - state.started) / 1000 : 0;
   return { state: state.phase, position: Math.min(state.script.duration, state.position + Math.max(0, elapsed)), muted: true };
 }
@@ -159,8 +167,9 @@ function ccEndingPlay(state) {
     ccEndingPaint(state);
   };
   document.addEventListener('keydown', key); document.addEventListener('visibilitychange', hide);
+  document.addEventListener('focusin', ccEndingFocusIn);
   window.addEventListener('pagehide', ccEndingDispose);
-  state.cleanup = [() => document.removeEventListener('keydown', key), () => document.removeEventListener('visibilitychange', hide), () => window.removeEventListener('pagehide', ccEndingDispose)];
+  state.cleanup = [() => document.removeEventListener('focusin', ccEndingFocusIn), () => document.removeEventListener('keydown', key), () => document.removeEventListener('visibilitychange', hide), () => window.removeEventListener('pagehide', ccEndingDispose)];
   ccEndingBegin(state, 0);
   if (ccEndingAudio()) state.cleanup.push(ccEndingAudio().subscribe(() => { if (ccEndingLive(state)) ccEndingPaint(state); }));
   ccEndingTick(state);
@@ -188,8 +197,23 @@ function ccEndingNext() {
     ccEndingAudio()?.stopCinematic(); ccEndingPaint(state);
   } else ccEndingBegin(state, scene.start, !!state.notice);
 }
+function ccEndingFocusIn(event) {
+  const state = ccEndingCurrent;
+  if (state && ccEndingLive(state) && !state.root.contains(event.target))
+    state.root.querySelector('button').focus({ preventScroll: true });
+}
 function ccEndingKeydown(event) {
-  if (!ccEndingActive() || event.defaultPrevented || event.repeat) return;
+  if (!ccEndingActive() || event.defaultPrevented) return;
+  if (event.key === 'Tab') {
+    const root = ccEndingCurrent.root, buttons = root.querySelectorAll('button');
+    const first = buttons[0], last = buttons[buttons.length - 1];
+    if (!root.contains(event.target) || event.target === (event.shiftKey ? first : last)) {
+      event.preventDefault(); event.stopPropagation();
+      (event.shiftKey ? last : first).focus({ preventScroll: true });
+    }
+    return;
+  }
+  if (event.repeat) return;
   if (!['Escape', ' ', 'ArrowRight'].includes(event.key)) return;
   if (event.key === ' ' && /^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(event.target?.tagName || '')) return;
   event.preventDefault(); event.stopPropagation();

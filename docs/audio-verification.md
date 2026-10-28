@@ -10,13 +10,13 @@
 - `node --test tests/ending-player.test.mjs tests/audio-cinematic.test.mjs`: 120/60초 경계, pause/resume, offset, 5초 timeout·404·늦은 promise, 무음/오디오 객체 부재와 자원 정리를 검사한다.
 - `node --test tests/ending-integration.test.mjs tests/audio-ui.test.mjs tests/audio-integration.test.mjs`: 마지막 결산 뒤 단일 cinematic, 종료 징글 중복 방지, 결과 BGM 복귀, 같은 세션 replay와 저장·경제·RNG 불변을 검사한다.
 
-## 실제 브라우저 — 2026-10-28
+## 실제 브라우저 — 2026-10-28~29(KST)
 
-사용자 서버·탭·dist가 아닌 격리 source, 고유 port와 소유 Chrome profile에서 B01–B12를 실행했다. 최종 제품 커밋 `2fc196f`의 `src/ui/ending-player.js` SHA-256과 QA 복사본이 일치했고, 정상 120초와 조기 60초 실제 시간 재생, pause/next/skip/replay, hidden/visible, 404·지연·무음, suspended AudioContext 활성화, 오프라인 선택 캐시, resume/import/recovery를 확인했다.
+사용자 서버·탭·dist가 아닌 격리 source, 고유 port와 소유 Chrome profile에서 B01–B12를 제품 커밋 `2fc196f`로 실행했다. 최종 변경 식별자 `55bb822`의 기억 선택·이전 이미지 callback 수정은 별도 실제 Chrome delta로 확인했고, 이 두 수정의 영향이 없는 기존 transport·입력·오프라인 범위에는 B01–B12 증거를 재사용했다. 최종 `src/ui/ending-player.js` SHA-256은 `6407c51c56c8152f47a6c9f8d3caa9bfcc68cfae521f038387dd1114dbe75057`이다.
 
 실제 B07에서 AudioContext가 suspended인 동안 「계속 보기」가 보이지 않는 결함을 발견해 수정했다. fresh page에서 position/voice 정지와 버튼 노출을 확인하고 native 클릭 뒤 context `running`, voice 1을 관측했다. B05 초점 누출도 수정 후 키보드·전체화면 시나리오를 재실행했다.
 
-최종 격리 검증은 `npm test` 1248/1248, `npm run audio:verify`, 33-source production build를 통과했다. release version은 `c6fbb27336fa`, 생성 `release.json` SHA-256은 `74192eb6ab5ed9e1e3b9a752b891f8e82c9b422fa75ba40e784d247b8c364968`다. 이는 공개 배포 완료를 뜻하지 않는다.
+최종 격리 검증은 `npm test` 1263/1263, `npm run audio:verify`, 33-source production build를 통과했다. release version은 `ed75c3d10498`, 생성 `release.json` SHA-256은 `506ada0ae5169988f7cc709f670bfcef5b2cabe8833b48e6c88e52cb80276e66`다. 이는 공개 배포 완료를 뜻하지 않는다.
 
 ## 오프라인 정책
 

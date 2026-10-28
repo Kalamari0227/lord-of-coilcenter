@@ -51,7 +51,7 @@
 | 대본·기억·여섯 인사 | [콘텐츠 검사](../tests/ending-content.test.mjs) |
 | 120/60초·조작·late promise·fallback | [플레이어 검사](../tests/ending-player.test.mjs), [통합 검사](../tests/ending-integration.test.mjs) |
 | 원화·용량·선택 캐시 | [자산 검사](../tests/ending-assets.test.mjs), [빌드 검사](../tests/build.test.mjs) |
-| 실제 배치·초점·재생·오프라인·복원 | 2026-10-28 격리 Chrome B01–B12 검증. 최종 제품 커밋 `2fc196f`, 테스트 1248/1248, audio verify와 격리 production build 통과 |
+| 실제 배치·초점·재생·오프라인·복원 | 2026-10-28~29(KST). B01–B12는 제품 커밋 `2fc196f`에서 실행했고, 최종 변경 식별자 `55bb822`의 기억 선택·이전 이미지 callback은 별도 실제 Chrome delta로 확인했다. 두 수정의 영향이 없는 기존 범위에는 B01–B12 증거를 재사용했다. 최종 `ending-model.js` SHA-256 `0afeed7ebae103330d929c840f9fd3078aac094e1c74e7ad4a012e3609cdd661`, `ending-player.js` SHA-256 `6407c51c56c8152f47a6c9f8d3caa9bfcc68cfae521f038387dd1114dbe75057`, 테스트 1263/1263, audio verify와 33-source 격리 production build `ed75c3d10498` 통과 |
 
 실제 브라우저 검증에서 B05 초점 누출과 B07 suspended AudioContext의 계속 보기 노출 누락을 발견해 수정한 뒤 해당 native-browser 시나리오를 다시 통과했다. B08 숨김/복귀는 소유한 headful 창의 같은 page session에서 실제 `visible→hidden→visible`을 관측했다. headless의 fullscreen API 응답은 물리 화면 전환 증거가 아니다.
 

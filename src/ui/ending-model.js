@@ -101,7 +101,9 @@ function ccEndingMemories(game, legacy, count) {
   const projectKeys = {craft:['quality'],finance:['cash'],recovery:['cash']}[legacy] || [];
   const first = candidates.find(c => c.keys.some(key => (c.kind === 'project' ? projectKeys : matching).includes(key))) || candidates[0];
   const selected = first ? [first] : [];
-  const second = first && candidates.find(c => c !== first && c.turn !== null && c.turn !== first.turn);
+  const others = first ? candidates.filter(c => c.turn !== null && c.turn !== first.turn) : [];
+  const second = first?.turn === candidates[0]?.turn
+    ? others.find(c => c.turn === others.at(-1)?.turn) : others[0];
   if (count > 1 && second) selected.push(second);
   const baseline = Array.isArray(W.snaps) && W.snaps[0]?.turn === 1 ? W.snaps[0] : null;
   let comparison = null;

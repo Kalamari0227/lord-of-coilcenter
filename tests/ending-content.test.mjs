@@ -87,3 +87,16 @@ test('legacy stored quote translation happens only at display boundary',()=>{
   assert.equal(script.scenes.find(s=>s.id==='memory-1').lines[0].text,h.run('ccNarrativeText(G.W.miles[0].msg)'));
   assert.equal(script.details.memories[0].original.quotes[0].text,h.run('G.W.miles[0].msg'));
 });
+
+for (const [matchingTurn, expectedTurns, expectedRefs] of [[1,[1,12],[0,2]],[5,[5,1],[1,0]]]) {
+  test(`memory scenes preserve selected ${expectedTurns.join('/')} dates and evidence from three timestamps`,()=>{
+    const h=endingFixture({content:true});
+    h.run(legacySetup.finance+`G.W.miles=[1,5,12].map(turn=>({key:turn===${matchingTurn}?'first-op':'other',turn,title:'record',date:'saved-'+turn}));const before=JSON.stringify(G)`);
+    const script=h.json('ccEndingScript(ccEndingModel(G))');
+    const memories=script.scenes.filter(scene=>scene.id.startsWith('memory-'));
+    assert.deepEqual(memories.map(scene=>scene.date),expectedTurns.map(turn=>'saved-'+turn));
+    assert.deepEqual(memories.map(scene=>scene.sourceRefs),expectedRefs.map(index=>[`W.miles[${index}]`]));
+    assert.deepEqual(script.details.memories.map(record=>record.original.turn),expectedTurns);
+    assert.equal(h.run('JSON.stringify(G)'),h.run('before'));
+  });
+}

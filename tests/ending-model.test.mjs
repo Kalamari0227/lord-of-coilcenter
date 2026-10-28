@@ -154,3 +154,42 @@ test('annual hit rate excludes the incomplete year and malformed expansion canno
   const m=h.json('ccEndingModel(G)');assert.equal(m.evidence.metrics.annualHitRate.value,0);
   assert.equal(m.evidence.candidates.find(c=>c.id==='growth').checks[1],false);
 });
+
+for (const [matchingTurn, expected] of [[1,[1,12]],[5,[5,1]],[12,[12,1]]]) {
+  test(`memory chronology chooses ${expected.join('/')} when finance match is turn ${matchingTurn}`, () => {
+    // Given three distinct dates in unsorted source order, with a known matching record.
+    const h=endingFixture();
+    h.run(`G.W.miles=[12,1,5].map(turn=>({key:turn===${matchingTurn}?'first-op':'other',turn,title:'record',date:'original-'+turn}));
+      const before=JSON.stringify(G);Math.random=()=>{throw Error('unexpected random')};makeRng=()=>{throw Error('unexpected seeded random')};`);
+    // When selecting the approved two representative memories.
+    const memories=h.json("ccEndingMemories(G,'finance',2)");
+    // Then earliest matches pair with latest, and later matches pair with earliest.
+    assert.deepEqual(memories.map(m=>m.turn),expected);
+    assert.deepEqual(memories.map(m=>m.date),expected.map(turn=>'original-'+turn));
+    assert.equal(h.run('JSON.stringify(G)'),h.run('before'));
+  });
+}
+test('earliest-turn match keeps same-turn profit dedup and earliest source index at the latest turn',()=>{
+  const h=endingFixture();
+  h.run(`G.W.miles=[{key:'other',turn:1,title:'first index'},
+    {key:'first-op',turn:1,title:'profit'},{key:'cum-op',turn:1,title:'cumulative'},
+    {key:'other',turn:5,title:'middle'},{key:'other',turn:12,title:'latest first'},
+    {key:'other',turn:12,title:'latest second'},{key:'other',title:'unknown date'}]`);
+  const memories=h.json("ccEndingMemories(G,'finance',2)");
+  assert.deepEqual(memories.map(m=>m.turn),[1,12]);
+  assert.deepEqual(memories[0].keys,['first-op','cum-op']);
+  assert.deepEqual(memories[0].sourceRefs,['W.miles[1]','W.miles[2]']);
+  assert.deepEqual(memories[1].sourceRefs,['W.miles[4]']);
+});
+test('completed project chronology preserves original dates and source indices at the latest boundary',()=>{
+  const h=endingFixture();
+  h.run(`G.W.projectLog=[{key:'cash',name:'first',start:1,end:2,grade:'half',date:'saved-first'},
+    {key:'other',name:'middle',start:2,end:6,grade:'win'},
+    {key:'other',name:'latest',start:6,end:13,grade:'lose',date:'saved-last'},
+    {key:'other',name:'same latest',start:6,end:13,grade:'win'}]`);
+  const memories=h.json("ccEndingMemories(G,'finance',2)");
+  assert.deepEqual(memories.map(m=>m.turn),[1,12]);
+  assert.deepEqual(memories.map(m=>m.date),['saved-first','saved-last']);
+  assert.deepEqual(memories[1].sourceRefs,['W.projectLog[2]']);
+  assert.equal(memories[1].projectGrade,'lose');
+});

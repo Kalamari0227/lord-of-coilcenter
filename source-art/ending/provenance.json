@@ -1,0 +1,384 @@
+{
+  "version": 1,
+  "tool": "image_gen.imagegen (built-in)",
+  "paidFallbackUsed": false,
+  "totalDeliveryBytes": 18928332,
+  "maxDeliveryBytes": 3145728,
+  "totalBudgetBytes": 25165824,
+  "assets": [
+    {
+      "id": "office-complete",
+      "source": "source-art/ending/office-complete.png",
+      "delivery": "art/ending/office-complete.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-d6a7c4e2-2748-4e52-8f99-f36a3219125f.png",
+      "sourceSha256": "beecc49b21e27e5a3be41e52a62dfede315be24a41a7f2ce23029d6997212741",
+      "deliverySha256": "9e966a8dd2a582c8d80fb10121d5399def819392ef6429f97edca796286fa2bb",
+      "generatedSha256": "beecc49b21e27e5a3be41e52a62dfede315be24a41a7f2ce23029d6997212741",
+      "sourceMatchesGenerated": true,
+      "width": 1586,
+      "height": 992,
+      "dimensions": [
+        1586,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "3cc200d6bfdc35eedd1b52ef823e5eeb5fac8ffb141d7578a11f88b6c3a043ba",
+      "deliveryDecodedRGBASha256": "3cc200d6bfdc35eedd1b52ef823e5eeb5fac8ffb141d7578a11f88b6c3a043ba",
+      "sourceBytes": 2731303,
+      "deliveryBytes": 2085512,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: precise-object-edit. Asset: office-complete ending background. Input image 1 is the existing empty manager office, edit target and strict architectural/composition reference. Keep EXACT same room, camera, large wooden desk, three chairs, wall technical drawing, cabinets, plants, window mullions, distant cold-coil yard and harbor. Change ONLY the desk papers and daylight: replace the large unfolded plan with a neat modest stack of ivory handover papers and two closed plain folders centrally on the desk, completely blank without readable markings. Leave telephone, lamp, pencil pot, books and desk mat where they are. Soft clear morning light enters the same windows, warm but less intense than the original sunrise; quiet feeling of a completed term and work handed over. Empty room, no people, no successor, no celebration symbols. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/strategy-office.png",
+          "sha256": "078234f41c195e7c4d769beaeb1a5baebee3e4d6da990aae2de1df71e1c58165",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/office-complete.png",
+        "-o",
+        "art/ending/office-complete.webp"
+      ]
+    },
+    {
+      "id": "office-early",
+      "source": "source-art/ending/office-early.png",
+      "delivery": "art/ending/office-early.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-c04e81f9-48df-40d3-983e-b0e465f53817.png",
+      "sourceSha256": "5b9a887cf0082111f0a6e50ccf8507c1e9c8da82f93f42097efecd3a02075527",
+      "deliverySha256": "a682104a57760596102594ec6c1fa690d4b2d20c11b7cc7072c489e828c5363d",
+      "generatedSha256": "5b9a887cf0082111f0a6e50ccf8507c1e9c8da82f93f42097efecd3a02075527",
+      "sourceMatchesGenerated": true,
+      "width": 1585,
+      "height": 992,
+      "dimensions": [
+        1585,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "ee4b203e1e6ce02d673332dbc4e333676568d0229919d077306eebcdb7b26d6a",
+      "deliveryDecodedRGBASha256": "ee4b203e1e6ce02d673332dbc4e333676568d0229919d077306eebcdb7b26d6a",
+      "sourceBytes": 2693952,
+      "deliveryBytes": 2067988,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: precise-object-edit. Asset: office-early ending background. Input image is the existing office, edit target. Keep EXACT same room, camera composition, desk, chairs, cabinets, plant positions, framed cold-roller technical drawing, window mullions and cold coil yard outside. Change ONLY desk papers and daylight: a modest open blank lined ledger rests on the existing desk mat with one loose ivory page. NO characters, symbols or readable writing on any paper. The room is empty; the tall chair remains quietly in its original place. Low soft late-afternoon light, subdued warm ivory highlights and longer cool teal shadows; contemplative and unfinished, never threatening or devastated. Retain telephone, lamp, pencil pot and stacked books in their original locations. No damage, closure sign, chain, sackings, successor, awards or trophies added. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/strategy-office.png",
+          "sha256": "078234f41c195e7c4d769beaeb1a5baebee3e4d6da990aae2de1df71e1c58165",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/office-early.png",
+        "-o",
+        "art/ending/office-early.webp"
+      ]
+    },
+    {
+      "id": "legacy-growth",
+      "source": "source-art/ending/legacy-growth.png",
+      "delivery": "art/ending/legacy-growth.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-32010646-dbbe-46be-b169-b35c40d0576d.png",
+      "sourceSha256": "21bab1330bbaad40c6a77ec774ec3bd5713f742d25affdb004d21e990a27497d",
+      "deliverySha256": "32b2d435c619a34354f1f09ee2e2a3ab4e7579f51d0d32cbaee6286bfc9e9594",
+      "generatedSha256": "21bab1330bbaad40c6a77ec774ec3bd5713f742d25affdb004d21e990a27497d",
+      "sourceMatchesGenerated": true,
+      "width": 1585,
+      "height": 992,
+      "dimensions": [
+        1585,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "0d7b2034d2d94ab69e635d06cc6686b0e07937cd0f1f8c655990ecdba33b323a",
+      "deliveryDecodedRGBASha256": "0d7b2034d2d94ab69e635d06cc6686b0e07937cd0f1f8c655990ecdba33b323a",
+      "sourceBytes": 3738751,
+      "deliveryBytes": 2830196,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: stylized-concept. Asset: legacy-growth original ending background for the game Coil Center. Input images are style/environment references, not a composition to merely copy or relabel. Create a new distinct scene of this SAME existing coastal coil-center district, closer to road level but slightly elevated. A strong deep diagonal perspective down the established coil-transfer lane links silver coils in foreground through the existing quay to distant shipping routes. Existing low sheds only, a few practical coil transport trailers, no extra factory buildings or expansion construction. The feeling is a wider view and farther-reaching routes, not a claimed new facility. The road/coil lane is the visual subject; open harbor beyond. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/strategy-map.png",
+          "sha256": "ffe68ad3959415b0bac102d7fa934dc83a47572c3ffe3b07a2aee7066e0ad82d",
+          "viewedBeforeGeneration": true
+        },
+        {
+          "path": "art/locations/yard.webp",
+          "sha256": "166aee766ca26109f70c6f840f9e654bab949c5408b8627930ab5064f19b18a4",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/legacy-growth.png",
+        "-o",
+        "art/ending/legacy-growth.webp"
+      ]
+    },
+    {
+      "id": "legacy-finance",
+      "source": "source-art/ending/legacy-finance.png",
+      "delivery": "art/ending/legacy-finance.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-a68074c7-27b7-4ed8-b227-b7ee6ae99b85.png",
+      "sourceSha256": "66da17fdcab3b23451cd5aba38ae9a5bf0176797c1f8957952aea7459a632e0e",
+      "deliverySha256": "064ff30878de82a2c73435d46e00280fd6de465d9765d5df79e864e8c1c40a71",
+      "generatedSha256": "66da17fdcab3b23451cd5aba38ae9a5bf0176797c1f8957952aea7459a632e0e",
+      "sourceMatchesGenerated": true,
+      "width": 1586,
+      "height": 992,
+      "dimensions": [
+        1586,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "6a5cd3b4a6f71b167a969b376f1719f891997dbacfd5fc2d7c9ca5c6eae2e71f",
+      "deliveryDecodedRGBASha256": "6a5cd3b4a6f71b167a969b376f1719f891997dbacfd5fc2d7c9ca5c6eae2e71f",
+      "sourceBytes": 2927906,
+      "deliveryBytes": 2232612,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: stylized-concept. Asset: legacy-finance original ending background for the game Coil Center. Input images are style/environment references, not a composition to merely copy or relabel. Create a new distinct closer still-life viewpoint inside a modest office overlooking the familiar peaceful coil yard. Foreground carefully ordered plain closed teal ledgers and a single open ledger with blank ruled pages on a wooden desk, a simple pen, subtle daylight. The window reveals quiet silver coils and sage low-roof sheds in low soft morning light. Balance and patient stewardship, no cash piles, money, certificates, trophies, graphs, readable writing or triumphant symbolism. Clearly a different composition from the full office ending; ledgers dominate lower foreground and window yard upper half. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/strategy-office.png",
+          "sha256": "078234f41c195e7c4d769beaeb1a5baebee3e4d6da990aae2de1df71e1c58165",
+          "viewedBeforeGeneration": true
+        },
+        {
+          "path": "art/locations/yard.webp",
+          "sha256": "166aee766ca26109f70c6f840f9e654bab949c5408b8627930ab5064f19b18a4",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/legacy-finance.png",
+        "-o",
+        "art/ending/legacy-finance.webp"
+      ]
+    },
+    {
+      "id": "legacy-customer",
+      "source": "source-art/ending/legacy-customer.png",
+      "delivery": "art/ending/legacy-customer.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-a92a2423-5dee-4b3c-82a7-c90bd6a194e4.png",
+      "sourceSha256": "c2d6b3abe19e27fd6226a8883590531f1dd55dd9380980ef0827b47b0315f9b6",
+      "deliverySha256": "c61356aade32b76de3e0e19c78adbfff2839434b454ea0fa890132b5f9fe5dfa",
+      "generatedSha256": "c2d6b3abe19e27fd6226a8883590531f1dd55dd9380980ef0827b47b0315f9b6",
+      "sourceMatchesGenerated": true,
+      "width": 1586,
+      "height": 992,
+      "dimensions": [
+        1586,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "7cc588cc9425958569cfc97b63e4dd7286ce70ea110f4389521c420283baf592",
+      "deliveryDecodedRGBASha256": "7cc588cc9425958569cfc97b63e4dd7286ce70ea110f4389521c420283baf592",
+      "sourceBytes": 3156075,
+      "deliveryBytes": 2325470,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: stylized-concept. Asset: legacy-customer original ending background for the game Coil Center. Input images are style/environment references, not a composition to merely copy or relabel. Create a new distinct customer-facing dispatch scene in the same fictional cold-coil service center. Through an open glass partition a modest consultation table in foreground with blank papers and a small silver coil sample connects visually to waiting shipment coils and two unbranded delivery vehicles in the loading lane beyond. Calm practical business relationship, no people needed. Not an automotive production scene: prioritize coil dispatch and welcoming consultation threshold. No customer counts, signed contracts, brand names, logos or promised new business. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/locations/customers.webp",
+          "sha256": "37be4f775ae38108924b678d6b8ae94649e6883431ad6d283c36405acb259e6f",
+          "viewedBeforeGeneration": true
+        },
+        {
+          "path": "art/locations/yard.webp",
+          "sha256": "166aee766ca26109f70c6f840f9e654bab949c5408b8627930ab5064f19b18a4",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/legacy-customer.png",
+        "-o",
+        "art/ending/legacy-customer.webp"
+      ]
+    },
+    {
+      "id": "legacy-craft",
+      "source": "source-art/ending/legacy-craft.png",
+      "delivery": "art/ending/legacy-craft.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-b6057af4-2f6b-4bc6-83c1-82d1555c3e89.png",
+      "sourceSha256": "7ac55246e2bcae8ef3b9531f31988019560585d0e051348cdd4412895690d618",
+      "deliverySha256": "9efa904b4ba5212d0d8560f57154cc0310a5c3aa15704a93f1dd2e3c411b81b3",
+      "generatedSha256": "7ac55246e2bcae8ef3b9531f31988019560585d0e051348cdd4412895690d618",
+      "sourceMatchesGenerated": true,
+      "width": 1586,
+      "height": 992,
+      "dimensions": [
+        1586,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "c1b7e68d0ca6cc32a844a61110c936bc16efca85c02e4490866067032accfaac",
+      "deliveryDecodedRGBASha256": "c1b7e68d0ca6cc32a844a61110c936bc16efca85c02e4490866067032accfaac",
+      "sourceBytes": 3309964,
+      "deliveryBytes": 2512276,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: stylized-concept. Asset: legacy-craft original ending background for the game Coil Center. Input images are style/environment references, not a composition to merely copy or relabel. Create a new distinct closer working-floor scene inside the familiar cold-coil slitting and leveling factory. Foreground an orderly metal inspection bench with a caliper, micrometer, steel rule without marks, folded work cloth and several cold sheet samples; midground readable polished cold rollers and a continuous silver sheet; yellow safety rails, sage machine housings and overhead crane in the background. Craft through maintenance and measurement, no perfect-quality badges, no new machinery, no glowing steel. Fine mechanical drawing and tactile tool detail. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/locations/factory.webp",
+          "sha256": "d6859e692630cf982bede585fc055ff09d7f7083d784712005aa5a56ab3ff3f7",
+          "viewedBeforeGeneration": true
+        },
+        {
+          "path": "art/opening/factory.webp",
+          "sha256": "a56f4a8630b00d932f66d53c7f00a4d596a45b2b6e177ed7f2e89ef05a8f1a79",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/legacy-craft.png",
+        "-o",
+        "art/ending/legacy-craft.webp"
+      ]
+    },
+    {
+      "id": "legacy-headquarters",
+      "source": "source-art/ending/legacy-headquarters.png",
+      "delivery": "art/ending/legacy-headquarters.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-7759a068-8dd0-4373-a240-d91cda0bb0ed.png",
+      "sourceSha256": "664419b17d11ec5bc876ab1291c35ed792ea4775ed154477a1395d3bb7d55d7b",
+      "deliverySha256": "a941ca09d9dcbc93785c98a94d8c14ca3a8126570a6ba43bcad3c7b5036b4dc9",
+      "generatedSha256": "664419b17d11ec5bc876ab1291c35ed792ea4775ed154477a1395d3bb7d55d7b",
+      "sourceMatchesGenerated": true,
+      "width": 1585,
+      "height": 992,
+      "dimensions": [
+        1585,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "70d7b10c584c92e0659627adaa16154bc48fe9033e1e7cc3d078944f35296486",
+      "deliveryDecodedRGBASha256": "70d7b10c584c92e0659627adaa16154bc48fe9033e1e7cc3d078944f35296486",
+      "sourceBytes": 3132972,
+      "deliveryBytes": 2394286,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: stylized-concept. Asset: legacy-headquarters original ending background for the game Coil Center. Input images are style/environment references, not a composition to merely copy or relabel. Create a new distinct panoramic scene looking from the familiar coil quay toward open sea and distant shipping lanes. Foreground small neatly cradled silver coils and the existing quay edge, a dark-hulled ocean freighter offshore in middle distance, harbor cranes confined to one side, the broad calm water route receding through coastal islands toward horizon. The sea lane is the subject, unlike road-focused growth scene. No headquarters skyscraper, new building, world domination map, corporate flags, added logos or ship lettering. Restrained expansive morning atmosphere. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/opening/harbor.webp",
+          "sha256": "7d61b7df6a559f58e8c24e82d11920312ca68e8edf71ade88f7880c95a55594e",
+          "viewedBeforeGeneration": true
+        },
+        {
+          "path": "art/locations/port.webp",
+          "sha256": "0ba205b7de46bbfbf50a93f9e11d40c179d5c9f17414c9e17844d1956bd76c92",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/legacy-headquarters.png",
+        "-o",
+        "art/ending/legacy-headquarters.webp"
+      ]
+    },
+    {
+      "id": "legacy-recovery",
+      "source": "source-art/ending/legacy-recovery.png",
+      "delivery": "art/ending/legacy-recovery.webp",
+      "generatedPath": "/Users/ethanlee/.codex/generated_images/01a18272-4300-7c73-bf66-e8e2cbb62f3e/exec-2719bdbd-af02-47d9-9e20-2dd2ab35d343.png",
+      "sourceSha256": "e6f68d627963d99aad72e370b1dee50710a9cd980e0066ccf0b80508a2805217",
+      "deliverySha256": "50a1e196344f6944b43824d02339e2bf0fa8c5836fb09e5cfddc765716f8f508",
+      "generatedSha256": "e6f68d627963d99aad72e370b1dee50710a9cd980e0066ccf0b80508a2805217",
+      "sourceMatchesGenerated": true,
+      "width": 1586,
+      "height": 992,
+      "dimensions": [
+        1586,
+        992
+      ],
+      "decodedRGBAEqual": true,
+      "decodedRGBASha256": "033030b078cebe278833d8cfe17fcc86d9b96e60244a363238f71798e7c79701",
+      "deliveryDecodedRGBASha256": "033030b078cebe278833d8cfe17fcc86d9b96e60244a363238f71798e7c79701",
+      "sourceBytes": 3170124,
+      "deliveryBytes": 2479992,
+      "within3MiB": true,
+      "nativeResolutionPreserved": true,
+      "approximate8to5": true,
+      "notRenamedExistingAsset": true,
+      "prompt": "Use case: stylized-concept. Asset: legacy-recovery original ending background for the game Coil Center. Input images are style/environment references, not a composition to merely copy or relabel. Create a new distinct quiet scene inside the same familiar cold-coil factory, viewed from beside a maintenance workbench. Low gentle sunlight returns through existing tall side windows and falls across worn but intact work surfaces. Foreground a neatly used wrench, clean folded rag, small bearing and modest evidence of routine maintenance; familiar stationary cold silver rollers and coil in middle distance, existing sage machines and yellow rails. Reflective resilience, no sparks, motion blur, activity proving restart, victory signs, debt cancellation, damage, new facility or broken machinery. Make the sunlight on the cared-for workbench the focus, different from the bright precision inspection composition. Keep the supplied reference's mature finely detailed PC-98 strategy-game illustration style: crisp stepped contours and restrained fine dithering, dark teal and navy shadows, sage, ivory and muted gold. Preserve rich native resolution details, no blur, no forced low-resolution pixels. Landscape 8:5 composition, target 1586x992 pixels. No readable text, letters, numbers, signage, logos, UI, frames, watermark, fantasy, molten metal, blast furnaces, smokestacks, photorealism, or smooth 3D.",
+      "references": [
+        {
+          "path": "art/locations/factory.webp",
+          "sha256": "d6859e692630cf982bede585fc055ff09d7f7083d784712005aa5a56ab3ff3f7",
+          "viewedBeforeGeneration": true
+        },
+        {
+          "path": "art/opening/factory.webp",
+          "sha256": "a56f4a8630b00d932f66d53c7f00a4d596a45b2b6e177ed7f2e89ef05a8f1a79",
+          "viewedBeforeGeneration": true
+        }
+      ],
+      "encoding": [
+        "cwebp",
+        "-lossless",
+        "-z",
+        "9",
+        "-exact",
+        "source-art/ending/legacy-recovery.png",
+        "-o",
+        "art/ending/legacy-recovery.webp"
+      ]
+    }
+  ]
+}

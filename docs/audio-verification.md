@@ -1,39 +1,35 @@
 # 오디오 검증 기록
 
-2026-10-14. 창작 FM 신스·작은 오케스트라 음원을 현재 전략 화면에 연결했다. 이 문서는 기술 검사와 실제 브라우저·사람의 청취를 구분한다.
+2026-10-28. 현재 24개 창작 WAV와 오프닝·엔딩 transport를 기술 검사와 격리 실제 브라우저에서 확인했다. 아래 결과는 사람 청취와 물리 기기 검증을 구분한다.
 
 ## 기술 검사
 
-- `npm run audio:verify`: 21개(BGM 6·징글 3·효과음 12), PCM WAV 22,050Hz·16bit·stereo. 총 52,193,536bytes, 약 49.78MiB로 60MiB 한도 이내다. 파일/소스 해시, 길이, 루프 범위·경계, peak/RMS, mix 상한을 검사한다. 최악 조합의 계산된 peak 상한은 약 0.689다.
-- `node --test tests/audio.test.mjs`: 지연 fetch, 최신 장면, 음소거·버스0, 중복 효과음, 최대 동시 수, 징글 duck/복원, 위치 보존, LRU3, 재개 거절·interrupted, 숨김·폐기 중 늦은 resume, 설정 저장 실패와 재시도를 검사한다.
-- `node --test tests/audio-ui.test.mjs`: 실제 결산 창 수명에 따른 decision 유지, 징글 종료 후 경고, 종료음 중복 방지, 새 게임·재개 성공, 입력 오류 전이, 미리듣기 종료와 초점 복귀를 검사한다.
-- `node --test tests/audio-integration.test.mjs`: 실제 결재 선택·발주 콜백, advance/showReport 및 session-save를 두 기간 실행한다. 월간은 3월 진입·Math.random 39회, 분기는 7월 진입·72회다. 고정 날짜와 계수한 결정적 난수 입력에서 음소거/정상 재생/resume 거절/404/decode 실패의 전체 s·W·pending, 월별·합산 보고서, 모든 자동 저장 checkpoint가 동일하다. 의도적으로 오디오에 RNG 소비나 현금 변경을 넣은 테스트 변이는 탐지된다. 자동 저장은 save 효과음을 호출하지 않는다.
-- 빌드 회귀는 오디오의 UI 이전 로딩, 21개 파일 복사, WAV 한 바이트 변경에 따른 캐시 버전 변경, 음원 누락 실패, 선택적 캐시의 quota·오프라인 실패를 검사한다. 테스트 빌드는 임시 출력 디렉터리를 사용한다.
+- `npm run audio:verify`: 24개 WAV, 22,050Hz·16-bit·stereo, 74,420,068B(70.97251MiB)로 80MiB 이하. 파일/소스 해시, 길이, loop, peak/RMS, stereo 차이와 mix 상한을 검사한다.
+- `ending-journey`: 정확히 2,646,000 frames/120초/10,584,044B. `ending-unfinished`: 1,323,000 frames/60초/5,292,044B. 둘 다 cinematic, gain .22, loop null이다.
+- 격리 복사본에서 전체 렌더 두 번의 24개 file/PCM 해시가 같고, 기존 22개 해시가 보존됐다. sourceHash 순서는 [오디오 제작 기록](audio-production.md)에 고정했다.
+- `node --test tests/ending-player.test.mjs tests/audio-cinematic.test.mjs`: 120/60초 경계, pause/resume, offset, 5초 timeout·404·늦은 promise, 무음/오디오 객체 부재와 자원 정리를 검사한다.
+- `node --test tests/ending-integration.test.mjs tests/audio-ui.test.mjs tests/audio-integration.test.mjs`: 마지막 결산 뒤 단일 cinematic, 종료 징글 중복 방지, 결과 BGM 복귀, 같은 세션 replay와 저장·경제·RNG 불변을 검사한다.
 
-재현 명령은 `npm run check`다. 현재 실행 로그와 소스 해시는 `.omo/evidence/ulw/01a139fb-6b3b-7d70-bf59-5b2b37945553/G001-fm/a1/`의 runtime/ui/integration 디렉터리에 보관한다. VM 테스트의 오디오 backend·DOM fixture는 실제 기기 출력이나 브라우저 자동재생 정책을 증명하지 않는다.
+## 실제 브라우저 — 2026-10-28
 
-## 배포·오프라인 정책
+사용자 서버·탭·dist가 아닌 격리 source, 고유 port와 소유 Chrome profile에서 B01–B12를 실행했다. 최종 제품 커밋 `2fc196f`의 `src/ui/ending-player.js` SHA-256과 QA 복사본이 일치했고, 정상 120초와 조기 60초 실제 시간 재생, pause/next/skip/replay, hidden/visible, 404·지연·무음, suspended AudioContext 활성화, 오프라인 선택 캐시, resume/import/recovery를 확인했다.
 
-개발은 서비스워커를 새로 등록하지 않는다. 같은 주소에 남은 이전 배포 서비스워커는 개발용 sw.js의 정상 update에서 즉시 교체·등록 해제하며, 저장·기존 캐시·진행 중 화면을 유지한다. 자동 갱신이 지연돼 이전 화면이 남으면 개발 서버에서만 제공하는 `/__dev/recover`의 「개발 화면 복구」 버튼을 사용한다. 기존 등록을 갱신·해제하고 그 탭만 루트로 돌아간다. 독립 Chrome 프로필에서 실제 복구 버튼 → 루트 새 음향 메뉴, 다른 열린 화면·저장·캐시 보존을 확인했다(`dev-cache/recovery-button-result.json`). 앞선 `browser-result.json`은 테스트 API로 update를 직접 호출한 제한된 증거다. 배포 버전은 앱 shell을 필수 캐시하고, manifest/WAV는 요청 성공 때만 선택적으로 캐시한다. 오프라인에서 미캐시 음원은 무음으로 실패하며 게임 계산·저장은 계속된다. 음원 전체 다운로드를 첫 방문이나 앱 설치의 선행조건으로 두지 않는다. 배포·푸시를 수행했다는 의미는 아니다.
+실제 B07에서 AudioContext가 suspended인 동안 「계속 보기」가 보이지 않는 결함을 발견해 수정했다. fresh page에서 position/voice 정지와 버튼 노출을 확인하고 native 클릭 뒤 context `running`, voice 1을 관측했다. B05 초점 누출도 수정 후 키보드·전체화면 시나리오를 재실행했다.
 
-## 실제 표면과 청취 상태
+최종 격리 검증은 `npm test` 1248/1248, `npm run audio:verify`, 33-source production build를 통과했다. release version은 `c6fbb27336fa`, 생성 `release.json` SHA-256은 `74192eb6ab5ed9e1e3b9a752b891f8e82c9b422fa75ba40e784d247b8c364968`다. 이는 공개 배포 완료를 뜻하지 않는다.
+
+## 오프라인 정책
+
+앱 shell은 필수 캐시하지만 manifest·WAV·엔딩 그림은 요청 성공 때만 선택적으로 캐시한다. 미캐시 음원은 오프라인에서 503으로 실패하고 엔딩은 무음 transport로 계속된다. 실패 응답은 캐시하지 않는다. 온라인 복귀 뒤 요청한 해당 곡·그림만 캐시된다. 음원 전체 다운로드를 설치 선행조건으로 두지 않는다.
+
+## 검증 상태
 
 | 항목 | 상태 |
-| --- | --- |
-| 데스크톱 브라우저 조작·오디오 출력·실제 hidden/visible·오프라인 | PASS — 실제 Chrome의 출력 PCM, 탭 숨김·복귀, 캐시 음원200/미캐시503, 오프라인 월 결재·저장 확인 |
-| 390×844 화면·키보드·모달 초점 | PASS — 실제 viewport와 PNG390×844, 가로 넘침 없음. Tab·Space·Escape, 부모 IAB의 방향키 음량 조절·초점 복귀 확인 |
-| 물리 iOS/Safari에서 최초 입력·중단·재개 | UNVERIFIED |
-| 헤드폰·작은 스피커에서 실제 사람 청취 | UNVERIFIED |
-| 6곡 도입+두 번 루프, 세 징글·12효과음의 음악적 자연스러움·피로·역할 구별 | UNVERIFIED |
+|---|---|
+| WAV 구조·해시·길이·신호·80MiB 예산 | PASS |
+| 소유 Chrome의 120/60초 transport·활성화·숨김·오프라인 | PASS |
+| 데스크톱/모바일 배치·키보드·초점·fallback | PASS |
+| 물리 iOS/Safari의 입력·중단·실제 출력 | **UNVERIFIED** |
+| 헤드폰·작은 스피커에서 사람의 전곡 청취 | **UNVERIFIED** |
 
-음향 설정의 여섯 곡 미리듣기 또는 `audio/*.wav`로 청취할 수 있다. 청취 기록에는 날짜·기기·볼륨·음원 해시와 루프 연결, 대사 읽기 방해, 연타 피로를 남긴다. peak·루프 경계 수치 통과를 음악적 품질 통과로 바꾸어 쓰지 않는다.
-
-## 최종 결과
-
-최종 `npm run check`는 101개 테스트, 21개 음원 검사, 배포 빌드를 통과했다. 증거는 같은 실행 폴더의 `completion-check.txt`, `completion-source-hashes.json`, `browser/report.md`와 `browser/assertions.json`이다. 브라우저 증거 검사는 23개 항목을 통과했다. 경제·사건 네 파일과 두 저장 파일은 음향 작업 시작 전 SHA-256과 같다.
-
-실제 검증에서 발견한 이전 음악 재생 중 새 곡 실패 시 재시도 버튼 비활성화 문제를 수정하고, 404 → 재시도 → 새 곡 재생 → 원래 곡 복귀까지 확인했다. 개발 주소에 남은 이전 캐시 문제는 개발 전용 복구 버튼으로 해결했다. 원래 실패 증거와 수정 후 결과를 함께 보존했다.
-
-COMPLETE·INSOLVENT·CAPITAL_ERODED의 종료 음악과 징글 중복 방지는 실제 브라우저의 명시적 종료 상태 fixture로 확인했다. 전체 48개월 수동 플레이를 완료했다는 뜻은 아니다. 검증용 브라우저·서버4191/4192·임시 프로필은 정리했고, 사용자용 개발 서버4186은 유지한다.
-
-개발 주소 전달 확인: 4186의 이전 서비스워커 때문에 남던 옛 타이틀은 `/__dev/recover`의 실제 복구 버튼을 통해 루트 `/`로 돌아온 뒤 새 「음악 켜기」·「음향 설정」 표시를 확인했다. 증거는 같은 attempt의 `delivery-title.txt`·`delivery-title.png`다. 검증용 탭만 닫았으며 기존 사용자 탭의 강제 새로고침이나 저장 삭제는 수행하지 않았다. 이 결과는 타이틀 전달 경로의 확인이며, 위 청취·물리 iOS 미검증 상태를 바꾸지 않는다.
+headless 브라우저의 AudioContext/voice 상태와 fullscreen API 성공은 실제 스피커 청취나 물리 화면 전환 증거가 아니다. 청취 기록에는 날짜·기기·볼륨·음원 해시, 루프 연결, 대사 읽기 방해와 연타 피로를 별도로 남겨야 한다.

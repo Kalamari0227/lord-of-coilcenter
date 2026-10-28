@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {verifyAudio,inspectWav} from '../scripts/verify-audio.mjs';
 import {encodeWav} from '../music/wav.mjs';
+import {readFile} from 'node:fs/promises';
+import {allScores} from '../music/score.mjs';
+import {sourceHash} from '../scripts/render-audio.mjs';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const groups={bgm:['title','map','office','decision','downturn','ending'],jingle:['month-close','term-complete','company-failure'],sfx:['select','confirm','cancel','paper-open','officer','dossier-next','stamp','order','error','month-turn','save','alert']};
 function fixture() {
@@ -10,21 +13,27 @@ function fixture() {
  const pcm=Buffer.alloc(frames*4);
  for(let i=0;i<frames;i++) {pcm.writeInt16LE(Math.round(Math.sin(i*.12)*3000),i*4);pcm.writeInt16LE(Math.round(Math.sin(i*.13)*2800),i*4+2);}
  for(const [kind,ids] of Object.entries(groups))for(const id of ids) {const file=`audio/${id}.wav`,bytes=encodeWav(pcm);files.set(file,bytes);tracks.push({id,title:id,kind,file,sourceHash:expectedSourceHash,fileHash:hash(bytes),sampleRate:22050,frames,duration:frames/22050,loopStartFrame:kind==='bgm'?128:null,loopEndFrame:kind==='bgm'?frames:null,gain:kind==='sfx'?.1:.22});}
- const openingPcm=Buffer.alloc(1587600*4);
- for(let offset=0;offset<openingPcm.length;offset+=pcm.length)pcm.copy(openingPcm,offset,0,Math.min(pcm.length,openingPcm.length-offset));
- const openingBytes=encodeWav(openingPcm);
- files.set('audio/opening.wav',openingBytes);
- tracks.push({id:'opening',title:'철의 항로',kind:'cinematic',file:'audio/opening.wav',sourceHash:expectedSourceHash,fileHash:hash(openingBytes),sampleRate:22050,frames:1587600,duration:72,loopStartFrame:null,loopEndFrame:null,gain:.22});
+ for(const [id,duration] of [['opening',72],['ending-journey',120],['ending-unfinished',60]]) {
+  const frames=duration*22050,cinematicPcm=Buffer.alloc(frames*4);
+  for(let offset=0;offset<cinematicPcm.length;offset+=pcm.length)pcm.copy(cinematicPcm,offset,0,Math.min(pcm.length,cinematicPcm.length-offset));
+  const bytes=encodeWav(cinematicPcm),file=`audio/${id}.wav`;
+  files.set(file,bytes);
+  tracks.push({id,title:id,kind:'cinematic',file,sourceHash:expectedSourceHash,fileHash:hash(bytes),sampleRate:22050,frames,duration,loopStartFrame:null,loopEndFrame:null,gain:.22});
+ }
  return {files,expectedSourceHash,manifest:{version:1,format:'pcm-s16le',sampleRate:22050,channels:2,bitsPerSample:16,tracks}};
 }
 function alterPcm(input,change) {const track=input.manifest.tracks[0],bytes=Buffer.from(input.files.get(track.file));change(bytes);input.files.set(track.file,bytes);track.fileHash=hash(bytes);}
 test('valid injected PCM assets produce a complete bounded mix report',async()=>{
  const input=fixture();const result=await verifyAudio(input);
- assert.equal(result.pass,true);assert.equal(result.tracks.length,22);assert(result.mixPeakBound<1);assert.equal(result.totalBytes,21*(44+4096)+6350444);
+ assert.equal(result.pass,true);assert.equal(result.tracks.length,24);assert(result.mixPeakBound<1);assert.equal(result.totalBytes,21*(44+4096)+6350444+15876088);
 });
 const mutations=[
  ['missing cinematic asset','ID',input=>input.manifest.tracks.pop()],
- ['wrong cinematic duration','cinematic duration',input=>{const track=input.manifest.tracks.at(-1);track.frames=1587599;track.duration=track.frames/22050;}],
+ ...['opening','ending-journey','ending-unfinished'].map(id=>[`wrong ${id} duration`,'cinematic duration',input=>{const track=input.manifest.tracks.find(track=>track.id===id);track.frames--;track.duration=track.frames/22050;}]),
+ ...['opening','ending-journey','ending-unfinished'].map(id=>[`loud ${id}`,'cinematic gain',input=>input.manifest.tracks.find(track=>track.id===id).gain=.23]),
+ ['swapped ending durations','cinematic duration',input=>{const a=input.manifest.tracks.at(-2),b=input.manifest.tracks.at(-1);[a.frames,b.frames]=[b.frames,a.frames];[a.duration,b.duration]=[b.duration,a.duration];}],
+ ['unknown cinematic ID','ID',input=>input.manifest.tracks.at(-1).id='ending-other'],
+ ['80MiB overflow','80MiB',input=>input.files.set('audio/title.wav',Buffer.alloc(80*1024*1024+1))],
  ['looping cinematic','loop',input=>input.manifest.tracks.at(-1).loopStartFrame=0],
  ['loud cinematic','cinematic gain',input=>input.manifest.tracks.at(-1).gain=.23],
  ['silent PCM','silent',input=>alterPcm(input,b=>b.fill(0,44))],
@@ -65,4 +74,25 @@ test('crossfade budget includes a cinematic peak larger than every BGM',async()=
  const result=await verifyAudio(input);
  // Then two music slots use the cinematic peak, preserving jingle and SFX budgets.
  assert.equal(result.mixPeakBound,2*openingPeak*.22+bgmPeak*.22+4*bgmPeak*.1);
+});
+
+test('public score collection contains the exact 24 unique assets',()=>{
+ const expected=fixture().manifest.tracks.map(track=>track.id).sort();
+ assert.deepEqual(allScores().map(score=>score.id).sort(),expected);
+});
+
+test('source hash appends ending manuscript after the original five sources',async()=>{
+ const files=['music/opening.mjs','music/score.mjs','music/synth.mjs','music/wav.mjs','scripts/render-audio.mjs','music/ending.mjs'];
+ const bytes=await Promise.all(files.map(file=>readFile(new URL(`../${file}`,import.meta.url))));
+ assert.equal(await sourceHash(),hash(Buffer.concat(bytes)));
+});
+
+test('exact 80MiB WAV budget passes without changing the mix policy',async()=>{
+ const input=fixture(),track=input.manifest.tracks[0],original=input.files.get(track.file);
+ const total=[...input.files.values()].reduce((sum,bytes)=>sum+bytes.length,0);
+ const padding=80*1024*1024-total,bytes=Buffer.alloc(original.length+padding);
+ original.copy(bytes);bytes.write('JUNK',original.length);bytes.writeUInt32LE(padding-8,original.length+4);bytes.writeUInt32LE(bytes.length-8,4);
+ input.files.set(track.file,bytes);track.fileHash=hash(bytes);
+ const result=await verifyAudio(input);
+ assert.equal(result.totalBytes,80*1024*1024);assert.equal(result.limitBytes,80*1024*1024);assert(result.mixPeakBound<1);
 });

@@ -16,6 +16,7 @@ function ccAudioCue(id, eventId) {
 function ccAudioScene() {
   if (typeof CCAudio === 'undefined') return;
   if (typeof ccOpeningActive === 'function' && ccOpeningActive()) return;
+  if (typeof ccEndingOwnsAudio === 'function' && ccEndingOwnsAudio()) return;
   const report = ccAudioState().report;
   const scene = !G ? 'title' : report?.game === G && report.dialog.open ? 'decision'
     : G.s.over ? (G.s.overReason === 'COMPLETE' ? 'ending' : 'downturn')
@@ -38,6 +39,7 @@ function ccAudioReport(report, dialog) {
   if (typeof CCAudio === 'undefined') return;
   const state = ccAudioState(), game = G;
   state.report = { game, dialog };
+  if (typeof ccEndingPrepareGame === 'function') ccEndingPrepareGame();
   let unsubscribe = () => {};
   dialog.addEventListener('close', () => {
     unsubscribe();
@@ -62,8 +64,9 @@ function ccAudioReport(report, dialog) {
 }
 function ccAudioEnding() {
   if (typeof CCAudio === 'undefined') return;
-  ccAudioScene();
   const state = ccAudioState();
+  if (typeof ccEndingOwnsAudio === 'function' && ccEndingOwnsAudio()) { state.endings.add(G); return; }
+  ccAudioScene();
   if (state.endings.has(G)) return;
   state.endings.add(G);
   void CCAudio.jingle(G.s.overReason === 'COMPLETE' ? 'term-complete' : 'company-failure', ccAudioEventId('end'));

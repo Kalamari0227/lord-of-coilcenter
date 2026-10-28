@@ -199,6 +199,35 @@ test('actual player hooks bind successful fallback and reject old image events a
   f.run('ccEndingDispose()'); assert.equal(f.frames.size, 0);
 });
 
+for (const callback of ['onload', 'onerror']) for (const boundary of ['same-state replay', 'finish', 'dispose', 'new game'])
+  test(`previous presentation ${callback} cannot take ownership after ${boundary}`, () => {
+    const f = playerFixture(), gameBefore = f.run('JSON.stringify(G)');
+    const old = f.load(), late = old[callback], oldStage = old.parentNode, oldSource = old.src;
+    if (boundary === 'same-state replay') f.run('ccEndingFinish(); ccEndingPlay(state)');
+    else if (boundary === 'finish') f.run('ccEndingFinish()');
+    else if (boundary === 'dispose') f.run('ccEndingDispose()');
+    else f.run('G = { s: { over: false } }');
+    const current = boundary === 'same-state replay' ? f.load() : null, active = f.run('state.motion');
+    for (let i = 0; i < 3; i++) late();
+    assert.equal(f.run('state.motion') === active, true);
+    assert.equal(old.src, oldSource);
+    if (current) {
+      assert.equal(active.removed, false); assert.equal(active.image === current, true);
+      assert.equal(f.app.querySelectorAll('.cc-ending-motion').length, 1);
+      assert.equal(oldStage.querySelectorAll('.cc-ending-motion').length, 0);
+      f.run('ccEndingToggle()'); current.onerror(); assert.equal(f.run('state.motion'), null);
+      f.load(); assert.equal(f.run('state.motion.source'), 'art/strategy-office.png');
+      assert.equal(f.run('state.motion.image') === current, true); assert.equal(f.run('state.phase'), 'paused');
+    }
+    assert.equal(f.run('JSON.stringify(state.game)'), gameBefore);
+    f.run('ccEndingDispose()');
+    assert.equal(f.frames.size, 0); assert.equal(f.run('state.motion'), null);
+    assert.equal(f.app.querySelectorAll('.cc-ending-motion').length, 0);
+    assert.equal(f.document.events.get('keydown').size, 0); assert.equal(f.document.events.get('focusin').size, 0);
+    observations.push({ scenario: 'previous-presentation-image-callback', callback, boundary, staleInvocations: 3,
+      retainedCurrentMotion: true, currentFallbackStillBinds: !!current, remainingClocks: 0, remainingMasks: 0 });
+  });
+
 test('repeated interruptions retain one player clock and clean all motion layers on every exit', () => {
   const f = playerFixture();
   for (let iteration = 0; iteration < 10; iteration++) {

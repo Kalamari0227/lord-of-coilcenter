@@ -72,13 +72,13 @@ function ccEndingPaint(state = ccEndingCurrent) {
     }
     const images = [...new Set([scene.image, ...scene.fallbackImages])]; let index = 0;
     image.onerror = () => {
-      if (!ccEndingLive(state) || stage.querySelector('.cc-ending-art') !== image) return;
+      if (!ccEndingLive(state) || state.root.querySelector('.cc-ending-stage') !== stage || stage.querySelector('.cc-ending-art') !== image) return;
       if (typeof ccEndingMotionRemove === 'function') ccEndingMotionRemove(state);
       if (++index < images.length) image.src = images[index];
       else { image.onerror = null; image.onload = null; image.hidden = true; fallback.hidden = false; }
     };
     image.onload = () => {
-      if (!ccEndingLive(state) || stage.querySelector('.cc-ending-art') !== image || image.hidden) return;
+      if (!ccEndingLive(state) || state.root.querySelector('.cc-ending-stage') !== stage || stage.querySelector('.cc-ending-art') !== image || image.hidden) return;
       if (typeof ccEndingMotionRemove === 'function') ccEndingMotionRemove(state);
       if (typeof ccEndingMotionBind === 'function') state.motion = ccEndingMotionBind(stage, image, scene);
       if (typeof ccEndingMotionPaint === 'function') ccEndingMotionPaint(state.motion, ccEndingStatus(state));

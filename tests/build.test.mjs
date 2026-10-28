@@ -276,22 +276,22 @@ for(const marker of ['invalid-json','foreign-owner','symlink']) test(`rejects ${
   assert.equal(await treeDigest(options.sourceRoot),before);
 });
 
-test('opening art is delivered and hashed but never blocks core installation', async t => {
+for (const kind of ['opening', 'ending']) test(`${kind} art is delivered and hashed but never blocks core installation`, async t => {
   const options=await fixture(t);
-  await mkdir(path.join(options.sourceRoot,'art/opening'));
-  await writeFile(path.join(options.sourceRoot,'art/opening/factory.webp'),'first');
+  await mkdir(path.join(options.sourceRoot,`art/${kind}`));
+  await writeFile(path.join(options.sourceRoot,`art/${kind}/factory.webp`),'first');
   const first=await build(options);
-  await writeFile(path.join(options.sourceRoot,'art/opening/factory.webp'),'second');
+  await writeFile(path.join(options.sourceRoot,`art/${kind}/factory.webp`),'second');
   const second=await build(options);assert.notEqual(first.version,second.version);
-  assert.equal(await readFile(path.join(options.outputDir,'art/opening/factory.webp'),'utf8'),'second');
+  assert.equal(await readFile(path.join(options.outputDir,`art/${kind}/factory.webp`),'utf8'),'second');
   const handlers={}, precache=[], stored=new Map();let offline=false;
   runInNewContext(await readFile(path.join(options.outputDir,'sw.js'),'utf8'),{URL,Response,
     self:{location:{href:'https://game.test/sw.js'},addEventListener:(key,fn)=>handlers[key]=fn},
     caches:{open:async()=>({addAll:async urls=>precache.push(...urls),match:async req=>stored.get(req.url),put:async(req,res)=>stored.set(req.url,res)})},
     fetch:async()=>{if(offline)throw Error('offline');return new Response('picture');}});
   let pending;handlers.install({waitUntil:value=>pending=value});await pending;
-  assert.equal(precache.some(url=>url.includes('opening/')),false);
-  const request=()=>{let response;handlers.fetch({request:{method:'GET',url:'https://game.test/art/opening/factory.webp'},respondWith:value=>response=value});return response;};
+  assert.equal(precache.some(url=>url.includes(`${kind}/`)),false);
+  const request=()=>{let response;handlers.fetch({request:{method:'GET',url:`https://game.test/art/${kind}/factory.webp`},respondWith:value=>response=value});return response;};
   assert.equal((await request()).status,200);assert.equal(stored.size,1);
   offline=true;assert.equal((await request()).status,200);stored.clear();assert.equal((await request()).status,503);
 });
@@ -309,4 +309,32 @@ test('development responses identify opening SVG and WebP with nosniff', async (
     await handle({method:'GET',url:'/art/opening/'+name},response);
     assert.equal(status,200);assert.equal(headers['Content-Type'],type);assert.equal(headers['X-Content-Type-Options'],'nosniff');assert.equal(body,bytes);
   }
+});
+
+for (const kind of ['opening', 'ending']) test(`${kind} optional cache rejects errors, partial and opaque responses under a project path`, async t => {
+  const options=await fixture(t), file=`art/${kind}/factory.webp`;
+  await mkdir(path.join(options.sourceRoot,`art/${kind}`));
+  await writeFile(path.join(options.sourceRoot,file),'picture');
+  await build(options);
+  const scope='https://example.github.io/lord-of-coilcenter/';
+  const handlers={}, stored=new Map(), precache=[];
+  let status=200, opaque=false, offline=false, quota=false, denied=false, requests=0;
+  const cache={addAll:async urls=>precache.push(...urls),match:async req=>stored.get(req.url),
+    put:async(req,res)=>{if(quota)throw Error('quota');stored.set(req.url,res);}};
+  runInNewContext(await readFile(path.join(options.outputDir,'sw.js'),'utf8'),{URL,Response,
+    self:{location:{href:scope+'sw.js'},addEventListener:(type,handler)=>handlers[type]=handler},
+    caches:{open:async()=>{if(denied)throw Error('denied');return cache;}},
+    fetch:async()=>{requests++;if(offline)throw Error('offline');
+      return opaque?{status:200,type:'opaque',clone(){throw Error('opaque must not be cached');}}:new Response('picture',{status});}});
+  let pending;handlers.install({waitUntil:value=>pending=value});await pending;
+  assert.ok(precache.includes('./art/a.png'));
+  assert.equal(precache.includes('./'+file),false);
+  const request=()=>{let response;handlers.fetch({request:{method:'GET',url:scope+file},respondWith:value=>response=value});return response;};
+  for(status of [404,206,500,503]) {assert.equal((await request()).status,status);assert.equal(stored.size,0);}
+  status=200;opaque=true;assert.equal((await request()).type,'opaque');assert.equal(stored.size,0);
+  opaque=false;quota=true;assert.equal((await request()).status,200);assert.equal(stored.size,0);
+  quota=false;denied=true;assert.equal((await request()).status,200);assert.equal(stored.size,0);
+  denied=false;assert.equal((await request()).status,200);assert.equal(stored.size,1);
+  offline=true;const before=requests;assert.equal((await request()).status,200);assert.equal(requests,before);
+  stored.clear();assert.equal((await request()).status,503);assert.equal(stored.size,0);
 });

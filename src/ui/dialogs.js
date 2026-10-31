@@ -8,10 +8,14 @@ function ccLayoutDecision(dialog, card) {
   dialog.querySelector('.deckhead')?.after(heading);
   const speech = crew.querySelector('.crew-body .line');
   const text = speech?.textContent.trim() || '';
-  if (text.length > 180) {
+  if (text.length > 180 && !card?.urgent && !card?.force && card?.topic !== 'big') {
     const firstSentence = text.match(/^.*?[.!?。](?:\s|$)/)?.[0].trim() || text;
     const preview = ccElement('p', 'cc-decision-preview');
     preview.textContent = firstSentence.length > 140 ? `${firstSentence.slice(0, 140).trim()}…` : firstSentence;
+    if (speech.hasAttribute?.('data-cc-reveal')) {
+      preview.setAttribute('data-cc-reveal', '');
+      speech.removeAttribute('data-cc-reveal');
+    }
     const report = ccElement('details', 'cc-decision-disclosure');
     const summary = ccElement('summary');
     summary.textContent = '보고 전문 펼치기';

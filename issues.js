@@ -209,7 +209,7 @@ function claimCard(s, W, k) {
     return msg;
   };
   return {
-    id: 'w-claim', who: 'oh', topic: 'quality',
+    id: 'w-claim', who: 'oh', topic: 'quality', urgent: true,
     title: `${cname(k)}에서 불량 보상을 요구합니다`,
     text: `${CUST[k]}가 가공하던 우리 코일에서 표면 불량이 발견됐습니다. 제품에 붙은 생산 번호를 확인했고, 우리가 납품한 제품이 맞습니다. `
         + `${why ? `관련 결정 기록으로 ${why}이 있습니다. 현재 품질도 함께 확인하십시오.` : '최근 우리 품질 지표가 떨어지고 있던 것은 사실입니다.'} `
@@ -1584,7 +1584,7 @@ function solarCard(s, W) {
 
 function safetyCard(s, W) {
   return {
-    id: 'm-safety', who: 'seo', topic: 'mat',
+    id: 'm-safety', who: 'seo', topic: 'mat', urgent: true,
     title: '크레인 와이어와 안전보호구 교체 시기입니다',
     text: `사장님, 크레인에서 코일을 들어 올리는 쇠줄을 바꿀 때가 지났습니다. ` +
         `어제 보니 쇠줄을 이루는 가는 철사 몇 가닥이 끊어져 튀어나와 있었어요. 안전화와 보호 장갑도 많이 낡았습니다. `
@@ -1676,7 +1676,7 @@ function bonusCard(s, W) {
 function laborCard(s, W) {
   const why = cause(W, s, ['overtime', 'volume', 'project']);
   return {
-    id: 'h-labor', who: 'han', topic: 'hr',
+    id: 'h-labor', who: 'han', topic: 'hr', urgent: true,
     title: '노동청이 근로시간 점검을 나온답니다',
     text: `노동청이 직원들의 근로시간을 점검하겠다고 통보했습니다. `
         + `${why ? `관련 결정 기록으로 ${why}이 있습니다. ` : ''}특근 기록을 확인하니 일주일에 52시간 넘게 일한 때가 여러 번 있습니다. `

@@ -472,7 +472,7 @@ function snapshot(s, W, R) {
 function briefing(s, W) {
   const L = look(s), cov = coverOf(s), run = runway(s);
   const out = [];
-  const say = (who, kind, text, w) => out.push({ who, kind, text, w });
+  const say = (who, kind, text, w, urgent = true) => out.push({ who, kind, text, w, urgent });
 
   // 생산 — 구 공장장. 숫자를 직접 본다. 대신 괜찮을 때는 말이 없다.
   if (W.equip < 48) say('gu', '확인', `설비 상태가 ${equipLabel(W.equip)}입니더. 마지막 정비 후 ${W.maintAge}개월 됐고예. 생산 현황을 보이소.`, 9);
@@ -498,7 +498,7 @@ function briefing(s, W) {
   const cold = ks.filter(k => W.rel[k] < 50).sort((a, b) => W.rel[a] - W.rel[b])[0];
   if (cold) say('jung', '추정', `${cname(cold)} 구매팀이 싸늘합니다. 제 전화를 세 번 안 받았습니다. 영업 십오 년에 이건 신호입니다.`, 7);
   const warm = ks.find(k => W.relHigh[k] >= 2);
-  if (warm && wChance(0.6)) say('jung', '추정', `${cname(warm)} 쪽 분위기가 좋습니다. 뭘 더 맡길 눈치인데, 제가 한번 찔러보겠습니다.`, 5);
+  if (warm && wChance(0.6)) say('jung', '추정', `${cname(warm)} 쪽 분위기가 좋습니다. 뭘 더 맡길 눈치인데, 제가 한번 찔러보겠습니다.`, 5, false);
 
   // 재무 — 한 부장. 숫자만 말한다. 틀리지 않는다.
   if (run < 1.6) say('han', '추정', `결론부터. 현금과 남은 한도로 계산한 자금 여력은 약 ${run.toFixed(1)}개월치입니다. 실제 지급 예정 대금도 확인해야 합니다.`, 9);

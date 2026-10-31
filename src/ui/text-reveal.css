@@ -1,0 +1,32 @@
+/* The accessible original stays complete; the decorative text reserves every line. */
+.cc-reveal-original {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+[data-cc-reveal-pending] { visibility: hidden; }
+.says:has([data-cc-reveal-pending])::before,
+.says:has([data-cc-reveal-pending])::after { visibility: hidden; }
+.cc-reveal-finish {
+  display: block;
+  width: auto;
+  min-height: 32px;
+  margin: 8px 0 0 auto;
+  padding: 4px 10px;
+  font-size: .78rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.cc-game .cc-commands .cc-dialogue .cc-reveal-finish { grid-column: 1 / -1; justify-self: end; }
+.cc-reveal-finish:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  [data-cc-reveal-pending] { visibility: visible; }
+  .says:has([data-cc-reveal-pending])::before,
+  .says:has([data-cc-reveal-pending])::after { visibility: visible; }
+}

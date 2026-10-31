@@ -53,6 +53,10 @@ function ccProgressItems(model) {
     const row = ccElement('li', 'cc-progress-item'); row.dataset.progressKind = item.kind;
     const title = ccElement('h3'); title.textContent = item.title;
     const text = ccElement('p'); text.textContent = item.text;
+    if (item.kind === 'records') {
+      row.dataset.ccRevealGroup = '';
+      text.dataset.ccReveal = '';
+    }
     const label = item.destination === 'save' ? '저장 문제 확인' : `${ccDossierTitles[item.destination]} 확인`;
     const button = ccCommand(label, trigger => {
       if (document.querySelector('dialog[open]')) return;
@@ -85,11 +89,13 @@ function ccProgressGuidance() {
   const chapter = ccProgressChapter(G);
   if (chapter) {
     const inset = ccElement('section', 'cc-progress-chapter');
+    inset.dataset.ccRevealGroup = '';
     inset.dataset.progressChapter = chapter.animate ? 'entering' : 'static';
     inset.dataset.progressYear = chapter.year;
     inset.setAttribute('aria-label', `${chapter.year}년차 시작`);
     const title = ccElement('h3'); title.textContent = `${chapter.year}년차 · ${YEAR_THEME[chapter.year - 1].name}`;
     const text = ccElement('p'); text.textContent = `새해 업무를 시작합니다. 남은 ${model.remainingMonths}개월의 판단은 현재 보고와 장부를 바탕으로 이어가십시오.`;
+    text.dataset.ccReveal = '';
     const skip = ccCommand('연차 안내 건너뛰기', () => {
       inset.remove(); if (next.isConnected) next.focus({ preventScroll: true });
     });

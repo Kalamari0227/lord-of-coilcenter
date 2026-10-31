@@ -277,7 +277,7 @@ async function openDecisions() {
     const small = deck === 'life';
     dlg.innerHTML = `<div class="dlg${small ? ' slim' : ''}">${head}
       <div class="crew">${crewBlock(who, card.role)}
-        <div class="crew-body"><div class="line says">${card.text}</div></div></div>
+        <div class="crew-body" data-cc-reveal-group><div class="line says"${deck === 'big' || card.force || card.urgent ? '' : ' data-cc-reveal'}>${card.text}</div></div></div>
       <div class="deckq"><h2>${card.title}</h2></div>
       ${ctxStrip(card.ctx)}
       <div class="optlist" id="olist">${card.opts.map((o, i) => `
@@ -343,7 +343,7 @@ async function openDecisions() {
 
     dlg.innerHTML = `<div class="dlg">${head}
       <div class="crew">${crewBlock(who, card.role)}
-        <div class="crew-body"><div class="line says">${card.text}</div></div></div>
+        <div class="crew-body" data-cc-reveal-group><div class="line says" data-cc-reveal>${card.text}</div></div></div>
       <div class="deckq"><h2>${card.title}</h2></div>
       <div class="ordwrap">
         <table class="ordt">
@@ -456,7 +456,7 @@ async function openDecisions() {
 
     dlg.innerHTML = `<div class="dlg">${head}
       <div class="crew">${crewBlock(who, card.role)}
-        <div class="crew-body"><div class="line says">${card.text}</div></div></div>
+        <div class="crew-body" data-cc-reveal-group><div class="line says" data-cc-reveal>${card.text}</div></div></div>
       <div class="deckq"><h2>${card.title}</h2></div>
       <div class="ordwrap">
         <table class="ordt">
@@ -567,11 +567,11 @@ async function openDecisions() {
       });
     }
     const slot = dlg.querySelector('#vslot');
-    const html = `<div class="verdict inline">
+    const html = `<div class="verdict inline" data-cc-reveal-group>
         <div class="vlabel">사장님의 결정</div>
         <div class="vchoice">${choiceLabel}</div>
         ${msg ? `<div class="vwho">${pic}<span>${who.name}</span></div>
-                 <p class="vmsg says">${escapeText(ccNarrativeText(msg))}</p>` : ''}
+                 <p class="vmsg says" data-cc-reveal>${escapeText(ccNarrativeText(msg))}</p>` : ''}
         ${chips ? `<div class="chips">${chips}</div>` : ''}
         ${extra}
       </div>
@@ -1287,9 +1287,9 @@ function renderSetup() {
     </div>
 
     <div class="card">
-      <div class="say"><div class="face">${face('han')}</div><div class="bubble says">
+      <div class="say"><div class="face">${face('han')}</div><div class="bubble says" data-cc-reveal-group>
         <span class="who">${CAST.han.name} · ${CAST.han.role}</span>
-        사장님, 법인은 이미 세워져 있습니다. 숫자는 여기 정리해뒀습니다. 이름만 정해주시면 됩니다.</div></div>
+        <span data-cc-reveal>사장님, 법인은 이미 세워져 있습니다. 숫자는 여기 정리해뒀습니다. 이름만 정해주시면 됩니다.</span></div></div>
       <table>
         <tr><td>진출 국가</td><td>${country.emoji} ${country.name} <span class="muted">— ${country.desc}</span></td></tr>
         <tr><td>설비</td><td>슬리터 1기 (연 10만톤) + 레벨러 1기 (연 5만톤)</td></tr>
@@ -2057,9 +2057,9 @@ function takeoverBrief(s) {
   const K1 = v => (v < 0 ? '−$' : '$') + fmt(Math.abs(v) / 1000) + 'k';
   const lines = s.lines.map(l => `${CFG.LINE[l.type].label} ${Math.round((u[l.type] || 0) * 100)}%`).join(', ');
   return `<div class="card brief-take">
-    <div class="say"><div class="face">${face('han')}</div><div class="bubble says">
+    <div class="say"><div class="face">${face('han')}</div><div class="bubble says" data-cc-reveal-group>
       <span class="who">${CAST.han.name} · ${CAST.han.role}</span>
-      사장님, 부임을 환영합니다. 작년 실적부터 보고드리겠습니다.<br><br>
+      <span data-cc-reveal>사장님, 부임을 환영합니다. 작년 실적부터 보고드리겠습니다.</span><br><br>
       작년 판매는 <b>${fmt(tons)}톤</b>, 매출 <b>${M1(Y.revenue)}</b>, 영업이익 <b>${K1(Y.op)}</b>,
       순이익 <b>${K1(Y.np)}</b>입니다. ${Y.np < 0 ? '작년 순이익은 적자입니다. 영업이익과 이자·대손을 함께 확인하십시오.' : ''}
       가공 판매 비중은 ${Math.round(proc * 100)}%이고, 거래가 제일 큰 곳은

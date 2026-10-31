@@ -82,6 +82,12 @@ test('short reports remain visible and form instructions retain their complete n
   assert.equal(f.guide.textContent, '기존 입력 안내와 지급 시점');
 });
 
+test('urgent reports keep the complete warning visible even when the speech is long', () => {
+  const f = fixture('크레인 쇠줄을 교체할 때가 지났습니다. '.repeat(12));
+  f.layout({ urgent: true });
+  assert.deepEqual(f.body.children, [f.speech]);
+});
+
 test('decision title receives focus after its heading is moved and explanation is attached', () => {
   let active = null;
   const order = [];

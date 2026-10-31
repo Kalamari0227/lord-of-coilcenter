@@ -48,9 +48,9 @@ function ccBriefingDossier(s, W) {
   const lines = ccBriefings.get(s);
   return `<section class="card"><h2>부서 보고</h2><div class="briefs">${!lines.length ? '<p>아직 기록된 부서 보고가 없습니다. 담당자 보고로 돌아가 현재 상태를 확인하십시오.</p>' : ''}${lines.map(line => {
     const person = CAST[line.who];
-    return `<div class="brief"><div class="bface">${face(line.who)}</div>
+    return `<div class="brief" data-cc-reveal-group><div class="bface">${face(line.who)}</div>
       <div class="btext"><span class="bwho">${ccEscape(person.name)} · ${ccEscape(person.role)}
-      <em>${ccEscape(line.kind)}</em></span><span class="says">${line.text}</span></div></div>`;
+      <em>${ccEscape(line.kind)}</em></span><span class="says"${line.urgent ? '' : ' data-cc-reveal'}>${line.text}</span></div></div>`;
   }).join('')}</div><p class="hint">소문은 틀릴 수 있습니다. 누가 말했는지, 확인된 건지를 보고 판단하십시오.</p></section>`;
 }
 
@@ -68,10 +68,10 @@ function ccDossierContent(kind) {
     <dt>양품률 · 설비 부하</dt><dd>양품률은 현재 품질 지수를 환산한 상태값입니다. 결재 전 설비 부하는 주문 기준이며 결산의 실제 가동률과 다릅니다.</dd>
     </dl><p class="hint">이 설명을 읽거나 닫아도 시간과 경영 상태는 변하지 않습니다.</p></section>`;
   if (kind === 'handover') return ccHandoverContent();
-  if (kind === 'instructions') return `<section class="card"><h2>당신의 임기는 4년입니다</h2>
-    <p>사업 지도에서 공장·야드·항만·거래처를 살펴보고, 인물을 선택해 담당자의 보고를 듣습니다.
+  if (kind === 'instructions') return `<section class="card" data-cc-reveal-group><h2>당신의 임기는 4년입니다</h2>
+    <p data-cc-reveal>사업 지도에서 공장·야드·항만·거래처를 살펴보고, 인물을 선택해 담당자의 보고를 듣습니다.
     집무실과 현장 장부에서 내용을 확인한 뒤 <b>금월 결재</b>를 시작하십시오.</p>
-    <p>안건의 선택과 고객별 소재 발주를 마치면 한 달이 지납니다. 분기 모드는 세 달을 함께 처리합니다.
+    <p data-cc-reveal>안건의 선택과 고객별 소재 발주를 마치면 한 달이 지납니다. 분기 모드는 세 달을 함께 처리합니다.
     본사의 소재 이익과 법인의 영업이익을 합친 <b>모법이익</b>이 본사 목표입니다.</p>
     <p>저장은 이 브라우저에 남습니다. 월 결산은 자동 저장되며, 결재 도중 닫으면 월초 상태부터 다시 시작합니다.
     직원의 보고에는 확인·추정·소문이 섞여 있으니 출처를 확인하십시오.</p>

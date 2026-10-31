@@ -13,6 +13,7 @@ function ccCreateAudio(options = {}) {
   let cinematic = { id: null, state: 'idle', position: 0, duration: 0, muted: true, error: null };
   let cinemaTicket = 0, cinemaVoice = null, cinemaTimer = null, cinemaStarted = 0, cinemaManual = false, cinemaAuto = false;
   let hidden = false, notice = '', attached = false, storageLoaded = false;
+  let textEntry = null, lastTextTick = -Infinity;
   const doc = options.document || host.document, win = options.window || host.window;
   const supported = !!(options.createContext || host.AudioContext || host.webkitAudioContext);
   const volume = (value, fallback) => typeof value === 'number' && Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : fallback;
@@ -61,7 +62,7 @@ function ccCreateAudio(options = {}) {
     voice.source.onended = null; voice.source.disconnect(); voice.gain.disconnect();
     if (current === voice) current = null;
     if (voice.kind === 'jingle') mix(true);
-    trim(); emit();
+    trim(); if (!voice.text) emit();
   }
   function stop(voice) {
     if (voice === current) remember(voice);
@@ -119,6 +120,34 @@ function ccCreateAudio(options = {}) {
     const voice = { id: track.id, kind: track.kind, source, gain, started: context.currentTime, offset: 0 };
     source.onended = () => finish(voice); return voice;
   }
+  function stopText(owner) {
+    for (const voice of [...shots]) if (voice.text && (owner === undefined || voice.owner === owner)) stop(voice);
+  }
+  function textTick(owner) {
+    const now = clock();
+    if (!audible('sfx') || now - lastTextTick < 90 || [...shots].filter(v => v.kind === 'sfx').length >= 4) return false;
+    let voice;
+    try {
+      if (!textEntry) {
+        const frames = Math.round(context.sampleRate * 0.036), buffer = context.createBuffer(1, frames, context.sampleRate);
+        const pcm = buffer.getChannelData(0);
+        for (let i = 0; i < frames; i++) {
+          const progress = i / (frames - 1), t = i / context.sampleRate;
+          const phase = 2 * Math.PI * (640 * t - 120 * t * t / (2 * buffer.duration));
+          pcm[i] = 0.54 * Math.sin(Math.PI * progress) ** 2 * (Math.sin(phase) + 0.12 * Math.sin(2 * phase));
+        }
+        textEntry = { track: { id: 'text-tick', kind: 'sfx', gain: 0.05 }, buffer };
+      }
+      stopText();
+      voice = voiceFor(textEntry); voice.text = true; voice.owner = owner; shots.add(voice);
+      voice.source.start(); lastTextTick = now;
+      voice.timer = later(() => { timers.delete(voice.timer); stop(voice); }, textEntry.buffer.duration * 1000 + 100);
+      timers.add(voice.timer); return true;
+    } catch {
+      if (voice) stop(voice);
+      return false;
+    }
+  }
   async function playScene() {
     const id = previewScene || scene, ticket = ++generation;
     if (!id || !audible('bgm') || current?.id === id) return false;
@@ -147,7 +176,7 @@ function ccCreateAudio(options = {}) {
       const entry = await load(id);
       if (ticket !== life || debounce.get(id) !== now || !audible(kind) || clock() - now > 500 || entry.track.kind !== kind) return false;
       const peers = [...shots].filter(v => v.kind === kind);
-      if (peers.length >= (kind === 'sfx' ? 4 : 2)) stop(peers[0]);
+      if (peers.length >= (kind === 'sfx' ? 4 : 2)) stop(peers.find(voice => voice.text) || peers[0]);
       const voice = voiceFor(entry); shots.add(voice); mix(); voice.source.start();
       voice.timer = later(() => { timers.delete(voice.timer); stop(voice); }, entry.buffer.duration * 1000 + 100);
       timers.add(voice.timer); emit(); return true;
@@ -333,16 +362,16 @@ function ccCreateAudio(options = {}) {
   }
   async function dispose() {
     if (disposed) return; disposed = true; stopCinematic(); silence();
-    for (const timer of timers) cancel(timer); timers.clear(); buffers.clear(); loading.clear();
+    for (const timer of timers) cancel(timer); timers.clear(); buffers.clear(); loading.clear(); textEntry = null;
     doc?.removeEventListener('visibilitychange', visibility); win?.removeEventListener('pagehide', hide); win?.removeEventListener('pageshow', show);
     doc?.removeEventListener('click', gesture, true); doc?.removeEventListener('keydown', gesture, true);
     if (context) { context.onstatechange = null; for (const bus of [master, bgmBus, sfxBus, jingleBus]) bus.disconnect(); try { await context.close(); } catch { fail(); } }
     emit(); listeners.clear();
   }
-  return { startCinematic, pauseCinematic: () => pauseCinematic(), resumeCinematic, stopCinematic, setCinematicMuted, cinematicStatus, unlock, configure, status: () => { readSettings(); return status(); }, dispose,
-    setScene: id => { if (scene !== id) life++; scene = id; return playScene(); },
-    preview: id => { if (previewScene !== id) life++; previewScene = id; return playScene(); },
-    endPreview: () => { if (previewScene !== null) life++; previewScene = null; return playScene(); },
+  return { startCinematic, pauseCinematic: () => pauseCinematic(), resumeCinematic, stopCinematic, setCinematicMuted, cinematicStatus, unlock, configure, status: () => { readSettings(); return status(); }, dispose, textTick, stopText,
+    setScene: id => { if (scene !== id) { life++; stopText(); } scene = id; return playScene(); },
+    preview: id => { if (previewScene !== id) { life++; stopText(); } previewScene = id; return playScene(); },
+    endPreview: () => { if (previewScene !== null) { life++; stopText(); } previewScene = null; return playScene(); },
     cue: (id, eventId) => shortSound(id, eventId, 'sfx'), jingle: (id, eventId) => shortSound(id, eventId, 'jingle'),
     subscribe: fn => { readSettings(); listeners.add(fn); try { fn(status()); } catch { /* Optional observer. */ } return () => listeners.delete(fn); } };
 }

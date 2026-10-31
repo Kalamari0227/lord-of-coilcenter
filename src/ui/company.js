@@ -79,9 +79,9 @@ function ccShowReport() {
   const [dossier, judgment] = ccOfficerEvidence[ccView.person];
   report.dataset.reportPerson = ccView.person;
   report.innerHTML = `${ccPortraitMarkup(ccView.person, 'cc-dialogue-portrait')}
-    <div><h2>${ccEscape(person.name)} <small>${ccEscape(person.role)}</small></h2>
+    <div data-cc-reveal-group><h2>${ccEscape(person.name)} <small>${ccEscape(person.role)}</small></h2>
     ${status && status.state !== 'neutral' ? `<p class="cc-report-state" data-staff-state="${status.state}">${status.state === 'concerned' ? '주의 · ' : ''}${ccEscape(status.text)}</p>` : ''}
-    ${lines.map(line => `<p><span class="cc-report-kind">${ccEscape(line.kind)}</span> ${line.text}</p>`).join('')}
+    ${lines.map(line => `<p><span class="cc-report-kind">${ccEscape(line.kind)}</span> <span${line.urgent || status?.state === 'concerned' ? '' : ' data-cc-reveal'}>${line.text}</span></p>`).join('')}
     <details class="cc-report-help"><summary>판단 도움말</summary><p class="hint">${judgment} 확인을 마치면 금${G.mpt === 3 ? '분기' : '월'} 결재에서 직접 결정하십시오.</p></details>
     <div class="cc-report-actions"></div></div>`;
   const actions = report.querySelector('.cc-report-actions');

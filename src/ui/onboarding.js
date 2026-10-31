@@ -37,7 +37,7 @@ function ccQuarterGuidance() {
   panel.setAttribute('aria-label', '첫 분기 업무 안내');
   if (G.s.turn === 4) {
     panel.dataset.guidanceStage = 'independent';
-    panel.innerHTML = '<h2>이제 사장님의 판단입니다</h2><p>첫 분기를 마쳤습니다. 직원 보고 → 장부 확인 → 결재의 순서를 이어가십시오. 취임 안내는 게임 메뉴에서 다시 볼 수 있습니다.</p>';
+    panel.innerHTML = '<div data-cc-reveal-group><h2>이제 사장님의 판단입니다</h2><p data-cc-reveal>첫 분기를 마쳤습니다. 직원 보고 → 장부 확인 → 결재의 순서를 이어가십시오. 취임 안내는 게임 메뉴에서 다시 볼 수 있습니다.</p></div>';
     return panel;
   }
   panel.dataset.guidanceStage = G.mpt === 3 ? 'quarter' : `month-${G.s.turn}`;
@@ -45,9 +45,9 @@ function ccQuarterGuidance() {
     ${G.mpt === 3 ? '<p class="hint">분기 결재는 세 달을 연속 집행합니다. 아래 세 관점을 함께 확인하십시오. 다음 화면은 4개월차입니다.</p>' : ''}`;
   ccQuarterObjectives().forEach(item => {
     const person = CAST[item.person];
-    panel.append(ccElement('div', 'cc-guidance-brief', `${ccPortraitMarkup(item.person)}<div>
+    panel.append(ccElement('div', 'cc-guidance-brief', `${ccPortraitMarkup(item.person)}<div data-cc-reveal-group>
       <h3>${G.mpt === 3 ? `${item.month}개월 관점 · ` : ''}${item.title}</h3>
-      <p><b>${ccEscape(person.name)}</b> · ${item.text}</p></div>`));
+      <p><b>${ccEscape(person.name)}</b> · <span data-cc-reveal>${item.text}</span></p></div>`));
     const report = ccCommand(`${ccEscape(person.name)} 보고 듣기`, () => ccGuidanceReport(item.person));
     report.dataset.guidance = 'report';
     const ledger = ccCommand(item.label, button => ccOpenDossier(item.dossier, button));
@@ -58,12 +58,12 @@ function ccQuarterGuidance() {
 }
 
 function ccHandoverContent() {
-  return `<section class="cc-handover"><div class="cc-guidance-brief">${ccPortraitMarkup('han')}<div>
+  return `<section class="cc-handover" data-cc-reveal-group><div class="cc-guidance-brief">${ccPortraitMarkup('han')}<div>
     <h3>사장님, 첫 분기는 이렇게 살펴보십시오.</h3>
-    <p>${ccEscape(CAST.han.name)} · 장부와 담당자는 언제든 다시 만나실 수 있습니다.</p></div></div>
-    <ol><li><b>보고를 듣습니다.</b> 직원 이름을 누르면 담당자의 보고가 나옵니다. 확인·추정·소문을 구분하십시오.</li>
-    <li><b>장부로 확인합니다.</b> 지도 거점과 현장 장부에서 재고, 생산, 현금을 살펴보십시오.</li>
-    <li><b>${G.mpt === 3 ? '금분기' : '금월'} 결재를 시작합니다.</b> 안건과 고객별 발주를 마치면 ${G.mpt === 3 ? '세 달' : '한 달'}이 지나고 결산을 받습니다.</li></ol>
+    <p>${ccEscape(CAST.han.name)} · <span data-cc-reveal>장부와 담당자는 언제든 다시 만나실 수 있습니다.</span></p></div></div>
+    <ol><li><b>보고를 듣습니다.</b> <span data-cc-reveal>직원 이름을 누르면 담당자의 보고가 나옵니다. 확인·추정·소문을 구분하십시오.</span></li>
+    <li><b>장부로 확인합니다.</b> <span data-cc-reveal>지도 거점과 현장 장부에서 재고, 생산, 현금을 살펴보십시오.</span></li>
+    <li><b>${G.mpt === 3 ? '금분기' : '금월'} 결재를 시작합니다.</b> <span data-cc-reveal>안건과 고객별 발주를 마치면 ${G.mpt === 3 ? '세 달' : '한 달'}이 지나고 결산을 받습니다.</span></li></ol>
     <p class="hint">목표는 4년간 모법이익, 즉 본사 소재 이익과 현지 영업이익을 합친 이익을 남기는 것입니다. 안내 확인은 선택 사항이며 결재를 막지 않습니다. 결재 도중 나가면 저장된 월초부터 다시 시작합니다.</p>
     <p>아래 <b>업무 시작</b> 버튼을 눌러 사업 지도로 돌아가십시오. 게임 메뉴의 <b>취임 안내</b>에서 다시 열 수 있습니다.</p></section>`;
 }

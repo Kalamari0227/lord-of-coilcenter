@@ -15,10 +15,14 @@ function fixture(options = {}) {
   const param = () => ({ value: 1, setValueAtTime(v) { this.value = v; }, cancelScheduledValues() {}, linearRampToValueAtTime(v) { this.value = v; } });
   const node = () => ({ gain: param(), target: null, connect(target) { this.target = target; }, disconnect() { this.target = null; } });
   const context = {
-    state: 'suspended', get currentTime() { return time / 1000; }, destination: {},
+    state: 'suspended', sampleRate: 48000, get currentTime() { return time / 1000; }, destination: {},
     resume: async () => { if (options.resumeGate) await options.resumeGate.promise; if (options.reject) throw new Error('blocked'); context.state = options.interrupted ? 'interrupted' : 'running'; },
     suspend: async () => { context.state = 'suspended'; }, close: async () => { context.state = 'closed'; },
     createGain: node,
+    createBuffer(channels, length, sampleRate) {
+      const data = Array.from({ length: channels }, () => new Float32Array(length));
+      return { numberOfChannels: channels, length, sampleRate, duration: length / sampleRate, getChannelData: index => data[index] };
+    },
     decodeAudioData: async bytes => { if (options.decodeFail) throw new Error('decode'); return { duration: 20, id: bytes.id }; },
     createBufferSource() {
       const source = Object.assign(node(), { active: false, start(at, offset = 0) { this.active = true; this.offset = offset; },
@@ -40,7 +44,7 @@ function fixture(options = {}) {
     fetch: async url => { requests.push(url); if (gates.has(url)) await gates.get(url).promise; return { ok: !options.fetchFail, json: async () => ({ version: 1, tracks }), arrayBuffer: async () => ({ id: url }) }; },
     now: () => time, setTimeout: (fn, delay) => { const id = {}; timers.set(id, { at: time + delay, fn }); return id; }, clearTimeout: id => timers.delete(id),
   });
-  return { api, context, sources, requests, storage, options, gates, listeners, created: () => created,
+  return { api, context, sources, requests, storage, options, gates, listeners, created: () => created, pendingTimers: () => timers.size,
     active: () => sources.filter(s => s.active),
     advance(ms) { time += ms; for (const [key, timer] of [...timers]) if (timer.at <= time) { timers.delete(key); timer.fn(); } },
     async hidden(value) { document.hidden = value; listeners.get('d:visibilitychange')?.(); await flush(); },
@@ -222,4 +226,95 @@ test('third jingle replaces the oldest graph while both remaining voices share o
   f.api.configure({ muted: true });
   assert.equal(f.active().length, 0);
   assert.ok(f.sources.every(s => s.target === null));
+});
+
+test('text ticks stay synchronous and silent before unlock without requesting assets', () => {
+  const f = fixture(); // Given
+  const started = f.api.textTick({}); f.api.stopText(); // When
+  assert.equal(started, false); assert.equal(f.created(), 0); assert.equal(f.requests.length, 0); // Then
+});
+test('text tick produces a cached soft short waveform on the existing SFX bus', async () => {
+  const f = fixture(); await f.api.unlock(); // Given
+  const started = f.api.textTick('report'); const first = f.active()[0]; // When
+  assert.equal(started, true); assert.equal(f.created(), 1); assert.equal(f.requests.length, 0); // Then
+  const pcm = first.buffer.getChannelData(0), peak = Math.max(...pcm.map(Math.abs));
+  assert.ok(first.buffer.duration >= 0.03 && first.buffer.duration <= 0.04);
+  assert.ok(peak > 0.1 && peak <= 0.65); assert.equal(pcm[0], 0); assert.ok(Math.abs(pcm.at(-1)) < 1e-5);
+  assert.ok(first.target.gain.value >= 0.04 && first.target.gain.value <= 0.06);
+  assert.equal(first.target.target.gain.value, 0.65); assert.equal(f.api.status().activeSfx, 1);
+  first.finish(); f.advance(100); f.api.textTick('next');
+  assert.equal(f.active()[0].buffer, first.buffer);
+});
+test('text ticks share one cadence across owners and never overlap', async () => {
+  const f = fixture(); await f.api.unlock(); const owner = {}, other = {}; // Given
+  assert.equal(f.api.textTick(owner), true); f.advance(89); // When
+  assert.equal(f.api.textTick(other), false); assert.equal(f.active().length, 1); // Then
+  f.advance(1); assert.equal(f.api.textTick(other), true);
+  assert.equal(f.active().length, 1); assert.equal(f.sources[0].active, false);
+});
+test('full SFX capacity drops a text tick while preserving important effects', async () => {
+  const f = fixture(); await f.api.unlock();
+  for (const id of ['stamp', 'select', 'error', 'save']) await f.api.cue(id);
+  const effects = f.active(); // Given
+  const started = f.api.textTick('report'); // When
+  assert.equal(started, false); assert.deepEqual(f.active(), effects); assert.equal(f.api.status().activeSfx, 4); // Then
+});
+test('new regular effect replaces the text blip before any important SFX at capacity', async () => {
+  const f = fixture(); await f.api.unlock();
+  for (const id of ['stamp', 'select', 'error']) await f.api.cue(id);
+  const effects = f.active(); f.api.textTick('report'); const tick = f.active().at(-1); // Given
+  const started = await f.api.cue('save'); // When
+  assert.equal(started, true); assert.equal(tick.active, false); assert.equal(tick.target, null); // Then
+  assert.ok(effects.every(effect => effect.active)); assert.equal(f.api.status().activeSfx, 4);
+  assert.equal(f.active().at(-1).buffer.id, 'audio/save.wav');
+});
+test('stopText respects owner identity and preserves music and other effects', async () => {
+  const f = fixture(); await f.api.setScene('map'); await f.api.unlock(); await f.api.cue('stamp');
+  const others = f.active(), owner = {}; f.api.textTick(owner); const tick = f.active().at(-1); // Given
+  f.api.stopText({}); assert.equal(tick.active, true);
+  f.api.stopText(owner); // When
+  assert.equal(tick.active, false); assert.equal(tick.target, null); assert.deepEqual(f.active(), others); // Then
+  f.advance(200); assert.deepEqual(f.active(), others);
+});
+for (const settings of [{ muted: true }, { masterVolume: 0 }, { sfxVolume: 0 }]) test(`text ticks cannot queue through silent settings ${JSON.stringify(settings)}`, async () => {
+  const f = fixture(); await f.api.unlock(); f.api.textTick('report'); // Given
+  f.api.configure(settings); assert.equal(f.api.textTick('report'), false); // When
+  assert.equal(f.active().length, 0); assert.equal(f.pendingTimers(), 0); // Then
+  f.api.configure({ muted: false, masterVolume: 0.7, sfxVolume: 0.65 }); await flush(); f.advance(200);
+  assert.equal(f.active().length, 0);
+});
+for (const navigation of ['scene', 'preview', 'end-preview']) test(`text blip stops on ${navigation} navigation without stopping other effects`, async () => {
+  const f = fixture(); await f.api.setScene('map'); await f.api.unlock();
+  if (navigation === 'end-preview') await f.api.preview('ending');
+  await f.api.cue('stamp'); const effect = f.active().find(s => s.buffer.id === 'audio/stamp.wav');
+  f.api.textTick('report'); const tick = f.active().at(-1); // Given
+  if (navigation === 'scene') await f.api.setScene('office');
+  else if (navigation === 'preview') await f.api.preview('ending'); else await f.api.endPreview(); // When
+  assert.equal(tick.active, false); assert.equal(tick.target, null); assert.equal(effect.active, true); // Then
+});
+test('same scene render keeps a current text blip', async () => {
+  const f = fixture(); await f.api.setScene('map'); await f.api.unlock(); f.api.textTick('report'); const tick = f.active().at(-1); // Given
+  await f.api.setScene('map'); // When
+  assert.equal(tick.active, true); // Then
+});
+for (const boundary of ['hidden', 'pagehide', 'interrupted', 'cinematic', 'dispose']) test(`text ticks clean up at ${boundary} and do not replay on recovery`, async () => {
+  const f = fixture(); await f.api.unlock(); f.api.textTick('report'); const tick = f.active()[0]; // Given
+  if (boundary === 'hidden') await f.hidden(true);
+  else if (boundary === 'pagehide') await f.page('pagehide');
+  else if (boundary === 'interrupted') { f.context.state = 'interrupted'; f.context.onstatechange(); }
+  else if (boundary === 'cinematic') await f.api.startCinematic('opening', { autoplay: true, muted: true, durationSeconds: 1 });
+  else await f.api.dispose(); // When
+  assert.equal(f.api.textTick('report'), false); assert.equal(tick.active, false); assert.equal(tick.target, null); // Then
+  if (boundary === 'hidden') await f.hidden(false);
+  else if (boundary === 'pagehide') await f.page('pageshow');
+  else if (boundary === 'interrupted') await f.api.unlock();
+  else if (boundary === 'cinematic') f.api.stopCinematic();
+  f.advance(200); assert.equal(f.active().length, 0); assert.equal(f.pendingTimers(), 0);
+});
+test('text tick completion releases its voice and timers without notifying every glyph', async () => {
+  const f = fixture(); await f.api.unlock(); let notifications = 0; f.api.subscribe(() => notifications++);
+  const before = notifications; // Given
+  f.api.textTick('report'); const tick = f.active()[0]; tick.finish(); // When
+  assert.equal(f.api.status().activeSfx, 0); assert.equal(tick.target, null); assert.equal(f.pendingTimers(), 0); // Then
+  assert.equal(notifications, before);
 });

@@ -7,7 +7,11 @@ const source = readFileSync(new URL('../src/ui/dialogs.js', import.meta.url), 'u
 
 function fixture(text) {
   const node = (tag = 'div', className = '') => ({
-    tag, className, textContent: '', children: [], parent: null,
+    tag, className, textContent: '', children: [], parent: null, attributes: new Map(),
+    setAttribute(name, value) { this.attributes.set(name, value); },
+    getAttribute(name) { return this.attributes.get(name) ?? null; },
+    hasAttribute(name) { return this.attributes.has(name); },
+    removeAttribute(name) { this.attributes.delete(name); },
     append(...items) {
       for (const item of items) {
         if (item.parent) item.parent.children.splice(item.parent.children.indexOf(item), 1);
@@ -31,6 +35,7 @@ function fixture(text) {
   const wrapper = node(), head = node(), heading = node(), crew = node(), body = node();
   const speech = node(), guide = node(), choices = node(), button = node('button');
   speech.textContent = text;
+  speech.setAttribute('data-cc-reveal', '');
   speech.innerHTML = `<b>${text}</b>`;
   guide.textContent = '기존 입력 안내와 지급 시점';
   let applied = 0;
@@ -66,6 +71,9 @@ test('long decision report retains original rich text in a disclosure and the or
   assert.equal(f.speech.textContent, text);
   assert.equal(f.speech.innerHTML, `<b>${text}</b>`);
   assert.equal(disclosure.open, undefined);
+  assert.equal(preview.hasAttribute('data-cc-reveal'), true);
+  assert.equal(disclosure.hasAttribute('data-cc-reveal-group'), true);
+  assert.equal(f.speech.hasAttribute('data-cc-reveal'), true);
   assert.equal(f.choices.children[0], f.button);
   f.button.onclick();
   assert.equal(f.applied(), 1);
@@ -82,7 +90,7 @@ test('short reports remain visible and form instructions retain their complete n
   assert.equal(f.guide.textContent, '기존 입력 안내와 지급 시점');
 });
 
-test('urgent reports keep the complete warning visible even when the speech is long', () => {
+test('urgent reports stay outside collapsed disclosures even when the speech is long', () => {
   const f = fixture('크레인 쇠줄을 교체할 때가 지났습니다. '.repeat(12));
   f.layout({ urgent: true });
   assert.deepEqual(f.body.children, [f.speech]);

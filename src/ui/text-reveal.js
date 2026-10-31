@@ -2,7 +2,8 @@ const ccTextRevealStates = new WeakMap();
 const ccTextRevealActive = new Set();
 const ccTextRevealMedia = typeof window !== 'undefined' ? window.matchMedia?.('(prefers-reduced-motion: reduce)') : null;
 const ccTextRevealInteractive = 'button,a,input,select,textarea,summary,form,[role="button"],[contenteditable="true"]';
-const ccTextRevealCritical = /[\d０-９$€£¥₩₹%]|달러|유로|엔화|위안|만원|억원|위험|경고|주의|긴급|손실|적자|연체|미수|납기|파산|부도|체납|안전|사고|중단|불가|실패|훼손|부족|반드시|절대|삭제/;
+const ccTextRevealNumber = /(?<![A-Za-z0-9_.])(?:[+−-]?[$€£¥₩₹]\s*[+−-]?|[+−-]?)(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:천만|백만|만|억|천)?(?:달러|유로|위안|엔화|개월|톤|벌|점|번|조|회|년|월|일|달|원|%|％|[kMt])?(?![A-Za-z0-9_])/gu;
+const ccTextRevealWarning = /위험|경고|주의|긴급|손실|적자|연체|파산|부도|체납|사고|중단|불가|실패|부족/gu;
 
 function ccTextRevealDisabled() {
   return (typeof motionOff === 'function' && motionOff()) || !!ccTextRevealMedia?.matches;
@@ -51,17 +52,41 @@ function ccTextRevealSegments(text, granularity) {
   return [{ segment: text, index: 0 }];
 }
 
+function ccTextRevealDecorate(group) {
+  for (const span of group.querySelectorAll('[data-cc-reveal-highlight]')) {
+    if (span.closest('[data-cc-reveal-group]') === group) span.replaceWith(...span.childNodes);
+  }
+  for (const part of ccTextRevealSources(group)) {
+    const text = part.values.join(''), boundaries = new Set([text.length]);
+    for (const grapheme of ccTextRevealSegments(text, 'grapheme')) boundaries.add(grapheme.index);
+    const ranges = [['number', ccTextRevealNumber], ['warning', ccTextRevealWarning]].flatMap(([tone, pattern]) =>
+      [...text.matchAll(pattern)].filter(match => boundaries.has(match.index) && boundaries.has(match.index + match[0].length))
+        .map(match => ({ start: match.index, end: match.index + match[0].length, tone }))).sort((a, b) => a.start - b.start);
+    let offset = 0;
+    for (const node of part.nodes) {
+      const start = offset; offset += node.data.length;
+      if (node.parentElement.closest('[data-cc-reveal-immediate],[role="alert"]')) continue;
+      const matches = ranges.filter(range => range.start < offset && range.end > start);
+      if (!matches.length) continue;
+      const fragments = []; let cursor = 0;
+      for (const range of matches) {
+        const from = Math.max(0, range.start - start), to = Math.min(node.data.length, range.end - start);
+        if (from > cursor) fragments.push(document.createTextNode(node.data.slice(cursor, from)));
+        const span = document.createElement('span');
+        span.setAttribute('data-cc-reveal-highlight', range.tone); span.textContent = node.data.slice(from, to);
+        fragments.push(span); cursor = to;
+      }
+      if (cursor < node.data.length) fragments.push(document.createTextNode(node.data.slice(cursor)));
+      node.replaceWith(...fragments);
+    }
+  }
+}
+
 function ccTextRevealPrepare(state, part) {
-  const text = part.values.join('');
-  const immediate = ccTextRevealSegments(text, 'sentence').filter(sentence => ccTextRevealCritical.test(sentence.segment));
-  let offset = 0;
   for (const node of part.nodes) {
-    const start = offset;
-    offset += node.data.length;
     if (!node.data.trim() || node.parentElement.closest('[data-cc-reveal-immediate],[role="alert"]')) continue;
     const characters = ccTextRevealSegments(node.data, 'grapheme');
-    const delayed = characters.map(character => !/^\s+$/.test(character.segment) &&
-      !immediate.some(sentence => start + character.index >= sentence.index && start + character.index < sentence.index + sentence.segment.length));
+    const delayed = characters.map(character => !/^\s+$/.test(character.segment));
     if (!delayed.some(Boolean)) continue;
     const wrapper = document.createElement('span'), original = document.createElement('span'), visual = document.createElement('span');
     original.className = 'cc-reveal-original'; original.setAttribute('data-cc-reveal-source', '');
@@ -108,6 +133,7 @@ function ccStartTextReveal(group) {
   if (previous && ccTextRevealSame(previous.sources, sources)) return;
   if (previous) { ccFinishTextReveal(group); previous.button?.remove(); }
   if (!ccTextRevealAvailable(group)) { ccTextRevealStates.delete(group); return; }
+  ccTextRevealDecorate(group);
   const state = { sources: ccTextRevealSources(group), wrappers: [], queue: [], index: 0, timer: null, button: null, click: null };
   ccTextRevealStates.set(group, state);
   if (ccTextRevealDisabled()) return;

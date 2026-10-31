@@ -50,7 +50,7 @@ function ccBriefingDossier(s, W) {
     const person = CAST[line.who];
     return `<div class="brief" data-cc-reveal-group><div class="bface">${face(line.who)}</div>
       <div class="btext"><span class="bwho">${ccEscape(person.name)} · ${ccEscape(person.role)}
-      <em>${ccEscape(line.kind)}</em></span><span class="says"${line.urgent ? '' : ' data-cc-reveal'}>${line.text}</span></div></div>`;
+      <em>${ccEscape(line.kind)}</em></span><span class="says" data-cc-reveal${line.urgent ? ' data-cc-reveal-tone="warning"' : ''}>${line.text}</span></div></div>`;
   }).join('')}</div><p class="hint">소문은 틀릴 수 있습니다. 누가 말했는지, 확인된 건지를 보고 판단하십시오.</p></section>`;
 }
 

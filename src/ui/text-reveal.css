@@ -11,6 +11,10 @@
   border: 0 !important;
 }
 [data-cc-reveal-pending] { visibility: hidden; }
+[data-cc-reveal-tone="warning"],
+[data-cc-reveal-highlight="warning"] { color: var(--cc-warning); }
+[data-cc-reveal-highlight="number"] { color: var(--cc-gold); }
+[data-cc-reveal-highlight] { font-weight: 600; }
 .says:has([data-cc-reveal-pending])::before,
 .says:has([data-cc-reveal-pending])::after { visibility: hidden; }
 .cc-reveal-finish {

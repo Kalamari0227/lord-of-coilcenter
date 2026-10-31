@@ -17,7 +17,7 @@ function fixture() {
   return run;
 }
 
-test('positive staff reports can animate while implicit equipment warnings remain immediate', () => {
+test('staff reports distinguish ordinary speech from implicit warning tone', () => {
   const run = fixture();
   const reports = run('briefing(G.s, G.W)');
   const positive = reports.find(line => line.text.includes('분위기가 좋습니다'));

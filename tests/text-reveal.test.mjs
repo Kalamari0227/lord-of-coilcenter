@@ -18,14 +18,63 @@ test('prose reveals sequentially with intact graphemes and original rich text re
   assert.equal(p.childNodes[0], strong);
 });
 
-test('financial amounts, quantities, critical sentences and explicit immediate text never wait', () => {
+test('numbers and warning sentences reveal in reading order while explicit alerts stay immediate', () => {
   const f = fixture(), p = f.node('p', '현장 보고입니다. '), bold = f.node('b', '$150만'), tail = f.node('span', '을 확보했습니다. 안전 경고입니다. 직원이 협력합니다.');
   const immediate = f.node('span', '선택 내용'); immediate.setAttribute('data-cc-reveal-immediate', '');
-  p.append(bold, tail, immediate); const group = f.group(p); f.start(group);
-  assert.equal(pending(bold).length, 0);
-  assert.equal(pending(immediate).length, 0);
-  assert.ok(pending(p).length > 0);
-  assert.equal(pending(tail).map(n => n.textContent).join(''), '직원이협력합니다.');
+  const alert = f.node('span', '즉시 확인'); alert.setAttribute('role', 'alert');
+  p.append(bold, tail, immediate, alert); const group = f.group(p); f.start(group);
+  assert.equal(pending(group).map(n => n.textContent).join(''), '현장보고입니다.$150만을확보했습니다.안전경고입니다.직원이협력합니다.');
+  assert.ok(pending(bold).length > 0);
+  assert.equal(pending(immediate).length, 0); assert.equal(pending(alert).length, 0);
+  assert.equal(bold.querySelector('[data-cc-reveal-highlight="number"]') !== null, true);
+  assert.equal(tail.querySelector('[data-cc-reveal-highlight="warning"]') !== null, true);
+  f.tick();
+  assert.equal(pending(group).map(n => n.textContent).join(''), '장보고입니다.$150만을확보했습니다.안전경고입니다.직원이협력합니다.');
+  group.fire('click', group);
+  assert.equal(bold.textContent, '$150만');
+  assert.equal(tail.querySelector('[data-cc-reveal-highlight="warning"]').textContent, '경고');
+  assert.equal(p.childNodes.includes(bold), true);
+});
+
+for (const finish of ['click', 'natural', 'off', 'reduced']) test(`${finish} preserves useful number and warning emphasis without repeated wrappers`, () => {
+  const f = fixture({ [finish]: true }), p = f.node('p', '현금 −$1.2M과 재고 1,200톤, 품질 98.6%를 확인합니다. 부족하면 주의하십시오. A4 안내입니다.');
+  const group = f.group(p); f.start(group);
+  if (finish === 'click') group.fire('click', group);
+  if (finish === 'natural') { let ticks = 0; while (f.timers.size && ticks++ < 1000) f.tick(); }
+  assert.equal(pending(group).length, 0);
+  assert.deepEqual(p.querySelectorAll('[data-cc-reveal-highlight="number"]').map(node => node.textContent), ['−$1.2M', '1,200톤', '98.6%']);
+  assert.deepEqual(p.querySelectorAll('[data-cc-reveal-highlight="warning"]').map(node => node.textContent), ['부족', '주의']);
+  const nodes = p.querySelectorAll('[data-cc-reveal-highlight]');
+  for (let scan = 0; scan < 3; scan++) f.mutate();
+  assert.deepEqual(p.querySelectorAll('[data-cc-reveal-highlight]'), nodes);
+  assert.equal(p.querySelectorAll('[data-cc-reveal-source]').length, 0);
+  assert.equal(f.timers.size, 0);
+  assert.equal(p.textContent, '현금 −$1.2M과 재고 1,200톤, 품질 98.6%를 확인합니다. 부족하면 주의하십시오. A4 안내입니다.');
+});
+
+test('new report text and edited highlighted values receive fresh emphasis without stale nested spans', () => {
+  const f = fixture(), p = f.node('p', '현금 $100입니다.'), group = f.group(p);
+  f.start(group); group.fire('click', group);
+  const highlighted = p.querySelector('[data-cc-reveal-highlight="number"]'); assert.ok(highlighted);
+  highlighted.textContent = '부족';
+  f.mutate(); assert.ok(pending(group).length > 0); group.fire('click', group);
+  assert.equal(p.querySelectorAll('[data-cc-reveal-highlight="number"]').length, 0);
+  assert.deepEqual(p.querySelectorAll('[data-cc-reveal-highlight="warning"]').map(node => node.textContent), ['부족']);
+  p.textContent = '재고 300톤이 도착합니다.';
+  f.mutate(); assert.ok(pending(group).length > 0); group.fire('click', group);
+  assert.equal(p.querySelectorAll('[data-cc-reveal-highlight="warning"]').length, 0);
+  assert.deepEqual(p.querySelectorAll('[data-cc-reveal-highlight="number"]').map(node => node.textContent), ['300톤']);
+});
+
+test('a currency split by rich markup keeps its emphasis and existing link behavior', () => {
+  const f = fixture(), p = f.node('p', '현금 $'), bold = f.node('b', '150'), tail = f.node('span', '만을 확인하십시오.'), link = f.node('a', '장부 3쪽');
+  p.append(bold, tail, link); const group = f.group(p); f.start(group);
+  assert.equal(pending(group).map(node => node.textContent).join(''), '현금$150만을확인하십시오.');
+  assert.equal(link.querySelectorAll('[data-cc-reveal-highlight]').length, 0);
+  group.fire('click', group);
+  assert.equal(p.textContent, '현금 $150만을 확인하십시오.장부 3쪽');
+  assert.equal(p.querySelectorAll('[data-cc-reveal-highlight="number"]').map(node => node.textContent).join(''), '$150만');
+  assert.equal(p.childNodes.includes(bold), true); assert.equal(p.childNodes.includes(link), true);
 });
 
 test('choice buttons and links retain default behavior; full-view button finishes whole group', () => {
@@ -128,6 +177,17 @@ test('optional audio failure cannot block text completion or immediate priority 
   f.start(group); const count = pending(group).length;
   assert.doesNotThrow(() => f.tick()); assert.equal(pending(group).length, count - 1);
   assert.doesNotThrow(() => group.fire('click', group)); assert.equal(pending(group).length, 0);
-  const priority = f.group(f.node('p', '현금 $150만입니다.'));
+  const amount = f.node('p', '현금 $150만입니다.'); amount.setAttribute('data-cc-reveal-immediate', '');
+  const priority = f.group(amount);
   f.start(priority); assert.equal(pending(priority).length, 0); assert.equal(f.timers.size, 0);
+});
+
+test('numeric-looking emoji remain intact graphemes instead of receiving partial number highlights', () => {
+  const f = fixture(), p = f.node('p', '1️⃣ 공장에 👩🏽‍🏭 직원이 있습니다.'), group = f.group(p);
+  f.start(group);
+  assert.equal(pending(group)[0].textContent, '1️⃣');
+  assert.ok(pending(group).some(node => node.textContent === '👩🏽‍🏭'));
+  assert.equal(p.querySelectorAll('[data-cc-reveal-highlight="number"]').length, 0);
+  group.fire('click', group);
+  assert.equal(p.textContent, '1️⃣ 공장에 👩🏽‍🏭 직원이 있습니다.');
 });

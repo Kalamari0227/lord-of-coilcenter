@@ -14,9 +14,9 @@ function ccLayoutDecision(dialog, card) {
     preview.textContent = firstSentence.length > 140 ? `${firstSentence.slice(0, 140).trim()}…` : firstSentence;
     if (speech.hasAttribute?.('data-cc-reveal')) {
       preview.setAttribute('data-cc-reveal', '');
-      speech.removeAttribute('data-cc-reveal');
     }
     const report = ccElement('details', 'cc-decision-disclosure');
+    report.setAttribute('data-cc-reveal-group', '');
     const summary = ccElement('summary');
     summary.textContent = '보고 전문 펼치기';
     speech.before(preview, report);

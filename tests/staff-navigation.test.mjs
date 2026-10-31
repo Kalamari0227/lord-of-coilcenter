@@ -99,3 +99,19 @@ test('aging display boundaries do not mutate engine labels or quantity buckets',
   assert.match(markup, /6개월 초과/);
   assert.equal(f.run('JSON.stringify(inventoryAging(G.s))'), before);
 });
+
+
+test('ordinary and urgent character speech both reveal while the separate warning state stays immediate', async () => {
+  const f = fixture(); await f.start(); f.dialogs[0].close();
+  f.run(`ccView.person = 'gu';
+    ccBriefings.set(G.s, [{who:'gu',kind:'확인',text:'설비 상태를 보고드립니다.',urgent:false},
+      {who:'gu',kind:'추정',text:'기계 소리가 좋지 않습니다.',urgent:true}]);
+    ccCompanyState = () => ({staff:{gu:{state:'concerned',text:'설비 점검이 필요합니다.'}}});
+    ccShowReport();`);
+  const markup = f.app.querySelector('#cc-person-report').innerHTML;
+  assert.match(markup, /<span data-cc-reveal[^>]*>설비 상태를 보고드립니다\.<\/span>/);
+  assert.match(markup, /<span data-cc-reveal[^>]*data-cc-reveal-tone="warning"[^>]*>기계 소리가 좋지 않습니다\.<\/span>/);
+  assert.match(markup, /<p class="cc-report-state" data-staff-state="concerned">주의 · 설비 점검이 필요합니다\.<\/p>/);
+  const dossier = f.run('ccBriefingDossier(G.s,G.W)');
+  assert.match(dossier, /<span class="says" data-cc-reveal data-cc-reveal-tone="warning">기계 소리가 좋지 않습니다\.<\/span>/);
+});

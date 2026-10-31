@@ -277,7 +277,7 @@ async function openDecisions() {
     const small = deck === 'life';
     dlg.innerHTML = `<div class="dlg${small ? ' slim' : ''}">${head}
       <div class="crew">${crewBlock(who, card.role)}
-        <div class="crew-body" data-cc-reveal-group><div class="line says"${deck === 'big' || card.force || card.urgent ? '' : ' data-cc-reveal'}>${card.text}</div></div></div>
+        <div class="crew-body" data-cc-reveal-group><div class="line says" data-cc-reveal${card.force || card.urgent ? ' data-cc-reveal-tone="warning"' : ''}>${card.text}</div></div></div>
       <div class="deckq"><h2>${card.title}</h2></div>
       ${ctxStrip(card.ctx)}
       <div class="optlist" id="olist">${card.opts.map((o, i) => `
@@ -1501,10 +1501,10 @@ function milesBlock(list) {
   return list.map(m => {
     const w = CAST[m.who] || CAST.han;
     const pic = w.img ? `<img src="${A(w.img + '.png')}" alt="">` : `<div class="em">${w.face}</div>`;
-    return `<div class="mile">
+    return `<div class="mile" data-cc-reveal-group>
       <div class="mt">이정표 달성 · ${escapeText(ccNarrativeText(m.title))}</div>
       <div class="mwho">${pic}<span>${w.name}</span></div>
-      <p class="says">${escapeText(ccNarrativeText(m.msg))}</p>
+      <p class="says" data-cc-reveal>${escapeText(ccNarrativeText(m.msg))}</p>
       <div class="mnext">다음 목표 — ${escapeText(ccNarrativeText(m.next))}</div>
     </div>`;
   }).join('');
@@ -1663,11 +1663,11 @@ function briefPanel(s, W) {
     <h2>부서 보고</h2>
     <div class="briefs">${b.map(x => {
       const who = CAST[x.who];
-      return `<div class="brief">
+      return `<div class="brief" data-cc-reveal-group>
         <div class="bface">${face(x.who)}</div>
         <div class="btext"><span class="bwho">${who.name} · ${who.role}
           <em class="k-${x.kind === '확인' ? 'ok' : x.kind === '추정' ? 'est' : 'rum'}">${x.kind}</em></span>
-          <span class="says">${x.text}</span></div></div>`; }).join('')}</div>
+          <span class="says" data-cc-reveal${x.urgent ? ' data-cc-reveal-tone="warning"' : ''}>${x.text}</span></div></div>`; }).join('')}</div>
     <p class="hint">소문은 틀릴 수 있습니다. 누가 말했는지, 확인된 건지를 보고 판단하십시오.</p>
   </div>`;
 }
@@ -2059,7 +2059,7 @@ function takeoverBrief(s) {
   return `<div class="card brief-take">
     <div class="say"><div class="face">${face('han')}</div><div class="bubble says" data-cc-reveal-group>
       <span class="who">${CAST.han.name} · ${CAST.han.role}</span>
-      <span data-cc-reveal>사장님, 부임을 환영합니다. 작년 실적부터 보고드리겠습니다.</span><br><br>
+      <span data-cc-reveal>사장님, 부임을 환영합니다. 작년 실적부터 보고드리겠습니다.<br><br>
       작년 판매는 <b>${fmt(tons)}톤</b>, 매출 <b>${M1(Y.revenue)}</b>, 영업이익 <b>${K1(Y.op)}</b>,
       순이익 <b>${K1(Y.np)}</b>입니다. ${Y.np < 0 ? '작년 순이익은 적자입니다. 영업이익과 이자·대손을 함께 확인하십시오.' : ''}
       가공 판매 비중은 ${Math.round(proc * 100)}%이고, 거래가 제일 큰 곳은
@@ -2074,7 +2074,7 @@ function takeoverBrief(s) {
       짚어드릴 게 세 가지 있습니다. 전임 사장님이 설비 정비를 한 번 미루셨고,
       창고 구석에 규격이 애매한 일반재 ${fmt(legacyTons(s))}톤이 묵어 있습니다.
       그리고 고객 단가가 해마다 조금씩 깎여서 지금 평균 톤당 <b>$${Math.round(G && G.W ? standingCut(s, G.W) : 0)}</b>가 나가 있습니다.
-      할인된 가격은 톤당 수입을 줄입니다. 전체 영업이익에는 판매량·가공비·재고 손실도 반영됩니다. 결산표에서 함께 확인하십시오.</div></div>
+      할인된 가격은 톤당 수입을 줄입니다. 전체 영업이익에는 판매량·가공비·재고 손실도 반영됩니다. 결산표에서 함께 확인하십시오.</span></div></div>
   </div>`;
 }
 

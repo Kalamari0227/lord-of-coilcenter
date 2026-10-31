@@ -188,13 +188,17 @@ for (const action of ['resume', 'delete']) for (const accepted of [false, true])
     const f = dialogFixture(), commands = [], calls = [];
     Object.assign(f.context, {
       G: {}, ccSaveNotice() {}, render() {}, openDecisions() {}, ccCheckpointStatus: () => ({ busy: false, state: 'ready' }),
+      CFG: { TOTAL_TURNS: 48 }, dateLabel: () => '2026년 1월', money: String, fmt: String,
+      ccCheckpointRecords: async () => ({ primary: { company: '확인된 회사', turn: 1, at: 1792324800000, mode: 'normal', diffKey: 'normal', completed: 0,
+        stats: { cash: 2000000, debt: 0, netIncome: 0, inventory: 100, revenue: 0 } }, backup: null }),
       ccCommand(label, callback) { const node = new f.Element('button'); node.textContent = label; node.onclick = () => callback(node); commands.push(node); return node; },
       clearSave: async () => { calls.push('delete'); return true; }, resumeGame: async () => { calls.push('resume'); return true; },
       ccDownloadCheckpoint() {}, ccAudioCue() {}, ccConfirm: options => new Promise(resolve => { f.context.answer = resolve; f.context.question = options; }),
     });
     f.run(read('src/ui/save-manager.js'));
     f.run('ccRefreshSaveUI=()=>{}; ccOpenSaveManager()');
-    const button = commands.find(node => node.textContent === (action === 'delete' ? '저장 기록 삭제' : '브라우저의 최신 기록으로 이어하기'));
+    await flush();
+    const button = commands.find(node => node.textContent === (action === 'delete' ? '저장 기록 삭제' : '이 기록으로 이어하기'));
     const done = button.onclick();
     await flush();
     assert.equal(typeof f.context.answer, 'function');

@@ -6,7 +6,9 @@ function ccRenderSetup() {
     app.className = 'wrap cc-app cc-setup';
     const back = ccCommand('‹ 타이틀로 돌아가기', () => { ccView.preparing = false; render(); ccAudioCue('cancel'); }, 'cc-back');
     app.prepend(back);
-    const sound = ccElement('div', 'cc-audio-controls'); ccAudioMenu(sound); app.append(sound);
+    const sound = ccElement('nav', 'cc-nav cc-audio-controls cc-setup-tools');
+    sound.setAttribute('aria-label', '저장 및 게임 설정');
+    ccAudioMenu(sound); app.append(sound);
     app.querySelector('h1').textContent = '새로운 부임';
     ccWrapTables(app);
     for (const [id, mode] of [['go-normal', 'normal'], ['go-quick', 'quick']]) {

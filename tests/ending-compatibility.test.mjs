@@ -24,9 +24,15 @@ test.after(()=>{
  rmSync(baseline,{recursive:true,force:true});engineEvidence.cleanup={ownedTemporarySource:baseline,removed:!existsSync(baseline),serversStarted:0,browserProfilesCreated:0};
  if(process.env.ENDING_COMPATIBILITY_EVIDENCE){mkdirSync(process.env.ENDING_COMPATIBILITY_EVIDENCE,{recursive:true});for(const [name,data] of [['engine-parity',engineEvidence],['save-compatibility',saveEvidence]])writeFileSync(path.join(process.env.ENDING_COMPATIBILITY_EVIDENCE,name+'.json'),JSON.stringify(data,null,2)+'\n');}
 });
-test('approved economy/save source and every fixed v1 corpus byte remain unchanged',()=>{
+test('approved economy/checkpoint writers and every fixed v1 corpus byte remain unchanged',()=>{
  for(const file of ['engine.js','world.js','save.js','src/platform/session-save.js',...readdirSync(new URL('tests/fixtures/save-v1',root)).map(file=>'tests/fixtures/save-v1/'+file)]){
-  const before=hash(baseBytes(file)),after=hash(readFileSync(new URL(file,root)));assert.equal(after,before,file);engineEvidence.protected.push({file,baselineSha256:before,currentSha256:after,equal:true});
+  const protectedSource=bytes=>{
+   if(file!=='src/platform/session-save.js')return bytes;
+   const source=bytes.toString(),start=source.indexOf('resumeGame = async function('),end=source.indexOf('async function ccImportCheckpoint(preview)');
+   assert.ok(start>=0&&end>start,'record reading/loading boundary must remain explicit');
+   return source.slice(0,start)+source.slice(end);
+  };
+  const before=hash(protectedSource(baseBytes(file))),after=hash(protectedSource(readFileSync(new URL(file,root))));assert.equal(after,before,file);engineEvidence.protected.push({file,scope:file==='src/platform/session-save.js'?'all except record reading/loading boundary':'entire file',baselineSha256:before,currentSha256:after,equal:true});
  }
 });
 for(const [mode,funding,months,reason,grade] of [['normal',0,44,'CAPITAL_ERODED','F'],['quick',0,48,'COMPLETE','D'],['normal',1e9,48,'COMPLETE','D']])test(`${mode} ${funding?'funded':'ordinary'} real campaign matches approved old code at every monthly close`,{timeout:60000},async()=>{

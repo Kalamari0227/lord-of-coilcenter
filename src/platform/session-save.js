@@ -304,10 +304,15 @@ function ccApplyCheckpoint(data) {
   G.bigPlan=Object.fromEntries(Object.entries(data.bigPlan).map(([turn,id])=>[turn,DECK.big.find(card=>card.id===id)]));
   G.pending=data.pending.map(event=>ccRestoreEffect(event,G.W));ccApprovalOpen=false;
 }
-resumeGame = async function() {
+resumeGame = async function(preview) {
   if(ccApprovalOpen)return false;
   return ccTransition(async()=>{
-  const ok=await ccCoordinate(()=>{const data=ccReadLocked(true);if(!data)return false;ccApplyCheckpoint(data);return true;});
+  const ok=await ccCoordinate(()=>{
+    if(preview!==undefined && ccImportTokens.get(preview)?.raw!==localStorage.getItem(ccSaveKey)) {
+      ccSaveNotice('conflict','선택한 기록이 바뀌었습니다. 최신 목록을 확인한 뒤 다시 이어가세요.');return false;
+    }
+    const data=ccReadLocked(true);if(!data)return false;ccApplyCheckpoint(data);return true;
+  });
   if(ok){render();toast(`${periodNow()}부터 이어서 합니다.`);}else toast('저장 파일을 읽지 못했습니다.');
   return ok;
   });
@@ -315,9 +320,17 @@ resumeGame = async function() {
 function ccExportCheckpoint() {return ccConfirmedRaw;}
 function ccPreviewImport(raw) {
   const data=ccParseCheckpoint(raw);if(!data)return null;
-  const preview=Object.freeze({company:data.s.companyName,turn:data.s.turn,at:data.at,mode:data.mode});
+  const preview=Object.freeze({company:data.s.companyName,turn:data.s.turn,at:data.at,mode:data.mode,diffKey:data.diffKey,
+    completed:Math.min(CFG.TOTAL_TURNS,data.s.turn-1),over:data.s.over,
+    stats:Object.freeze({cash:data.s.cash,debt:data.s.debt.principal,netIncome:data.s.cum.np,
+      inventory:inventoryTons(data.s),revenue:data.s.cum.revenue})});
   ccImportTokens.set(preview,{raw,expected:ccObservedRaw});return preview;
 }
+async function ccCheckpointRecords() {
+  return ccCoordinate(()=>Object.freeze({primary:ccPreviewImport(localStorage.getItem(ccSaveKey)),
+    backup:ccPreviewImport(localStorage.getItem(ccBackupKey))}));
+}
+function ccExportPreview(preview) {return ccImportTokens.get(preview)?.raw || null;}
 async function ccImportCheckpoint(preview) {
   const token=ccImportTokens.get(preview);if(!token||ccApprovalOpen||ccSessionTransition)return false;
   return ccCoordinate(()=>{if(token.expected!==ccObservedRaw||!ccCommitLocked(token.raw,true))return false;

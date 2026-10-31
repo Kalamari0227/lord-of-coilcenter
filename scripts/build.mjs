@@ -140,14 +140,15 @@ self.addEventListener('activate', event => {
     await writeRelease(outputDir, { version, productVersion }, sourceRoot);
     return { sources, version, output: outputDir };
   }
+  const optionalArt = art.filter(file => file.startsWith('opening/') || file.startsWith('ending/'));
   const assets = ['./', './index.html', './game.js', './game.css', './manifest.webmanifest',
-    './icon-192.png', './icon-512.png', ...art.filter(file => !file.startsWith('opening/')).map(file => `./art/${file}`)];
+    './icon-192.png', './icon-512.png', ...art.filter(file => !optionalArt.includes(file)).map(file => `./art/${file}`)];
   await writeFile(path.join(outputDir, 'sw.js'), `const SCOPE = new URL('./', self.location.href);
 const PREFIX = 'coilcenter-foundation:' + encodeURIComponent(SCOPE.pathname) + ':';
 const CACHE = PREFIX + '${version}';
 const VERSION = '${version}';
 const ASSETS = ${JSON.stringify(assets)};
-const AUDIO = ${JSON.stringify([...audio.keys(), ...art.filter(file => file.startsWith('opening/')).map(file => 'art/' + file)].sort().map(file => './' + file))};
+const AUDIO = ${JSON.stringify([...audio.keys(), ...optionalArt.map(file => 'art/' + file)].sort().map(file => './' + file))};
 self.addEventListener('message', event => {
   const data = event.data, client = event.source;
   if (!client || !event.ports[0] || data?.protocol !== 'coilcenter-update-v1' || data.scope !== SCOPE.href) return;

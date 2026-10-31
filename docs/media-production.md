@@ -1,5 +1,24 @@
 # Strategy game media production
 
+## Journey ending artwork — 2026-10-28
+
+Built-in `image_gen.imagegen` produced eight new ending sources after the existing map, office, opening harbor/factory and location scenes were viewed as style and environment references. Six independent company scenes represent growth, financial stability, customer relationships, production/quality, headquarters contribution and recovery. Two identity-preserving office edits show a completed handover and an early ending. Common/fallback endings reuse the existing office and do not add a ninth image.
+
+Original PNGs and exact prompts/reference hashes are preserved in [`source-art/ending`](../source-art/ending/provenance.json). Runtime deliveries are [`art/ending`](../art/ending), encoded with `cwebp -lossless -z 9 -exact`. The PNG and WebP for every asset decode to identical RGBA pixels at native size; no palette reduction, blur or forced downsampling was used. Width is 1585 or 1586 and height 992, retaining the generated near-8:5 composition. Each WebP is below 3MiB and the eight total 18,928,332 bytes, below the 24MiB art budget.
+
+| Delivery | Intended evidence, not a new simulation fact |
+|---|---|
+| `legacy-growth.webp` | Existing coil-transfer road and routes; no guaranteed new building |
+| `legacy-finance.webp` | Ordered ledgers and a calm yard; no cash pile or debt-free certificate |
+| `legacy-customer.webp` | Consultation threshold and waiting shipments; no customer count or signed contract |
+| `legacy-craft.webp` | Cold rollers, inspection tools and sheet; no perfect-quality badge or molten steel |
+| `legacy-headquarters.webp` | Existing quay, freighter and sea route; no new headquarters or world-conquest map |
+| `legacy-recovery.webp` | Familiar equipment, maintenance traces and returning light; no guaranteed restart or debt forgiveness |
+| `office-complete.webp` | Same empty office, tidy blank handover papers and morning light; no successor or promotion |
+| `office-early.webp` | Same empty office, open blank ledger and subdued afternoon; no closure sign, damage or layoffs |
+
+The source manifest records built-in generation, `paidFallbackUsed:false`, generated/source/delivery SHA-256, prompts and viewed local references. It is provenance and pixel evidence, not an independent certification of commercial rights. The runtime loads only the selected company image and matching office image. All eight are release-hashed but optional, success-200-only cache assets; source PNGs are not shipped. Missing art falls back through existing scene art and finally readable HTML, so it cannot block results.
+
 ## Location scene artwork — 2026-10-21
 
 Four new location backgrounds were generated with the built-in `image_gen.imagegen`: processing factory, coil yard, import port and automotive customer premises. The existing office was visually inspected to ground the text prompts in its palette, crisp detailed pixel illustration and warm morning light. Each scene is an independent new generation. All four are 1586×992 PNGs, copied byte-for-byte into [source-art/locations/20261021](../source-art/locations/20261021/README.md). Exact prompts and generated source filenames are in that folder's `generation-prompts.json`; `manifest.json` records dimensions, SHA-256 and exact-copy checks. Generation used no raster post-processing or external API/CLI.

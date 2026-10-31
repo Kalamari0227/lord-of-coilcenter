@@ -1,5 +1,6 @@
 // Original Coilcenter score. Each cell is a separate four-beat melodic bar.
 import {scoreOpening} from './opening.mjs';
+import {scoreEndingJourney,scoreEndingUnfinished} from './ending.mjs';
 export const SAMPLE_RATE = 22050;
 const themes = [
   { id:'title', title:'첫 발령', bpm:104, root:60, mode:[0,2,4,5,7,9,11], lead:'oboe', rhythm:[0,.75,1.5,2.5], chords:[0,3,5,4,0,2,3,4], melody:[[0,4,2,1],[2,5,4,2],[5,4,2,0],[1,3,2,6],[7,6,4,2],[4,2,1,0],[3,5,4,2],[1,2,6,4]], bridge:[[4,6,7,6],[5,7,9,7],[6,4,3,2],[5,3,2,1],[2,4,6,4],[3,1,0,2],[1,3,6,5],[4,2,1,6]] },
@@ -53,5 +54,5 @@ export const sfxSpecs = [
   ['month-turn','달력 넘김',.4,'paper'],['save','저장',.26,'piano'],['alert','경고',.4,'bell']
 ].map(([id,title,seconds,voice])=>({id,title,seconds,voice,kind:'sfx',gain:.10}));
 export function allScores() {
-  return [...themes.map(scoreBgm), ...jingles.map(([id,title,seconds,notes,voice])=>({id,title,seconds,kind:'jingle',gain:.22,bpm:120,events:notes.map((midi,i)=>({beat:i*(seconds-.8)*2/notes.length,midi,voice,duration:.65,velocity:.4,pan:(i%2?.2:-.2)}))})),...sfxSpecs,scoreOpening()];
+  return [...themes.map(scoreBgm), ...jingles.map(([id,title,seconds,notes,voice])=>({id,title,seconds,kind:'jingle',gain:.22,bpm:120,events:notes.map((midi,i)=>({beat:i*(seconds-.8)*2/notes.length,midi,voice,duration:.65,velocity:.4,pan:(i%2?.2:-.2)}))})),...sfxSpecs,scoreOpening(),scoreEndingJourney(),scoreEndingUnfinished()];
 }

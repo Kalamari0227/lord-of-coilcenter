@@ -1,0 +1,24 @@
+.cc-ending { position:fixed; inset:0; z-index:100; display:flex; flex-direction:column; overflow:hidden; background:var(--cc-bg); color:var(--cc-text); font-family:var(--cc-font-body); }
+.cc-ending-main { flex:1 1 auto; min-height:0; width:min(100%,1100px); margin:0 auto; padding:24px; box-sizing:border-box; overflow-y:auto; overscroll-behavior:contain; }
+.cc-ending-stage { position:relative; display:grid; place-items:center; aspect-ratio:8/5; background:var(--cc-dark); border:2px solid var(--cc-border); box-shadow:inset 0 0 0 2px var(--cc-shadow); }
+.cc-ending-art { position:absolute; inset:0; display:block; width:100%; height:100%; min-height:0; object-fit:contain; }
+.cc-ending-art[hidden],.cc-ending-image-fallback[hidden] { display:none; }
+.cc-ending-image-fallback { padding:24px; line-height:1.6; }
+.cc-ending-person { position:absolute; z-index:1; bottom:0; left:50%; transform:translateX(-50%); }
+.cc-ending-person .cc-ending-portrait { display:block; width:clamp(100px,25vw,240px); height:auto; aspect-ratio:1; background-size:300% 200%; }
+.cc-ending-caption { padding:20px 24px; min-height:130px; border:2px solid var(--cc-border); border-top:0; background:var(--cc-panel); text-align:center; font-size:calc(18px * var(--cc-text-scale,1)); line-height:1.6; word-break:keep-all; overflow-wrap:anywhere; }
+.cc-ending-heading { margin:0 0 12px; color:var(--cc-gold); font-family:var(--cc-font-title); font-size:calc(24px * var(--cc-text-scale,1)); }
+.cc-ending-heading:empty { display:none; }
+.cc-ending-line { margin:8px 0; }
+.cc-ending-line-label,.cc-ending-grade,.cc-ending-date { color:var(--cc-muted); }
+.cc-ending-notice { margin:12px 0; text-align:center; line-height:1.5; overflow-wrap:anywhere; }
+.cc-ending-controls { flex:none; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px)); background:var(--cc-panel); border-top:2px solid var(--cc-border); }
+.cc-ending-controls button { min-width:44px; min-height:44px; padding:10px 16px; font:inherit; font-size:calc(16px * var(--cc-text-scale,1)); color:var(--cc-text); background:var(--cc-raised); border:2px solid var(--cc-border); }
+.cc-ending-controls button:focus-visible { outline:3px solid var(--cc-gold); outline-offset:2px; }
+.cc-ending-controls .cc-ending-finish { color:var(--cc-bg); background:var(--cc-gold); }
+@media(max-width:760px) {
+ .cc-ending-main { padding:12px; }
+ .cc-ending-caption { padding:16px 12px; font-size:calc(17px * var(--cc-text-scale,1)); }
+ .cc-ending-heading { font-size:calc(22px * var(--cc-text-scale,1)); }
+ .cc-ending-controls button { flex:1 1 auto; padding:10px 8px; }
+}

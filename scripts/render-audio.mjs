@@ -8,7 +8,7 @@ import { encodeWav } from '../music/wav.mjs';
 export const projectRoot=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const hashBytes=bytes=>createHash('sha256').update(bytes).digest('hex');
 export async function sourceHash() {
-  const files=['music/opening.mjs','music/score.mjs','music/synth.mjs','music/wav.mjs','scripts/render-audio.mjs'];
+  const files=['music/opening.mjs','music/score.mjs','music/synth.mjs','music/wav.mjs','scripts/render-audio.mjs','music/ending.mjs'];
   return hashBytes(Buffer.concat(await Promise.all(files.map(file=>readFile(resolve(projectRoot,file))))));
 }
 export async function renderAudio(only=null) {
